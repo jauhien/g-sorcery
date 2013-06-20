@@ -116,6 +116,22 @@ class PackageDB:
         """
         pass
 
+    def sync(self, repo_uri="", db_uri=""):
+        if repo_uri:
+            self.repo_uri = repo_uri
+        if db_uri:
+            self.db_uri = db_uri
+        self.clean()
+        real_db_uri = self.get_real_db_uri()
+        """
+        TODO
+        code that downloads tarball from the real_db_uri
+        and unpacks it
+        """
+
+    def get_real_db_uri():
+        return self.db_uri
+            
     def manifest(self):
         categories = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         categories = categories.read()
