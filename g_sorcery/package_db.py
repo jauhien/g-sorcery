@@ -263,3 +263,8 @@ class PackageDB:
 
     def list_categories(self):
         return list(self.db['categories'].keys())
+
+    def list_package_names(self, category):
+        if not category in self.db['packages']:
+            raise Exception('No such category: ' + category)
+        return list(self.db['packages'][category].keys())
