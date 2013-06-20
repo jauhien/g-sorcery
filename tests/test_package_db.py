@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+    test_package_db.py
+    ~~~~~~~~~~~~~~~~~~
+    
+    package database test suite
+    
+    :copyright: (c) 2013 by Jauhien Piatlicki
+    :license: GPL-2, see LICENSE for more details.
+"""
+
+import json, os, tempfile, unittest
+
+from g_sorcery import package_db
+
+class TestFileJSON(unittest.TestCase):
+    
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.path = os.path.join(self.tempdir.name, 'tst')
+        self.name = 'tst.json'
+
+    def tearDown(self):
+        del self.tempdir
+
+    def do_test_read_ok(self, mandatories, value_suffix=""):
+        f = package_db.FileJSON(self.path, self.name, mandatories)
+        content = f.read()
+        for key in mandatories:
+            self.assertTrue(key in content)
+            if value_suffix:
+                value = key + value_suffix
+            else:
+                value = ""
+            self.assertEqual(content[key], value)
+        self.assertTrue(os.path.isfile(os.path.join(self.path, self.name)))
+        with open(os.path.join(self.path, self.name), 'r') as f:
+            content_f = json.load(f)
+        self.assertEqual(content, content_f)
+        
+    def test_read_dir_does_not_exist(self):
+        mandatories = ['tst1', 'tst2', 'tst3']
+        self.do_test_read_ok(mandatories)
+
+    def test_read_file_does_not_exist(self):
+        os.makedirs(self.path)
+        mandatories = ['tst1', 'tst2', 'tst3']
+        self.do_test_read_ok(mandatories)
+
+    def test_read_all_keys(self):
+        os.makedirs(self.path)
+        mandatories = ['tst1', 'tst2', 'tst3']
+        content = {}
+        for key in mandatories:
+            content[key] = key + "_v"
+        with open(os.path.join(self.path, self.name), 'w') as f:
+            json.dump(content, f)
+        self.do_test_read_ok(mandatories, "_v")
+
+    def test_read_missing_keys(self):
+        os.makedirs(self.path)
+        mandatories = ['tst1', 'tst2', 'tst3']
+        content = {}
+        for key in mandatories:
+            content[key] = key + "_v"
+        with open(os.path.join(self.path, self.name), 'w') as f:
+            json.dump(content, f)
+        f = package_db.FileJSON(self.path, self.name, mandatories)
+        mandatories.append("tst4")
+        self.assertRaises(KeyError, f.read)
+
+    def do_test_write_ok(self):
+        mandatories = ['tst1', 'tst2', 'tst3']
+        content = {}
+        for key in mandatories:
+            content[key] = key + '_v'
+        f = package_db.FileJSON(self.path, self.name, mandatories)
+        f.write(content)
+        self.assertTrue(os.path.isfile(os.path.join(self.path, self.name)))
+        with open(os.path.join(self.path, self.name), 'r') as f:
+            content_f = json.load(f)
+        self.assertEqual(content, content_f)
+
+    def test_write_missing_keys(self):
+        content = {'tst1' : '', 'tst2' : ''}
+        mandatories = ['tst1', 'tst2', 'tst3']
+        f = package_db.FileJSON(self.path, self.name, mandatories)
+        self.assertRaises(KeyError, f.write, content)
+
+    def test_write_dir_does_not_exist(self):
+        self.do_test_write_ok()
+
+    def test_write_file_does_not_exist(self):
+        os.makedirs(self.path)
+        self.do_test_write_ok()
+
+    def test_write_all_keys(self):
+        os.makedirs(self.path)
+        mandatories = ['tst11', 'tst12']
+        content = {}
+        for key in mandatories:
+            content[key] = key + "_v"
+        with open(os.path.join(self.path, self.name), 'w') as f:
+            json.dump(content, f)
+        self.do_test_write_ok()
+
+
+class DummyDB(package_db.PackageDB):
+    def __init__(self, directory, packages):
+        super().__init__(directory)
+        self.packages = packages
+
+    def generate_tree(self):
+        for category in [x.category for x in self.packages]:
+            self.add_category(category)
+        for package in self.packages:
+            self.add_package(package)
+
+
+class TestDummyDB(unittest.TestCase):
+    
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+        category1 = 'app-test'
+        category2 = 'dev-test'
+        self.packages = [package_db.Package(category1, 'test', '0.2'),
+            package_db.Package(category1, 'tst', '0.1'),
+            package_db.Package(category1, 'dummy', '1'),
+            package_db.Package(category2, 'test', '0.1'),
+            package_db.Package(category2, 'test', '0.2'),
+            package_db.Package(category2, 'tst', '0.1')]
+
+    def tearDown(self):
+        del self.tempdir
+
+    def test_manifest(self):
+        db = DummyDB(self.tempdir.name, self.packages)
+        db.generate()
+        self.assertEqual(db.check_manifest(), (True, []))
+
+    def test_read(self):
+        db = DummyDB(self.tempdir.name, self.packages)
+        db.generate()
+        db2 = DummyDB(self.tempdir.name, self.packages)
+        db2.read()
+        self.assertEqual(db.db, db2.db)
+
+    def test_list_categories(self):
+        db = DummyDB(self.tempdir.name, self.packages)
+        db.generate()
+        categories = list(set([x.category for x in self.packages]))
+        self.assertEqual(categories, db.list_categories())
+                
+            
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestFileJSON('test_read_dir_does_not_exist'))
+    suite.addTest(TestFileJSON('test_read_file_does_not_exist'))
+    suite.addTest(TestFileJSON('test_read_all_keys'))
+    suite.addTest(TestFileJSON('test_read_missing_keys'))
+    suite.addTest(TestFileJSON('test_write_missing_keys'))
+    suite.addTest(TestFileJSON('test_write_dir_does_not_exist'))
+    suite.addTest(TestFileJSON('test_write_file_does_not_exist'))
+    suite.addTest(TestFileJSON('test_write_all_keys'))
+    suite.addTest(TestDummyDB('test_manifest'))
+    suite.addTest(TestDummyDB('test_read'))
+    suite.addTest(TestDummyDB('test_list_categories'))
+    return suite
