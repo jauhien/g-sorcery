@@ -106,13 +106,9 @@ class PackageDB:
 
     def generate_tree(self):
         """
-        Generate tree with JSON files containing info
-        about packages in a repository
+        Generate tree
 
         Should be implemented in a subclass
-
-        repo_uri -- repository uri
-        if repo_uri is an empty string should use self.repo_uri
         """
         pass
 
