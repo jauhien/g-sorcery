@@ -162,6 +162,18 @@ class TestDummyDB(unittest.TestCase):
             self.assertEqual(package_names, db.list_package_names(category))
         self.assertRaises(Exception, db.list_package_names, 'no_such_category')
 
+    def test_list_package_versions(self):
+        db = DummyDB(self.tempdir.name, self.packages)
+        db.generate()
+        categories = list(set([x.category for x in self.packages]))
+        for category in categories:
+            package_names = list(set([x.name for x in self.packages if x.category == category]))
+            for name in package_names:
+                versions = [x.version for x in self.packages if x.category == category and x.name == name]
+                self.assertEqual(versions, db.list_package_versions(category, name))
+        self.assertRaises(Exception, db.list_package_names, 'no_such_category', 'a')
+        self.assertRaises(Exception, db.list_package_names, categories[0], 'no_such_package')
+
             
 def suite():
     suite = unittest.TestSuite()
@@ -177,4 +189,5 @@ def suite():
     suite.addTest(TestDummyDB('test_read'))
     suite.addTest(TestDummyDB('test_list_categories'))
     suite.addTest(TestDummyDB('test_list_package_names'))
+    suite.addTest(TestDummyDB('test_list_package_versions'))
     return suite
