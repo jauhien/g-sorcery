@@ -11,7 +11,7 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import collections, hashlib, json, os, shutil
+import collections, glob, hashlib, json, os, shutil, tarfile, tempfile
 
 Package = collections.namedtuple("Package", "category name version")
 
@@ -61,7 +61,15 @@ def hash_file(name, hasher, blocksize=65536):
             hasher.update(buf)
             buf = f.read(blocksize)
     return hasher.hexdigest()
-    
+
+def copy_all(src, dst):
+    for f_name in os.listdir(src):
+        src_name = os.path.join(src, f_name)
+        dst_name = os.path.join(dst, f_name)
+        if os.path.isdir(src_name):
+            shutil.copytree(src_name, dst_name)
+        else:
+            shutil.copy2(src_name, dst_name)
 
 class PackageDB:
     def __init__(self, directory, repo_uri="", db_uri=""):
@@ -112,18 +120,43 @@ class PackageDB:
         """
         pass
 
-    def sync(self, repo_uri="", db_uri=""):
-        if repo_uri:
-            self.repo_uri = repo_uri
+    def sync(self, db_uri=""):
         if db_uri:
             self.db_uri = db_uri
         self.clean()
         real_db_uri = self.get_real_db_uri()
-        """
-        TODO
-        code that downloads tarball from the real_db_uri
-        and unpacks it
-        """
+        download_dir = tempfile.TemporaryDirectory()
+        if os.system('wget -P ' + download_dir.name + ' ' + real_db_uri):
+            raise Exception('sync failed: ' + real_db_uri)
+        
+        temp_dir = tempfile.TemporaryDirectory()
+        for f_name in glob.iglob(os.path.join(download_dir.name, '*.tar.gz')):
+            with tarfile.open(f_name) as f:
+                f.extractall(temp_dir.name)
+
+        tempdb_dir = tempfile.TemporaryDirectory()
+        tempdb = PackageDB(tempdb_dir.name)
+
+        for d_name in os.listdir(temp_dir.name):
+            current_dir = os.path.join(temp_dir.name, d_name)
+            if not os.path.isdir(current_dir):
+                continue
+            copy_all(current_dir, tempdb_dir.name)
+
+        if not tempdb.check_manifest():
+            raise Exception('Manifest check failed.')
+
+        self.clean()
+        copy_all(tempdb_dir.name, self.directory)
+        
+        if not self.check_manifest():
+            raise Exception('Manifest check failed, db inconsistent.')
+                
+        del download_dir
+        del temp_dir
+        del tempdb_dir
+        
+        self.read()
 
     def get_real_db_uri():
         return self.db_uri
@@ -157,7 +190,7 @@ class PackageDB:
         names = [self.INFO_NAME, self.CATEGORIES_NAME, self.URI_NAME]
         for name in names:
             if not name in manifest:
-                raise RunTimeError('Bad manifest: no ' + name + ' entry')
+                raise Exception('Bad manifest: no ' + name + ' entry')
 
         for name, value in manifest.items():
             if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \

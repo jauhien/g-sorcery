@@ -11,9 +11,24 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import json, os, tempfile, unittest
+import json, http.server, os, shutil, tempfile, threading, \
+  unittest
 
 from g_sorcery import package_db
+
+
+class Server(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        server_address = ('127.0.0.1', 8080)
+        self.httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
+    
+    def run(self):
+        self.httpd.serve_forever()
+
+    def shutdown(self):
+        self.httpd.shutdown()
+
 
 class TestFileJSON(unittest.TestCase):
     
@@ -118,6 +133,10 @@ class DummyDB(package_db.PackageDB):
         for package in self.packages:
             self.add_package(package)
 
+    def get_real_db_uri(self):
+        print(self.db_uri)
+        return self.db_uri + '/dummy.tar.gz'
+
 
 class TestDummyDB(unittest.TestCase):
     
@@ -174,6 +193,24 @@ class TestDummyDB(unittest.TestCase):
         self.assertRaises(Exception, db.list_package_names, 'no_such_category', 'a')
         self.assertRaises(Exception, db.list_package_names, categories[0], 'no_such_package')
 
+    def test_sync(self):
+        src_db = DummyDB(os.path.join(self.tempdir.name, 'src_testdb'), self.packages)
+        src_db.generate()
+
+        os.chdir(self.tempdir.name)
+        os.system('tar cvzf dummy.tar.gz src_testdb')
+        
+        server = Server()
+        server.start()
+
+        db = DummyDB(os.path.join(self.tempdir.name, 'testdb'), self.packages)
+        db.sync(db_uri='127.0.0.1:8080')
+        
+        server.shutdown()
+        server.join()
+
+        self.assertEqual(src_db.db, db.db)
+
             
 def suite():
     suite = unittest.TestSuite()
@@ -190,4 +227,5 @@ def suite():
     suite.addTest(TestDummyDB('test_list_categories'))
     suite.addTest(TestDummyDB('test_list_package_names'))
     suite.addTest(TestDummyDB('test_list_package_versions'))
+    suite.addTest(TestDummyDB('test_sync'))
     return suite
