@@ -211,6 +211,10 @@ class TestDummyDB(unittest.TestCase):
 
         self.assertEqual(src_db.db, db.db)
 
+    def test_sync_fail(self):
+        db = DummyDB(os.path.join(self.tempdir.name, 'testdb'), self.packages)
+        self.assertRaises(Exception, db.sync, db_uri='127.0.0.1:8080')
+
             
 def suite():
     suite = unittest.TestSuite()
@@ -228,4 +232,5 @@ def suite():
     suite.addTest(TestDummyDB('test_list_package_names'))
     suite.addTest(TestDummyDB('test_list_package_versions'))
     suite.addTest(TestDummyDB('test_sync'))
+    suite.addTest(TestDummyDB('test_sync_fail'))
     return suite
