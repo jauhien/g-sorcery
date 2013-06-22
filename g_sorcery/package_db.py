@@ -320,3 +320,7 @@ class PackageDB:
         if not name in self.db['packages'][category]:
             raise Exception('No such package: ' + name)
         return list(self.db['packages'][category][name])
+
+    def get_package_description(self, package):
+        #a possible exception should be catched in the caller
+        return self.db['packages'][package.category][package.name][package.version]
