@@ -86,9 +86,13 @@ class PackageDB:
         uri_f = FileJSON(self.directory, self.URI_NAME, ['repo_uri', 'db_uri'])
         uri = uri_f.read()
         if not repo_uri:
-                self.repo_uri = uri['repo_uri']
+            self.repo_uri = uri['repo_uri']
+        else:
+            self.repo_uri = repo_uri
         if not db_uri:
-                self.db_uri = uri['db_uri']
+            self.db_uri = uri['db_uri']
+        else:
+            self.db_uri = db_uri
         uri['repo_uri'] = self.repo_uri
         uri['db_uri'] = self.db_uri
         uri_f.write(uri)
@@ -320,6 +324,14 @@ class PackageDB:
         if not name in self.db['packages'][category]:
             raise Exception('No such package: ' + name)
         return list(self.db['packages'][category][name])
+
+    def list_all_packages(self):
+        result = []
+        for category in self.db['packages']:
+            for name in self.db['packages'][category]:
+                for version in self.db['packages'][category][name]:
+                    result.append(Package(category, name, version))
+        return result
 
     def get_package_description(self, package):
         #a possible exception should be catched in the caller

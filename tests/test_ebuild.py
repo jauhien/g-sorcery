@@ -16,15 +16,18 @@ import os, tempfile, unittest
 from g_sorcery import ebuild, package_db
 
 package = package_db.Package("app-test", "test", "0.1")
+package2 = package_db.Package("app-test", "tst", "1")
 
 class DummyDB(package_db.PackageDB):
-    def __init__(self, directory):
-        super().__init__(directory)
+    def __init__(self, directory, repo_uri="", db_uri=""):
+        super().__init__(directory, repo_uri, db_uri)
 
     def generate_tree(self):
         self.add_category("app-test")
         self.add_package(package,
                          {"author" : "jauhien", "homepage" : "127.0.0.1"})
+        self.add_package(package2,
+                         {"author" : "unknown", "homepage" : "example.com"})
 
 
 class DummyEbuildGenerator(ebuild.EbuildGenerator):
