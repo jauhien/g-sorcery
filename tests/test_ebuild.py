@@ -11,7 +11,7 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import tempfile, unittest
+import os, tempfile, unittest
 
 from g_sorcery import ebuild, package_db
 
@@ -37,11 +37,9 @@ class TestEbuildGenerator(unittest.TestCase):
     
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
-        pass
 
     def tearDown(self):
         del self.tempdir
-        pass
 
     def test_process(self):
         eg = DummyEbuildGenerator(None)
@@ -58,9 +56,42 @@ class TestEbuildGenerator(unittest.TestCase):
         self.assertEqual(ebuild, ['test', 'author: jauhien',
                                   'homepage: 127.0.0.1', 'var: $var'])
 
+
+class DummyEbuildGeneratorFromFile(ebuild.EbuildGeneratorFromFile):
+    def __init__(self, db, path):
+        super().__init__(db)
+        self.path = path
+    
+    def get_template_file(self, package, description):
+        return self.path
+
+
+class TestEbuildGeneratorFromFile(unittest.TestCase):
+    
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        del self.tempdir
+
+    def test_generate(self):
+        db = DummyDB(os.path.join(self.tempdir.name, 'tstdb'))
+        db.generate()
+        tmpl = os.path.join(self.tempdir.name, 'tst.tmpl')
+        with open(tmpl, 'w') as f:
+            f.write("""test
+author: $author
+homepage: $homepage
+var: $$var""")
+        eg = DummyEbuildGeneratorFromFile(db, tmpl)
+        ebuild = eg.generate(package)
+        self.assertEqual(ebuild, ['test', 'author: jauhien',
+                                  'homepage: 127.0.0.1', 'var: $var'])
         
+    
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestEbuildGenerator('test_process'))
     suite.addTest(TestEbuildGenerator('test_generate'))
+    suite.addTest(TestEbuildGeneratorFromFile('test_generate'))
     return suite

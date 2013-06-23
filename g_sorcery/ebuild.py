@@ -38,3 +38,18 @@ class EbuildGenerator:
         
     def postprocess(self, ebuild, description):
         return ebuild
+
+class EbuildGeneratorFromFile(EbuildGenerator):
+    def __init__(self, db):
+        super().__init__(db)
+
+    def get_template(self, package, description):
+        name = self.get_template_file(package, description)
+        with open(name, 'r') as f:
+            ebuild = f.read().split('\n')
+            if ebuild[-1] == '':
+                ebuild = ebuild[:-1]
+        return ebuild
+
+    def get_template_file(self, package, description):
+        return ""
