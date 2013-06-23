@@ -197,6 +197,7 @@ class TestDummyDB(unittest.TestCase):
         src_db = DummyDB(os.path.join(self.tempdir.name, 'src_testdb'), self.packages)
         src_db.generate()
 
+        prev = os.getcwd()
         os.chdir(self.tempdir.name)
         os.system('tar cvzf dummy.tar.gz src_testdb')
         
@@ -208,6 +209,8 @@ class TestDummyDB(unittest.TestCase):
         
         server.shutdown()
         server.join()
+
+        os.chdir(prev)
 
         self.assertEqual(src_db.db, db.db)
 
