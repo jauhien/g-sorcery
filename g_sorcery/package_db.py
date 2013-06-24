@@ -225,11 +225,11 @@ class PackageDB:
                     self.additional_write_version(category, package, version)
                 f = FileJSON(os.path.join(self.directory, category, package),
                                      self.VERSIONS_NAME, [])
-                f.write(list(versions.keys()))
+                f.write(list(versions))
                 self.additional_write_package(category, package)
             f = FileJSON(os.path.join(self.directory, category),
                                      self.PACKAGES_NAME, [])
-            f.write(list(self.db['packages'][category].keys()))
+            f.write(list(self.db['packages'][category]))
             self.additional_write_category(category)
         self.additional_write()
 
@@ -311,12 +311,12 @@ class PackageDB:
         self.db['packages'][category][name][version] = description
 
     def list_categories(self):
-        return list(self.db['categories'].keys())
+        return list(self.db['categories'])
 
     def list_package_names(self, category):
         if not category in self.db['packages']:
             raise Exception('No such category: ' + category)
-        return list(self.db['packages'][category].keys())
+        return list(self.db['packages'][category])
 
     def list_package_versions(self, category, name):
         if not category in self.db['packages']:
