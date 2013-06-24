@@ -296,17 +296,21 @@ class PackageDB:
     def additional_read(self):
         pass
         
-    def add_category(self, category, description={}):
+    def add_category(self, category, description=None):
+        if not description:
+            description = {}
         self.db['categories'][category] = description;
         self.db['packages'][category] = {}
 
-    def add_package(self, package, description={}):
+    def add_package(self, package, description=None):
+        if not description:
+            description = {}
         category = package.category
         name = package.name
         version = package.version
-        if not category in self.db['packages']:
+        if category and not category in self.db['packages']:
             raise Exception('Non-existent category: ' + category)
-        if not name in self.db['packages'][category]:
+        if name and not name in self.db['packages'][category]:
             self.db['packages'][category][name] = {}
         self.db['packages'][category][name][version] = description
 
@@ -314,14 +318,14 @@ class PackageDB:
         return list(self.db['categories'])
 
     def list_package_names(self, category):
-        if not category in self.db['packages']:
+        if category and not category in self.db['packages']:
             raise Exception('No such category: ' + category)
         return list(self.db['packages'][category])
 
     def list_package_versions(self, category, name):
-        if not category in self.db['packages']:
+        if category and not category in self.db['packages']:
             raise Exception('No such category: ' + category)
-        if not name in self.db['packages'][category]:
+        if name and not name in self.db['packages'][category]:
             raise Exception('No such package: ' + name)
         return list(self.db['packages'][category][name])
 
