@@ -11,6 +11,9 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
+from .exceptions import DBStructureError, FileJSONError, IntegrityError, \
+     InvalidKeyError, SyncError
+
 import collections, glob, hashlib, json, os, shutil, tarfile, tempfile
 
 Package = collections.namedtuple("Package", "category name version")
@@ -41,13 +44,13 @@ class FileJSON:
                 content = json.load(f)
             for key in self.mandatories:
                 if not key in content:
-                    raise KeyError
+                    raise FileJSONError('lack of mandatory key: ' + key)
         return content
 
     def write(self, content):
         for key in self.mandatories:
             if not key in content:
-                raise KeyError
+                raise FileJSONError('lack of mandatory key: ' + key)
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         with open(self.path, 'w') as f:
@@ -131,7 +134,7 @@ class PackageDB:
         real_db_uri = self.get_real_db_uri()
         download_dir = tempfile.TemporaryDirectory()
         if os.system('wget -P ' + download_dir.name + ' ' + real_db_uri):
-            raise Exception('sync failed: ' + real_db_uri)
+            raise SyncError('sync failed: ' + real_db_uri)
         
         temp_dir = tempfile.TemporaryDirectory()
         for f_name in glob.iglob(os.path.join(download_dir.name, '*.tar.gz')):
@@ -148,13 +151,13 @@ class PackageDB:
             copy_all(current_dir, tempdb_dir.name)
 
         if not tempdb.check_manifest():
-            raise Exception('Manifest check failed.')
+            raise IntegrityError('Manifest check failed.')
 
         self.clean()
         copy_all(tempdb_dir.name, self.directory)
         
         if not self.check_manifest():
-            raise Exception('Manifest check failed, db inconsistent.')
+            raise IntegrityError('Manifest check failed, db inconsistent.')
                 
         del download_dir
         del temp_dir
@@ -176,7 +179,7 @@ class PackageDB:
         for category in categories:
             category_path = os.path.join(self.directory, category)
             if not os.path.isdir(category_path):
-                raise Exception('Empty category: ' + category)
+                raise DBStructureError('Empty category: ' + category)
             for root, dirs, files in os.walk(category_path):
                 for f in files:
                     manifest[os.path.join(root[len(self.directory)+1:], f)] = \
@@ -194,7 +197,7 @@ class PackageDB:
         names = [self.INFO_NAME, self.CATEGORIES_NAME, self.URI_NAME]
         for name in names:
             if not name in manifest:
-                raise Exception('Bad manifest: no ' + name + ' entry')
+                raise DBStructureError('Bad manifest: no ' + name + ' entry')
 
         for name, value in manifest.items():
             if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
@@ -216,7 +219,7 @@ class PackageDB:
         categories_f.write(self.db['categories'])
         for category in self.db['categories']:
             if not category in self.db['packages']:
-                raise Exception('Empty category: ' + category)
+                raise DBStructureError('Empty category: ' + category)
             for package, versions in self.db['packages'][category].items():
                 for version, content in versions.items():
                     f = FileJSON(os.path.join(self.directory, category, package),
@@ -248,7 +251,7 @@ class PackageDB:
     def read(self):
         sane, errors = self.check_manifest()
         if not sane:
-            raise Exception('Manifest error: ' + str(errors))
+            raise IntegrityError('Manifest error: ' + str(errors))
         info_f = FileJSON(self.directory, self.INFO_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         self.db['info'] = info_f.read()
@@ -256,23 +259,23 @@ class PackageDB:
         for category in self.db['categories']:
             category_path = os.path.join(self.directory, category)
             if not os.path.isdir(category_path):
-                raise Exception('Empty category: ' + category)
+                raise DBStructureError('Empty category: ' + category)
             
             f = FileJSON(category_path, self.PACKAGES_NAME, [])
             packages = f.read()
             if not packages:
-                raise Exception('Empty category: ' + category)
+                raise DBStructureError('Empty category: ' + category)
             
             self.db['packages'][category] = {}
             for name in packages:
                 package_path = os.path.join(category_path, name)
                 if not os.path.isdir(category_path):
-                    raise Exception('Empty package: ' + category + '/' + name)
+                    raise DBStructureError('Empty package: ' + category + '/' + name)
                 
                 f = FileJSON(package_path, self.VERSIONS_NAME, [])
                 versions = f.read()
                 if not versions:
-                    raise Exception('Empty package: ' + category + '/' + name)
+                    raise DBStructureError('Empty package: ' + category + '/' + name)
                 
                 self.db['packages'][category][name] = {}
                 for version in versions:
@@ -309,7 +312,7 @@ class PackageDB:
         name = package.name
         version = package.version
         if category and not category in self.db['packages']:
-            raise Exception('Non-existent category: ' + category)
+            raise InvalidKeyError('Non-existent category: ' + category)
         if name and not name in self.db['packages'][category]:
             self.db['packages'][category][name] = {}
         self.db['packages'][category][name][version] = description
@@ -319,14 +322,14 @@ class PackageDB:
 
     def list_package_names(self, category):
         if category and not category in self.db['packages']:
-            raise Exception('No such category: ' + category)
+            raise InvalidKeyError('No such category: ' + category)
         return list(self.db['packages'][category])
 
     def list_package_versions(self, category, name):
         if category and not category in self.db['packages']:
-            raise Exception('No such category: ' + category)
+            raise InvalidKeyError('No such category: ' + category)
         if name and not name in self.db['packages'][category]:
-            raise Exception('No such package: ' + name)
+            raise InvalidKeyError('No such package: ' + name)
         return list(self.db['packages'][category][name])
 
     def list_all_packages(self):

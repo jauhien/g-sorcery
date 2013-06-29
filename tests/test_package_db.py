@@ -14,7 +14,7 @@
 import json, http.server, os, shutil, tempfile, threading, \
   unittest
 
-from g_sorcery import package_db
+from g_sorcery import package_db, exceptions
 
 
 class Server(threading.Thread):
@@ -84,7 +84,7 @@ class TestFileJSON(unittest.TestCase):
             json.dump(content, f)
         f = package_db.FileJSON(self.path, self.name, mandatories)
         mandatories.append("tst4")
-        self.assertRaises(KeyError, f.read)
+        self.assertRaises(exceptions.FileJSONError, f.read)
 
     def do_test_write_ok(self):
         mandatories = ['tst1', 'tst2', 'tst3']
@@ -102,7 +102,7 @@ class TestFileJSON(unittest.TestCase):
         content = {'tst1' : '', 'tst2' : ''}
         mandatories = ['tst1', 'tst2', 'tst3']
         f = package_db.FileJSON(self.path, self.name, mandatories)
-        self.assertRaises(KeyError, f.write, content)
+        self.assertRaises(exceptions.FileJSONError, f.write, content)
 
     def test_write_dir_does_not_exist(self):
         self.do_test_write_ok()
@@ -179,7 +179,7 @@ class TestDummyDB(unittest.TestCase):
         for category in categories:
             package_names = list(set([x.name for x in self.packages if x.category == category]))
             self.assertEqual(package_names, db.list_package_names(category))
-        self.assertRaises(Exception, db.list_package_names, 'no_such_category')
+        self.assertRaises(exceptions.InvalidKeyError, db.list_package_names, 'no_such_category')
 
     def test_list_package_versions(self):
         db = DummyDB(self.tempdir.name, self.packages)
@@ -190,8 +190,9 @@ class TestDummyDB(unittest.TestCase):
             for name in package_names:
                 versions = [x.version for x in self.packages if x.category == category and x.name == name]
                 self.assertEqual(versions, db.list_package_versions(category, name))
-        self.assertRaises(Exception, db.list_package_names, 'no_such_category', 'a')
-        self.assertRaises(Exception, db.list_package_names, categories[0], 'no_such_package')
+        self.assertRaises(exceptions.InvalidKeyError, db.list_package_versions, 'no_such_category', 'a')
+        self.assertRaises(exceptions.InvalidKeyError, db.list_package_versions,
+                          categories[0], 'no_such_package')
 
     def test_sync(self):
         src_db = DummyDB(os.path.join(self.tempdir.name, 'src_testdb'), self.packages)
@@ -216,7 +217,7 @@ class TestDummyDB(unittest.TestCase):
 
     def test_sync_fail(self):
         db = DummyDB(os.path.join(self.tempdir.name, 'testdb'), self.packages)
-        self.assertRaises(Exception, db.sync, db_uri='127.0.0.1:8080')
+        self.assertRaises(exceptions.SyncError, db.sync, db_uri='127.0.0.1:8080')
 
             
 def suite():
