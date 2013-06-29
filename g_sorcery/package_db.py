@@ -104,7 +104,7 @@ class PackageDB:
         self.db = {}
         self.info = {}
         self.categories = {}
-        self.db['packages'] = {}
+        self.db = {}
 
     def generate(self, repo_uri=""):
         """
@@ -217,23 +217,31 @@ class PackageDB:
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         info_f.write(self.info)
         categories_f.write(self.categories)
-        for category in self.categories:
-            if not category in self.db['packages']:
-                raise DBStructureError('Empty category: ' + category)
-            for package, versions in self.db['packages'][category].items():
-                for version, content in versions.items():
-                    f = FileJSON(os.path.join(self.directory, category, package),
-                                 version + '.json', [])
-                    f.write(content)
-                    self.additional_write_version(category, package, version)
-                f = FileJSON(os.path.join(self.directory, category, package),
-                                     self.VERSIONS_NAME, [])
-                f.write(list(versions))
-                self.additional_write_package(category, package)
+
+        for pkgname, versions in self.db.items():
+            category, name = pkgname.split('/')
+            if not category or (not category in self.categories):
+                raise DBStructureError('Non existent: ' + category)
+            for version, content in versions.items():
+                f = FileJSON(os.path.join(self.directory, category, name),
+                    version + '.json', [])
+                f.write(content)
+                self.additional_write_version(category, name, version)
+            f = FileJSON(os.path.join(self.directory, category, name),
+                self.VERSIONS_NAME, [])
+            f.write(list(versions))
+            self.additional_write_package(category, name)
             f = FileJSON(os.path.join(self.directory, category),
-                                     self.PACKAGES_NAME, [])
-            f.write(list(self.db['packages'][category]))
+                self.PACKAGES_NAME, [])
+            pkgs = f.read()
+            if not pkgs:
+                pkgs = []
+            pkgs.append(name)
+            f.write(pkgs)
+
+        for category in self.categories:
             self.additional_write_category(category)
+            
         self.additional_write()
 
     def additional_write_version(self, category, package, version):
@@ -266,7 +274,6 @@ class PackageDB:
             if not packages:
                 raise DBStructureError('Empty category: ' + category)
             
-            self.db['packages'][category] = {}
             for name in packages:
                 package_path = os.path.join(category_path, name)
                 if not os.path.isdir(category_path):
@@ -276,12 +283,13 @@ class PackageDB:
                 versions = f.read()
                 if not versions:
                     raise DBStructureError('Empty package: ' + category + '/' + name)
-                
-                self.db['packages'][category][name] = {}
+
+                pkgname = category + '/' + name
+                self.db[pkgname] = {}
                 for version in versions:
                     f = FileJSON(package_path, version + '.json', [])
                     description = f.read()
-                    self.db['packages'][category][name][version] = description
+                    self.db[pkgname][version] = description
                     self.additional_read_version(category, name, version)
                 self.additional_read_package(category, name)
             self.additional_read_category(category)
@@ -303,7 +311,6 @@ class PackageDB:
         if not description:
             description = {}
         self.categories[category] = description;
-        self.db['packages'][category] = {}
 
     def add_package(self, package, description=None):
         if not description:
@@ -311,35 +318,38 @@ class PackageDB:
         category = package.category
         name = package.name
         version = package.version
-        if category and not category in self.db['packages']:
+        pkgname = category + '/' + name
+        if category and not category in self.categories:
             raise InvalidKeyError('Non-existent category: ' + category)
-        if name and not name in self.db['packages'][category]:
-            self.db['packages'][category][name] = {}
-        self.db['packages'][category][name][version] = description
+        if pkgname and not pkgname in self.db:
+            self.db[pkgname] = {}
+        self.db[pkgname][version] = description
 
     def list_categories(self):
         return list(self.categories)
 
     def list_package_names(self, category):
-        if category and not category in self.db['packages']:
+        if not category or (not category in self.categories):
             raise InvalidKeyError('No such category: ' + category)
-        return list(self.db['packages'][category])
+        res = [x.split('/')[1] for x in self.db if x.split('/')[0] == category]
+        return res
 
     def list_package_versions(self, category, name):
-        if category and not category in self.db['packages']:
+        if not category or (not category in self.categories):
             raise InvalidKeyError('No such category: ' + category)
-        if name and not name in self.db['packages'][category]:
-            raise InvalidKeyError('No such package: ' + name)
-        return list(self.db['packages'][category][name])
+        pkgname = category + '/' + name
+        if not pkgname in self.db:
+            raise InvalidKeyError('No such package: ' + pkgname)
+        return list(self.db[pkgname])
 
     def list_all_packages(self):
         result = []
-        for category in self.db['packages']:
-            for name in self.db['packages'][category]:
-                for version in self.db['packages'][category][name]:
-                    result.append(Package(category, name, version))
+        for pkgname, versions in self.db.items():
+            for version in versions:
+                category, name = pkgname.split('/')
+                result.append(Package(category, name, version))
         return result
 
     def get_package_description(self, package):
         #a possible exception should be catched in the caller
-        return self.db['packages'][package.category][package.name][package.version]
+        return self.db[package.category + '/' + package.name][package.version]
