@@ -103,7 +103,7 @@ class PackageDB:
     def reset_db(self):
         self.db = {}
         self.info = {}
-        self.db['categories'] = {}
+        self.categories = {}
         self.db['packages'] = {}
 
     def generate(self, repo_uri=""):
@@ -216,8 +216,8 @@ class PackageDB:
         info_f = FileJSON(self.directory, self.INFO_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         info_f.write(self.info)
-        categories_f.write(self.db['categories'])
-        for category in self.db['categories']:
+        categories_f.write(self.categories)
+        for category in self.categories:
             if not category in self.db['packages']:
                 raise DBStructureError('Empty category: ' + category)
             for package, versions in self.db['packages'][category].items():
@@ -255,8 +255,8 @@ class PackageDB:
         info_f = FileJSON(self.directory, self.INFO_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         self.info = info_f.read()
-        self.db['categories'] = categories_f.read()
-        for category in self.db['categories']:
+        self.categories = categories_f.read()
+        for category in self.categories:
             category_path = os.path.join(self.directory, category)
             if not os.path.isdir(category_path):
                 raise DBStructureError('Empty category: ' + category)
@@ -302,7 +302,7 @@ class PackageDB:
     def add_category(self, category, description=None):
         if not description:
             description = {}
-        self.db['categories'][category] = description;
+        self.categories[category] = description;
         self.db['packages'][category] = {}
 
     def add_package(self, package, description=None):
@@ -318,7 +318,7 @@ class PackageDB:
         self.db['packages'][category][name][version] = description
 
     def list_categories(self):
-        return list(self.db['categories'])
+        return list(self.categories)
 
     def list_package_names(self, category):
         if category and not category in self.db['packages']:
