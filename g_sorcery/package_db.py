@@ -102,7 +102,7 @@ class PackageDB:
 
     def reset_db(self):
         self.db = {}
-        self.db['info'] = {}
+        self.info = {}
         self.db['categories'] = {}
         self.db['packages'] = {}
 
@@ -215,7 +215,7 @@ class PackageDB:
     def write(self):
         info_f = FileJSON(self.directory, self.INFO_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        info_f.write(self.db['info'])
+        info_f.write(self.info)
         categories_f.write(self.db['categories'])
         for category in self.db['categories']:
             if not category in self.db['packages']:
@@ -254,7 +254,7 @@ class PackageDB:
             raise IntegrityError('Manifest error: ' + str(errors))
         info_f = FileJSON(self.directory, self.INFO_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        self.db['info'] = info_f.read()
+        self.info = info_f.read()
         self.db['categories'] = categories_f.read()
         for category in self.db['categories']:
             category_path = os.path.join(self.directory, category)
