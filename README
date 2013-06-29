@@ -41,3 +41,5 @@ manglers. But supporting them would be a good idea as well).
 Backend should have everything specific for a given 3rd party software
 provider: concrete algorithms for ebuild-generation, eclasses,
 databases with information about available software and so on.
+
+To test current code run `python3 scripts/run_tests.py'
