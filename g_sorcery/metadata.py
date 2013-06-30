@@ -64,6 +64,77 @@ class XMLGenerator:
 class MetadataGenerator:
     def __init__(self, db):
         self.db = db
+        schema = [{'name' : 'herd',
+                   'multiple' : (True, ""),
+                   'required' : False,
+                   'subtags' : []},
+                   
+                   {'name' : 'maintainer',
+                   'multiple' : (True, ""),
+                   'required' : False,
+                   'subtags' : [{'name' : 'email',
+                                 'multiple' : (False, ""),
+                                 'required' : True,
+                                 'subtags' : []},
+                                 {'name' : 'name',
+                                 'multiple' : (False, ""),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'description',
+                                 'multiple' : (False, ""),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 ]
+                    },
+
+                    {'name' : 'longdescription',
+                     'multiple' : (False, ""),
+                     'required' : False,
+                     'subtags' : []},
+
+                     {'name' : 'use',
+                     'multiple' : (False, ""),
+                     'required' : False,
+                     'subtags' : [{'name' : 'flag',
+                                 'multiple' : (True, "name"),
+                                 'required' : True,
+                                 'subtags' : []}]
+                     },
+
+                     {'name' : 'upstream',
+                     'multiple' : (False, ""),
+                     'required' : False,
+                     'subtags' : [{'name' : 'maintainer',
+                                 'multiple' : (True, ""),
+                                 'required' : False,
+                                 'subtags' : [{'name' : 'name',
+                                               'multiple' : (False, ""),
+                                               'required' : True,
+                                               'subtags' : []},
+                                               {'name' : 'email',
+                                               'multiple' : (False, ""),
+                                               'required' : False,
+                                               'subtags' : []}]},
+                                {'name' : 'changelog',
+                                 'multiple' : (False, ""),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'doc',
+                                 'multiple' : (False, ""),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'bugs-to',
+                                 'multiple' : (False, ""),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'remote-id',
+                                 'multiple' : (False, ""),
+                                 'required' : False,
+                                 'subtags' : []},
+                                ]
+                        },
+                   ]
+        self.xmlg = XMLGenerator('pkgmetadata', schema)
         
     def generate(self, package):
         description = self.db.get_package_description(package)
