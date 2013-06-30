@@ -75,7 +75,23 @@ class TestXMLGenerator(unittest.TestCase):
 <flag name="flag2">test2</flag></test_ext>')
 
 
+class DummyMetadataGenerator(metadata.MetadataGenerator):
+    def __init__(self, db):
+        super().__init__(db)
+
+class TestMetadataGenerator(unittest.TestCase):
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        del self.tempdir
+
+    def test_process(self):
+        mg = DummyMetadataGenerator(None)
+
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestXMLGenerator('test_generate'))
+    suite.addTest(TestMetadataGenerator('test_process'))
     return suite

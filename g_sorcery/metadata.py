@@ -60,3 +60,19 @@ class XMLGenerator:
         else:
             child.text = value
         
+
+class MetadataGenerator:
+    def __init__(self, db):
+        self.db = db
+        
+    def generate(self, package):
+        description = self.db.get_package_description(package)
+        metadata = self.process(package, description)
+        metadata = self.postprocess(package, description, metadata)
+        return metadata
+
+    def process(self, package, description):
+        pass
+        
+    def postprocess(self, package, description, metadata):
+        return metadata
