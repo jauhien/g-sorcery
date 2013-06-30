@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 
 import tempfile, unittest
 
-from g_sorcery import exceptions, metadata
+from g_sorcery import exceptions, metadata, package_db
 
 class TestXMLGenerator(unittest.TestCase):
     def setUp(self):
@@ -79,6 +79,23 @@ class DummyMetadataGenerator(metadata.MetadataGenerator):
     def __init__(self, db):
         super().__init__(db)
 
+package = package_db.Package("app-test", "test", "0.1")
+
+description = {'herd' : ['test'],
+               'maintainer' : [{'email' : 'test@example.com', 'name' : 'testor'}],
+               'longdescription' : 'test metadata',
+               'use' : {'flag' : [('flag1', 'test flag1'), ('flag2', 'test flag2')]},
+               'upstream' : {'maintainer' : [{'name' : 'TEST'}], 'remote-id' : '001'}}
+
+class DummyDB(package_db.PackageDB):
+    def __init__(self, directory, repo_uri="", db_uri=""):
+        super().__init__(directory, repo_uri, db_uri)
+
+    def generate_tree(self):
+        self.add_category("app-test")
+        self.add_package(package, description)
+        
+
 class TestMetadataGenerator(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
@@ -88,19 +105,33 @@ class TestMetadataGenerator(unittest.TestCase):
 
     def test_process(self):
         mg = DummyMetadataGenerator(None)
-        description = {'herd' : ['test'],
-                       'maintainer' : [{'email' : 'test@example.com', 'name' : 'testor'}],
-                       'longdescription' : 'test metadata',
-                       'use' : {'flag' : [('flag1', 'test flag1'), ('flag2', 'test flag2')]},
-                       'upstream' : {'maintainer' : [{'name' : 'TEST'}], 'remote-id' : '001'}}
         self.assertEqual(ET.tostring(mg.process(None, description), encoding='unicode'),
                          '<pkgmetadata><herd>test</herd><maintainer><email>test@example.com</email>\
 <name>testor</name></maintainer><longdescription>test metadata</longdescription><use>\
 <flag name="flag1">test flag1</flag><flag name="flag2">test flag2</flag></use>\
 <upstream><maintainer><name>TEST</name></maintainer><remote-id>001</remote-id></upstream></pkgmetadata>')
 
+    def test_generate(self):
+        db = DummyDB(self.tempdir.name)
+        db.generate()
+        mg = DummyMetadataGenerator(db)
+        metadata = mg.generate(package)
+        self.assertEqual(metadata,
+                          ['<?xml version="1.0" encoding="utf-8"?>',
+                           '<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">',
+                           '<pkgmetadata>', '\t<herd>test</herd>',
+                           '\t<maintainer>', '\t\t<email>test@example.com</email>',
+                           '\t\t<name>testor</name>', '\t</maintainer>',
+                           '\t<longdescription>test metadata</longdescription>',
+                           '\t<use>', '\t\t<flag name="flag1">test flag1</flag>',
+                           '\t\t<flag name="flag2">test flag2</flag>', '\t</use>',
+                           '\t<upstream>', '\t\t<maintainer>', '\t\t\t<name>TEST</name>',
+                           '\t\t</maintainer>', '\t\t<remote-id>001</remote-id>',
+                           '\t</upstream>', '</pkgmetadata>'])
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestXMLGenerator('test_generate'))
     suite.addTest(TestMetadataGenerator('test_process'))
+    suite.addTest(TestMetadataGenerator('test_generate'))
     return suite

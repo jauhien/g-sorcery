@@ -19,7 +19,7 @@ import xml.dom.minidom as minidom
 def prettify(tree):
     rough_str = ET.tostring(tree, 'unicode')
     reparsed = minidom.parseString(rough_str)
-    return reparsed.toprettyxml()
+    return reparsed.toprettyxml(encoding="utf-8").decode("utf-8")
 
 class XMLGenerator:
     def __init__(self, external, schema):
@@ -140,6 +140,11 @@ class MetadataGenerator:
         description = self.db.get_package_description(package)
         metadata = self.process(package, description)
         metadata = self.postprocess(package, description, metadata)
+        metadata = prettify(metadata)
+        metadata = metadata.split('\n')
+        if metadata[-1] == '':
+                metadata = metadata[:-1]
+        metadata.insert(1, '<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">')
         return metadata
 
     def process(self, package, description):
