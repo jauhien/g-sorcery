@@ -88,7 +88,16 @@ class TestMetadataGenerator(unittest.TestCase):
 
     def test_process(self):
         mg = DummyMetadataGenerator(None)
-
+        description = {'herd' : ['test'],
+                       'maintainer' : [{'email' : 'test@example.com', 'name' : 'testor'}],
+                       'longdescription' : 'test metadata',
+                       'use' : {'flag' : [('flag1', 'test flag1'), ('flag2', 'test flag2')]},
+                       'upstream' : {'maintainer' : [{'name' : 'TEST'}], 'remote-id' : '001'}}
+        self.assertEqual(ET.tostring(mg.process(None, description), encoding='unicode'),
+                         '<pkgmetadata><herd>test</herd><maintainer><email>test@example.com</email>\
+<name>testor</name></maintainer><longdescription>test metadata</longdescription><use>\
+<flag name="flag1">test flag1</flag><flag name="flag2">test flag2</flag></use>\
+<upstream><maintainer><name>TEST</name></maintainer><remote-id>001</remote-id></upstream></pkgmetadata>')
 
 def suite():
     suite = unittest.TestSuite()

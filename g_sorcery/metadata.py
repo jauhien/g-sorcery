@@ -143,7 +143,8 @@ class MetadataGenerator:
         return metadata
 
     def process(self, package, description):
-        pass
+        metadata = self.xmlg.generate(description)
+        return metadata
         
     def postprocess(self, package, description, metadata):
         return metadata
