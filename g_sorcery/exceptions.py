@@ -29,5 +29,8 @@ class IntegrityError(DBError):
 class DBStructureError(DBError):
     pass
 
-class FileJSONError(Exception):
+class FileJSONError(GSorceryError):
+    pass
+
+class XMLGeneratorError(GSorceryError):
     pass

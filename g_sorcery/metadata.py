@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+    metadata.py
+    ~~~~~~~~~~~
+    
+    metadata generation
+    
+    :copyright: (c) 2013 by Jauhien Piatlicki
+    :license: GPL-2, see LICENSE for more details.
+"""
+
+from .exceptions import XMLGeneratorError
+
+import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
+
+def prettify(tree):
+    rough_str = ET.tostring(tree, 'unicode')
+    reparsed = minidom.parseString(rough_str)
+    return reparsed.toprettyxml()
+
+class XMLGenerator:
+    def __init__(self, external, schema):
+        self.external = external
+        self.schema = schema        
+
+    def generate(self, values):
+        root = ET.Element(self.external)
+        for tag in self.schema:
+            self.add_tag(root, tag, values)
+        return root
+
+    def add_tag(self, root, tag, values):
+        name = tag['name']
+        if not name in values:
+            if tag['required']:
+                raise XMLGeneratorError('Required tag not found: ' + name)
+            return
+        value = values[name]
+        multiple, attr = tag['multiple']
+        if multiple:
+            for v in value:
+                self.add_single_tag(root, name, tag, v, attr)
+        else:
+            self.add_single_tag(root, name, tag, value)
+            
+    def add_single_tag(self, root, name, tag, value, attr=None):
+        child = ET.SubElement(root, name)
+        if attr:
+            child.set(attr, value[0])
+            value = value[1]
+        subtags = tag['subtags']
+        if subtags:
+            if 'text' in value:
+                child.text = value[text]
+            for child_tag in subtags:
+                self.add_tag(child, child_tag, value)
+        else:
+            child.text = value
+        
