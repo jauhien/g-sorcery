@@ -219,6 +219,11 @@ class TestDummyDB(unittest.TestCase):
         db = DummyDB(os.path.join(self.tempdir.name, 'testdb'), self.packages)
         self.assertRaises(exceptions.SyncError, db.sync, db_uri='127.0.0.1:8080')
 
+    def test_get_max_version(self):
+        db = DummyDB(os.path.join(self.tempdir.name, 'testdb'), self.packages)
+        db.generate()
+        self.assertEqual(db.get_max_version('dev-test', 'test'), '0.2')
+
             
 def suite():
     suite = unittest.TestSuite()
@@ -237,4 +242,5 @@ def suite():
     suite.addTest(TestDummyDB('test_list_package_versions'))
     suite.addTest(TestDummyDB('test_sync'))
     suite.addTest(TestDummyDB('test_sync_fail'))
+    suite.addTest(TestDummyDB('test_get_max_version'))
     return suite

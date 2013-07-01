@@ -14,6 +14,8 @@
 from .exceptions import DBStructureError, FileJSONError, IntegrityError, \
      InvalidKeyError, SyncError
 
+import portage
+     
 import collections, glob, hashlib, json, os, shutil, tarfile, tempfile
 
 Package = collections.namedtuple("Package", "category name version")
@@ -353,3 +355,15 @@ class PackageDB:
     def get_package_description(self, package):
         #a possible exception should be catched in the caller
         return self.db[package.category + '/' + package.name][package.version]
+
+    def get_max_version(self, category, name):
+        pkgname = category + '/' + name
+        if not pkgname in self.db:
+            raise InvalidKeyError('No such package: ' + pkgname)
+        versions = list(self.db[pkgname])
+        max_ver = versions[0]
+        for version in versions[1:]:
+            if portage.pkgcmp(portage.pkgsplit(pkgname + '-' + version),
+                              portage.pkgsplit(pkgname + '-' + max_ver)) > 0:
+                max_ver = version
+        return max_ver

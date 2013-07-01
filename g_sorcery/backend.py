@@ -13,8 +13,10 @@
 
 import glob, os
 
+from .package_db import Package
+
 class Backend:
-    def __init__(self, PackageDB, EbuildGenrator, directory,
+    def __init__(self, PackageDB, EbuildGenrator, MetadataGenerator, directory,
                  repo_uri="", db_uri="", sync_db=True, eclass_dir=""):
         self.sync_db = sync_db
         self.repo_uri = repo_uri
@@ -32,6 +34,7 @@ class Backend:
         self.db_uri = self.db.db_uri
 
         self.eg = EbuildGenrator(self.db)
+        self.mg = MetadataGenerator(self.db)
 
     def sync(self):
         if self.sync_db and not self.db_uri:
@@ -69,4 +72,6 @@ class Backend:
         return eclass
 
     def generate_metadata(self, category, name):
-        pass
+        version = self.db.get_max_version(category, name)
+        metadata = self.mg.generate(Package(category, name, version))
+        return metadata

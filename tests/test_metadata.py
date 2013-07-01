@@ -87,6 +87,18 @@ description = {'herd' : ['test'],
                'use' : {'flag' : [('flag1', 'test flag1'), ('flag2', 'test flag2')]},
                'upstream' : {'maintainer' : [{'name' : 'TEST'}], 'remote-id' : '001'}}
 
+resulting_metadata = ['<?xml version="1.0" encoding="utf-8"?>',
+                      '<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">',
+                      '<pkgmetadata>', '\t<herd>test</herd>',
+                      '\t<maintainer>', '\t\t<email>test@example.com</email>',
+                      '\t\t<name>testor</name>', '\t</maintainer>',
+                      '\t<longdescription>test metadata</longdescription>',
+                      '\t<use>', '\t\t<flag name="flag1">test flag1</flag>',
+                      '\t\t<flag name="flag2">test flag2</flag>', '\t</use>',
+                      '\t<upstream>', '\t\t<maintainer>', '\t\t\t<name>TEST</name>',
+                      '\t\t</maintainer>', '\t\t<remote-id>001</remote-id>',
+                      '\t</upstream>', '</pkgmetadata>']
+
 class DummyDB(package_db.PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
         super().__init__(directory, repo_uri, db_uri)
@@ -116,19 +128,9 @@ class TestMetadataGenerator(unittest.TestCase):
         db.generate()
         mg = DummyMetadataGenerator(db)
         metadata = mg.generate(package)
-        self.assertEqual(metadata,
-                          ['<?xml version="1.0" encoding="utf-8"?>',
-                           '<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">',
-                           '<pkgmetadata>', '\t<herd>test</herd>',
-                           '\t<maintainer>', '\t\t<email>test@example.com</email>',
-                           '\t\t<name>testor</name>', '\t</maintainer>',
-                           '\t<longdescription>test metadata</longdescription>',
-                           '\t<use>', '\t\t<flag name="flag1">test flag1</flag>',
-                           '\t\t<flag name="flag2">test flag2</flag>', '\t</use>',
-                           '\t<upstream>', '\t\t<maintainer>', '\t\t\t<name>TEST</name>',
-                           '\t\t</maintainer>', '\t\t<remote-id>001</remote-id>',
-                           '\t</upstream>', '</pkgmetadata>'])
+        self.assertEqual(metadata, resulting_metadata)
 
+        
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestXMLGenerator('test_generate'))
