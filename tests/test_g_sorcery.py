@@ -13,6 +13,10 @@
 
 import os, subprocess, tempfile, unittest
 
+from g_sorcery import g_sorcery
+
+from tests.dummy_backend import backend as dummyBackend
+
 class TestBin(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
@@ -42,9 +46,21 @@ class TestBin(unittest.TestCase):
         self.assertRaises(subprocess.CalledProcessError, subprocess.check_output, './g-empty')
         os.chdir(prev)
 
+class TestGSorcery(unittest.TestCase):
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        del self.tempdir
+
+    def test_get_backend(self):
+        self.assertEqual(g_sorcery.get_backend('nonexistent_backend'), None)
+        self.assertEqual(g_sorcery.get_backend('dummy_backend'), dummyBackend.instance)
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestBin('test_g_sorcery'))
     suite.addTest(TestBin('test_nonexistent_backend'))
     suite.addTest(TestBin('test_empty_config'))
+    suite.addTest(TestGSorcery('test_get_backend'))
     return suite

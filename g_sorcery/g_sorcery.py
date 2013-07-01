@@ -11,7 +11,7 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import os, sys
+import importlib, os, sys
 
 from .fileutils import FileJSON
 
@@ -40,6 +40,15 @@ def main():
             sys.stderr.write('g-sorcery error in config file for ' + name + ': ' + str(e) + '\n')
             return -1
         pass
+
+def get_backend(package):
+    try:
+        module = importlib.import_module(package + '.backend')
+    except ImportError:
+        return None
+    
+    return module.instance
+
 
 if __name__ == "__main__":
     sys.exit(main())
