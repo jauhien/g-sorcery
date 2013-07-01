@@ -39,7 +39,8 @@ def main():
         except FileJSONError as e:
             sys.stderr.write('g-sorcery error in config file for ' + name + ': ' + str(e) + '\n')
             return -1
-        pass
+        backend = get_backend(config['package'])
+        print(backend.test())
 
 def get_backend(package):
     try:

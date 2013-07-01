@@ -46,6 +46,15 @@ class TestBin(unittest.TestCase):
         self.assertRaises(subprocess.CalledProcessError, subprocess.check_output, './g-empty')
         os.chdir(prev)
 
+    def test_config(self):
+        prev = os.getcwd()
+        os.chdir(self.tempdir.name)
+        os.system('ln -s ' + self.binary + ' g-dummy')
+        os.system('echo {\\"package\\": \\"dummy_backend\\"} > ./g-dummy.json')
+        self.assertEqual(subprocess.check_output('./g-dummy').decode("utf-8")[:-1],
+                         dummyBackend.instance.test())
+        os.chdir(prev)
+
 class TestGSorcery(unittest.TestCase):
     def setUp(self):
         self.tempdir = tempfile.TemporaryDirectory()
@@ -62,5 +71,6 @@ def suite():
     suite.addTest(TestBin('test_g_sorcery'))
     suite.addTest(TestBin('test_nonexistent_backend'))
     suite.addTest(TestBin('test_empty_config'))
+    suite.addTest(TestBin('test_config'))
     suite.addTest(TestGSorcery('test_get_backend'))
     return suite
