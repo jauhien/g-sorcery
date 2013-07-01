@@ -59,12 +59,9 @@ class XMLGenerator:
                 self.add_tag(child, child_tag, value)
         else:
             child.text = value
-        
 
-class MetadataGenerator:
-    def __init__(self, db):
-        self.db = db
-        schema = [{'name' : 'herd',
+
+default_schema = [{'name' : 'herd',
                    'multiple' : (True, ""),
                    'required' : False,
                    'subtags' : []},
@@ -134,6 +131,11 @@ class MetadataGenerator:
                                 ]
                         },
                    ]
+            
+
+class MetadataGenerator:
+    def __init__(self, db, schema = default_schema):
+        self.db = db
         self.xmlg = XMLGenerator('pkgmetadata', schema)
         
     def generate(self, package):
