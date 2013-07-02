@@ -14,7 +14,7 @@
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
 
-from .fileutils import FileJSON, hash_file, copy_all
+from .fileutils import FileJSON, hash_file, copy_all, wget
 
 import portage
 
@@ -81,7 +81,7 @@ class PackageDB:
         self.clean()
         real_db_uri = self.get_real_db_uri()
         download_dir = tempfile.TemporaryDirectory()
-        if os.system('wget -P ' + download_dir.name + ' ' + real_db_uri):
+        if wget(real_db_uri, download_dir.name):
             raise SyncError('sync failed: ' + real_db_uri)
         
         temp_dir = tempfile.TemporaryDirectory()

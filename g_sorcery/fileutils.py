@@ -70,3 +70,6 @@ def copy_all(src, dst):
             shutil.copytree(src_name, dst_name)
         else:
             shutil.copy2(src_name, dst_name)
+
+def wget(uri, directory):
+    return os.system('wget -P ' + directory + ' ' + uri)
