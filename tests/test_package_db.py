@@ -11,24 +11,11 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import json, http.server, os, shutil, tempfile, threading, \
-  unittest
+import json, os, shutil, tempfile, unittest
 
 from g_sorcery import package_db, exceptions
 
-
-class Server(threading.Thread):
-    def __init__(self):
-        super().__init__()
-        server_address = ('127.0.0.1', 8080)
-        self.httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
-    
-    def run(self):
-        self.httpd.serve_forever()
-
-    def shutdown(self):
-        self.httpd.shutdown()
-
+from tests.server import Server
 
 class DummyDB(package_db.PackageDB):
     def __init__(self, directory, packages):
