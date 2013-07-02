@@ -11,11 +11,16 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import os, tempfile, urllib.parse
+import os
 
 import sexpdata
 
-from g_sorcery.compatibility import TemporaryDirectory
+from g_sorcery.compatibility import py2k, TemporaryDirectory
+
+if py2k:
+    from urlparse import urljoin
+else:
+    from urllib.parse import urljoin
 
 from g_sorcery.package_db import Package, PackageDB
 from g_sorcery.fileutils import wget
@@ -28,7 +33,7 @@ class ElpaDB(PackageDB):
     def generate_tree(self):
         tempdir = TemporaryDirectory()
         
-        ac_uri = urllib.parse.urljoin(self.repo_uri, 'archive-contents')
+        ac_uri = urljoin(self.repo_uri, 'archive-contents')
         if wget(ac_uri, tempdir.name):
             raise SyncError('sync failed: ' + self.repo_uri)
 

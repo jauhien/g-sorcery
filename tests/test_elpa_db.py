@@ -11,7 +11,7 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import http.server, os, tempfile, threading, unittest
+import os, unittest
 
 from g_elpa import elpa_db
 
