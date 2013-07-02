@@ -41,6 +41,8 @@ class ElpaDB(PackageDB):
         if sexpdata.car(archive_contents) != 1:
             raise SyncError('sync failed: ' + self.repo_uri + ' bad archive contents format')
 
+        self.add_category('app-emacs')
+        
         for entry in sexpdata.cdr(archive_contents):
             desc = entry[2].value()
             pkg = self._s_get_package(entry[0], desc[0])
@@ -57,7 +59,6 @@ class ElpaDB(PackageDB):
                           'depend' : dependencies,
                           'rdepend' : dependencies,
                           }
-            self.add_category('app-emacs')
             self.add_package(pkg, properties)
             
     
