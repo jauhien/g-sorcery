@@ -19,6 +19,9 @@ from g_sorcery import exceptions, metadata, package_db
 
 from tests.base import BaseTest
 
+def tostring(element):
+    return ET.tostring(element, encoding='utf-8').decode('utf-8')
+
 class TestXMLGenerator(BaseTest):
 
     def test_generate(self):
@@ -52,22 +55,22 @@ class TestXMLGenerator(BaseTest):
         xg = metadata.XMLGenerator('test_ext', schema)
         self.assertRaises(exceptions.XMLGeneratorError, xg.generate, {})
         tree = xg.generate({'desc' : 'test xml'})
-        self.assertEqual(ET.tostring(tree, encoding='unicode'),
+        self.assertEqual(tostring(tree),
                          '<test_ext><desc>test xml</desc></test_ext>')
         tree = xg.generate({'desc' : 'test xml', 
                             'contact' : {'email' : 'test@example.com',
                                          'phone' : '00-0'}})
-        self.assertEqual(ET.tostring(tree, encoding='unicode'),
+        self.assertEqual(tostring(tree),
                     '<test_ext><desc>test xml</desc><contact><email>test@example.com\
 </email><phone>00-0</phone></contact></test_ext>')
         tree = xg.generate({'desc' : 'test xml', 
                             'multiple' : ['test1', 'test2', 'test3']})
-        self.assertEqual(ET.tostring(tree, encoding='unicode'),
+        self.assertEqual(tostring(tree),
                          '<test_ext><desc>test xml</desc><multiple>test1</multiple>\
 <multiple>test2</multiple><multiple>test3</multiple></test_ext>')
         tree = xg.generate({'desc' : 'test xml', 
                             'flag' : [('flag1', 'test1'), ('flag2', 'test2')]})
-        self.assertEqual(ET.tostring(tree, encoding='unicode'),
+        self.assertEqual(tostring(tree),
                          '<test_ext><desc>test xml</desc><flag name="flag1">test1</flag>\
 <flag name="flag2">test2</flag></test_ext>')
 
@@ -109,7 +112,7 @@ class TestMetadataGenerator(BaseTest):
 
     def test_process(self):
         mg = DummyMetadataGenerator(None)
-        self.assertEqual(ET.tostring(mg.process(None, description), encoding='unicode'),
+        self.assertEqual(tostring(mg.process(None, description)),
                          '<pkgmetadata><herd>test</herd><maintainer><email>test@example.com</email>\
 <name>testor</name></maintainer><longdescription>test metadata</longdescription><use>\
 <flag name="flag1">test flag1</flag><flag name="flag2">test flag2</flag></use>\

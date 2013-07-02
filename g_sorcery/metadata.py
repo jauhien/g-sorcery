@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 
 def prettify(tree):
-    rough_str = ET.tostring(tree, 'unicode')
+    rough_str = ET.tostring(tree, "utf-8").decode("utf-8")
     reparsed = minidom.parseString(rough_str)
     return reparsed.toprettyxml(encoding="utf-8").decode("utf-8")
 
