@@ -13,7 +13,7 @@
 
 import string
 
-class EbuildGenerator:
+class EbuildGenerator(object):
     def __init__(self, db):
         self.db = db
 

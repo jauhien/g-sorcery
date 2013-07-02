@@ -19,7 +19,7 @@ if py2k:
 
     from tempfile import mkdtemp
     
-    class TemporaryDirectory():
+    class TemporaryDirectory(object):
         def __init__(self):
             self.name = mkdtemp()
 

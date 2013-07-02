@@ -21,7 +21,7 @@ def prettify(tree):
     reparsed = minidom.parseString(rough_str)
     return reparsed.toprettyxml(encoding="utf-8").decode("utf-8")
 
-class XMLGenerator:
+class XMLGenerator(object):
     def __init__(self, external, schema):
         self.external = external
         self.schema = schema        
@@ -133,7 +133,7 @@ default_schema = [{'name' : 'herd',
                    ]
             
 
-class MetadataGenerator:
+class MetadataGenerator(object):
     def __init__(self, db, schema = default_schema):
         self.db = db
         self.xmlg = XMLGenerator('pkgmetadata', schema)

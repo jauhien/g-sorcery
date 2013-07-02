@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-class Test:
+class Test(object):
     def __init__(self):
         self.tst = 'test backend'
     

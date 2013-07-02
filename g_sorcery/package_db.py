@@ -22,7 +22,7 @@ import collections, glob, hashlib, os, shutil, tarfile, tempfile
 
 Package = collections.namedtuple("Package", "category name version")
 
-class PackageDB:
+class PackageDB(object):
     def __init__(self, directory, repo_uri="", db_uri=""):
         self.URI_NAME = 'uri.json'
         self.INFO_NAME = 'info.json'

@@ -15,7 +15,7 @@ import glob, os
 
 from .package_db import Package
 
-class Backend:
+class Backend(object):
     def __init__(self, PackageDB, EbuildGenrator, MetadataGenerator, directory,
                  repo_uri="", db_uri="", sync_db=True, eclass_dir=""):
         self.sync_db = sync_db

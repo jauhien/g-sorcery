@@ -15,7 +15,7 @@ import json, os, shutil
 
 from .exceptions import FileJSONError
 
-class FileJSON:
+class FileJSON(object):
     def __init__(self, directory, name, mandatories):
         """
         Initialize
