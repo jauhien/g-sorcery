@@ -17,16 +17,15 @@ from g_sorcery import g_sorcery
 
 from tests.dummy_backend import backend as dummyBackend
 
-class TestBin(unittest.TestCase):
+from tests.base import BaseTest
+
+class TestBin(BaseTest):
     def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
+        super().setUp()
         
         binpath = os.path.join(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))), 'bin')
         self.binary = os.path.join(binpath, 'g-sorcery')
-
-    def tearDown(self):
-        del self.tempdir
 
     def test_g_sorcery(self):
         self.assertEqual(subprocess.check_output(self.binary),  b'g-sorcery\n')
@@ -55,12 +54,7 @@ class TestBin(unittest.TestCase):
                          dummyBackend.instance.test())
         os.chdir(prev)
 
-class TestGSorcery(unittest.TestCase):
-    def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
-
-    def tearDown(self):
-        del self.tempdir
+class TestGSorcery(BaseTest):
 
     def test_get_backend(self):
         self.assertEqual(g_sorcery.get_backend('nonexistent_backend'), None)

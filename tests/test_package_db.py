@@ -17,6 +17,8 @@ from g_sorcery import package_db, exceptions
 
 from tests.server import Server
 
+from tests.base import BaseTest
+
 class DummyDB(package_db.PackageDB):
     def __init__(self, directory, packages):
         super().__init__(directory)
@@ -33,10 +35,10 @@ class DummyDB(package_db.PackageDB):
         return self.db_uri + '/dummy.tar.gz'
 
 
-class TestDummyDB(unittest.TestCase):
+class TestDummyDB(BaseTest):
     
     def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
+        super().setUp()
         category1 = 'app-test'
         category2 = 'dev-test'
         self.packages = [package_db.Package(category1, 'test', '0.2'),
@@ -47,7 +49,7 @@ class TestDummyDB(unittest.TestCase):
             package_db.Package(category2, 'tst', '0.1')]
 
     def tearDown(self):
-        del self.tempdir
+        super().tearDown()
 
     def test_manifest(self):
         db = DummyDB(self.tempdir.name, self.packages)

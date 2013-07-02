@@ -17,12 +17,9 @@ import tempfile, unittest
 
 from g_sorcery import exceptions, metadata, package_db
 
-class TestXMLGenerator(unittest.TestCase):
-    def setUp(self):
-        pass
+from tests.base import BaseTest
 
-    def tearDown(self):
-        pass
+class TestXMLGenerator(BaseTest):
 
     def test_generate(self):
         schema = [{'name' : 'desc',
@@ -108,12 +105,7 @@ class DummyDB(package_db.PackageDB):
         self.add_package(package, description)
         
 
-class TestMetadataGenerator(unittest.TestCase):
-    def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
-
-    def tearDown(self):
-        del self.tempdir
+class TestMetadataGenerator(BaseTest):
 
     def test_process(self):
         mg = DummyMetadataGenerator(None)

@@ -15,6 +15,8 @@ import os, tempfile, unittest
 
 from g_sorcery import ebuild, package_db
 
+from tests.base import BaseTest
+
 package = package_db.Package("app-test", "test", "0.1")
 package2 = package_db.Package("app-test", "tst", "1")
 
@@ -36,13 +38,7 @@ class DummyEbuildGenerator(ebuild.EbuildGenerator):
         return tmpl
 
 
-class TestEbuildGenerator(unittest.TestCase):
-    
-    def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
-
-    def tearDown(self):
-        del self.tempdir
+class TestEbuildGenerator(BaseTest):
 
     def test_process(self):
         eg = DummyEbuildGenerator(None)
@@ -69,13 +65,7 @@ class DummyEbuildGeneratorFromFile(ebuild.EbuildGeneratorFromFile):
         return self.path
 
 
-class TestEbuildGeneratorFromFile(unittest.TestCase):
-    
-    def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
-
-    def tearDown(self):
-        del self.tempdir
+class TestEbuildGeneratorFromFile(BaseTest):
 
     def test_generate(self):
         db = DummyDB(os.path.join(self.tempdir.name, 'tstdb'))

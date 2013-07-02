@@ -15,16 +15,14 @@ import json, os, shutil, tempfile, unittest
 
 from g_sorcery import exceptions, fileutils
 
+from tests.base import BaseTest
 
-class TestFileJSON(unittest.TestCase):
+class TestFileJSON(BaseTest):
     
     def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
+        super().setUp()
         self.path = os.path.join(self.tempdir.name, 'tst')
         self.name = 'tst.json'
-
-    def tearDown(self):
-        del self.tempdir
 
     def do_test_read_ok(self, mandatories, value_suffix=""):
         f = fileutils.FileJSON(self.path, self.name, mandatories)

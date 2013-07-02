@@ -13,10 +13,9 @@
 
 import unittest
 
-class TestDummy(unittest.TestCase):
-    
-    def setUp(self):
-        pass
+from tests.base import BaseTest
+
+class TestDummy(BaseTest):
     
     def test_dummy(self):
         self.assertEqual('works', 'works')

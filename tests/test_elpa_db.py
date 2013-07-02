@@ -19,12 +19,9 @@ from g_sorcery import exceptions, package_db
 
 from tests.server import Server
 
-class TestElpaDB(unittest.TestCase):
-    def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
+from tests.base import BaseTest
 
-    def tearDown(self):
-        del self.tempdir
+class TestElpaDB(BaseTest):
 
     def test_generate(self):
         prev = os.getcwd()

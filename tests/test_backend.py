@@ -17,6 +17,8 @@ from g_sorcery import backend, ebuild, metadata, package_db
 
 from tests import test_ebuild, test_metadata
 
+from tests.base import BaseTest
+
 class DummyBackend(backend.Backend):
     def __init__(self, PackageDB, EbuildGenrator, MetadataGenerator, directory,
                  sync_db=True, eclass_dir=""):
@@ -24,14 +26,8 @@ class DummyBackend(backend.Backend):
                          sync_db=sync_db, eclass_dir=eclass_dir)
 
 
-class TestBackend(unittest.TestCase):
+class TestBackend(BaseTest):
     
-    def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
-
-    def tearDown(self):
-        del self.tempdir
-
     def test_list_eclasses(self):
         backend = DummyBackend(package_db.PackageDB, ebuild.EbuildGenerator,
                                metadata.MetadataGenerator,
