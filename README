@@ -43,3 +43,6 @@ provider: concrete algorithms for ebuild-generation, eclasses,
 databases with information about available software and so on.
 
 To test current code run `python3 scripts/run_tests.py'
+
+Note that for tests of an ELPA backend you'll need dev-python/sexpdata
+available in `jauhien' overlay (just do `layman -a jauhien')
