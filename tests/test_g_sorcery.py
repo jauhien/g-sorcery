@@ -21,7 +21,7 @@ from tests.base import BaseTest
 
 class TestBin(BaseTest):
     def setUp(self):
-        super().setUp()
+        super(TestBin, self).setUp()
         
         binpath = os.path.join(os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))), 'bin')

@@ -20,7 +20,7 @@ from tests.base import BaseTest
 class TestFileJSON(BaseTest):
     
     def setUp(self):
-        super().setUp()
+        super(TestFileJSON, self).setUp()
         self.path = os.path.join(self.tempdir.name, 'tst')
         self.name = 'tst.json'
 

@@ -21,7 +21,7 @@ from g_sorcery.exceptions import SyncError
 
 class ElpaDB(PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
-        super().__init__(directory, repo_uri, db_uri)
+        super(ElpaDB, self).__init__(directory, repo_uri, db_uri)
 
     def generate_tree(self):
         tempdir = tempfile.TemporaryDirectory()

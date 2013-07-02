@@ -21,7 +21,7 @@ from tests.base import BaseTest
 
 class DummyDB(package_db.PackageDB):
     def __init__(self, directory, packages):
-        super().__init__(directory)
+        super(DummyDB, self).__init__(directory)
         self.packages = packages
 
     def generate_tree(self):
@@ -38,7 +38,7 @@ class DummyDB(package_db.PackageDB):
 class TestDummyDB(BaseTest):
     
     def setUp(self):
-        super().setUp()
+        super(TestDummyDB, self).setUp()
         category1 = 'app-test'
         category2 = 'dev-test'
         self.packages = [package_db.Package(category1, 'test', '0.2'),
@@ -47,9 +47,6 @@ class TestDummyDB(BaseTest):
             package_db.Package(category2, 'test', '0.1'),
             package_db.Package(category2, 'test', '0.2'),
             package_db.Package(category2, 'tst', '0.1')]
-
-    def tearDown(self):
-        super().tearDown()
 
     def test_manifest(self):
         db = DummyDB(self.tempdir.name, self.packages)

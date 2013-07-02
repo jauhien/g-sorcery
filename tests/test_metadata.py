@@ -74,7 +74,7 @@ class TestXMLGenerator(BaseTest):
 
 class DummyMetadataGenerator(metadata.MetadataGenerator):
     def __init__(self, db):
-        super().__init__(db)
+        super(DummyMetadataGenerator, self).__init__(db)
 
 package = package_db.Package("app-test", "test", "0.1")
 
@@ -98,7 +98,7 @@ resulting_metadata = ['<?xml version="1.0" encoding="utf-8"?>',
 
 class DummyDB(package_db.PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
-        super().__init__(directory, repo_uri, db_uri)
+        super(DummyDB, self).__init__(directory, repo_uri, db_uri)
 
     def generate_tree(self):
         self.add_category("app-test")

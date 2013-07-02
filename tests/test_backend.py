@@ -22,7 +22,7 @@ from tests.base import BaseTest
 class DummyBackend(backend.Backend):
     def __init__(self, PackageDB, EbuildGenrator, MetadataGenerator, directory,
                  sync_db=True, eclass_dir=""):
-        super().__init__(PackageDB, EbuildGenrator, MetadataGenerator, directory,
+        super(DummyBackend, self).__init__(PackageDB, EbuildGenrator, MetadataGenerator, directory,
                          sync_db=sync_db, eclass_dir=eclass_dir)
 
 

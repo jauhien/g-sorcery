@@ -22,7 +22,7 @@ package2 = package_db.Package("app-test", "tst", "1")
 
 class DummyDB(package_db.PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
-        super().__init__(directory, repo_uri, db_uri)
+        super(DummyDB, self).__init__(directory, repo_uri, db_uri)
 
     def generate_tree(self):
         self.add_category("app-test")
@@ -58,7 +58,7 @@ class TestEbuildGenerator(BaseTest):
 
 class DummyEbuildGeneratorFromFile(ebuild.EbuildGeneratorFromFile):
     def __init__(self, db, path):
-        super().__init__(db)
+        super(DummyEbuildGeneratorFromFile, self).__init__(db)
         self.path = path
     
     def get_template_file(self, package, description):

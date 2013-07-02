@@ -15,7 +15,7 @@ import http.server, threading
 
 class Server(threading.Thread):
     def __init__(self):
-        super().__init__()
+        super(Server, self).__init__()
         server_address = ('127.0.0.1', 8080)
         self.httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
     

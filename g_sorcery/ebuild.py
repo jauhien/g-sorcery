@@ -41,7 +41,7 @@ class EbuildGenerator:
 
 class EbuildGeneratorFromFile(EbuildGenerator):
     def __init__(self, db):
-        super().__init__(db)
+        super(EbuildGeneratorFromFile, self).__init__(db)
 
     def get_template(self, package, description):
         name = self.get_template_file(package, description)
