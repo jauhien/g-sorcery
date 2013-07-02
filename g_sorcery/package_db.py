@@ -11,6 +11,8 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
+from .compatibility import TemporaryDirectory
+
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
 
@@ -80,16 +82,16 @@ class PackageDB(object):
             self.db_uri = db_uri
         self.clean()
         real_db_uri = self.get_real_db_uri()
-        download_dir = tempfile.TemporaryDirectory()
+        download_dir = TemporaryDirectory()
         if wget(real_db_uri, download_dir.name):
             raise SyncError('sync failed: ' + real_db_uri)
         
-        temp_dir = tempfile.TemporaryDirectory()
+        temp_dir = TemporaryDirectory()
         for f_name in glob.iglob(os.path.join(download_dir.name, '*.tar.gz')):
             with tarfile.open(f_name) as f:
                 f.extractall(temp_dir.name)
 
-        tempdb_dir = tempfile.TemporaryDirectory()
+        tempdb_dir = TemporaryDirectory()
         tempdb = PackageDB(tempdb_dir.name)
 
         for d_name in os.listdir(temp_dir.name):

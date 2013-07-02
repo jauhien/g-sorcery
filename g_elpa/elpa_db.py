@@ -15,6 +15,8 @@ import os, tempfile, urllib.parse
 
 import sexpdata
 
+from g_sorcery.compatibility import TemporaryDirectory
+
 from g_sorcery.package_db import Package, PackageDB
 from g_sorcery.fileutils import wget
 from g_sorcery.exceptions import SyncError
@@ -24,7 +26,7 @@ class ElpaDB(PackageDB):
         super(ElpaDB, self).__init__(directory, repo_uri, db_uri)
 
     def generate_tree(self):
-        tempdir = tempfile.TemporaryDirectory()
+        tempdir = TemporaryDirectory()
         
         ac_uri = urllib.parse.urljoin(self.repo_uri, 'archive-contents')
         if wget(ac_uri, tempdir.name):
