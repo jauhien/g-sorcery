@@ -11,16 +11,19 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import sys
+import shutil, sys
 
 py2k = sys.version_info < (3, 0)
 
 if py2k:
+
+    from tempfile import mkdtemp
+    
     class TemporaryDirectory():
         def __init__(self):
-            pass
+            self.name = mkdtemp()
 
         def __del__(self):
-            pass
+            shutil.rmtree(self.name)
 else:
     from tempfile import TemporaryDirectory
