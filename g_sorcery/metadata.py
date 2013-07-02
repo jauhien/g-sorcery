@@ -54,7 +54,7 @@ class XMLGenerator(object):
         subtags = tag['subtags']
         if subtags:
             if 'text' in value:
-                child.text = value[text]
+                child.text = value['text']
             for child_tag in subtags:
                 self.add_tag(child, child_tag, value)
         else:

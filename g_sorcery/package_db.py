@@ -20,7 +20,7 @@ from .fileutils import FileJSON, hash_file, copy_all, wget
 
 import portage
 
-import collections, glob, hashlib, os, shutil, tarfile, tempfile
+import collections, glob, hashlib, os, shutil, tarfile
 
 Package = collections.namedtuple("Package", "category name version")
 
@@ -115,7 +115,7 @@ class PackageDB(object):
         
         self.read()
 
-    def get_real_db_uri():
+    def get_real_db_uri(self):
         return self.db_uri
             
     def manifest(self):
