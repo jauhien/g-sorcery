@@ -16,11 +16,15 @@ import json, os, shutil
 from .exceptions import FileJSONError
 
 class FileJSON(object):
+    """
+    Class for JSON files.
+    """
     def __init__(self, directory, name, mandatories):
         """
-        Initialize
-
-        mandatories -- list of mandatory keys
+        Args:
+            directory: File directory.
+            name: File name.
+            mandatories: List of requiered keys.
         """
         self.directory = os.path.abspath(directory)
         self.name = name
@@ -28,6 +32,9 @@ class FileJSON(object):
         self.mandatories = mandatories
 
     def read(self):
+        """
+        Read JSON file.
+        """
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         content = {}
@@ -45,6 +52,9 @@ class FileJSON(object):
         return content
 
     def write(self, content):
+        """
+        Write JSON file.
+        """
         for key in self.mandatories:
             if not key in content:
                 raise FileJSONError('lack of mandatory key: ' + key)
@@ -55,6 +65,17 @@ class FileJSON(object):
 
 
 def hash_file(name, hasher, blocksize=65536):
+    """
+    Get a file hash.
+
+    Args:
+        name: file name.
+        hasher: Hasher.
+        blocksize: Blocksize.
+
+    Returns:
+        Hash value.
+    """
     with open(name, 'rb') as f:
         buf = f.read(blocksize)
         while len(buf) > 0:
@@ -63,6 +84,13 @@ def hash_file(name, hasher, blocksize=65536):
     return hasher.hexdigest()
 
 def copy_all(src, dst):
+    """
+    Copy entire tree.
+
+    Args:
+       src: Source.
+       dst: Destination.
+    """
     for f_name in os.listdir(src):
         src_name = os.path.join(src, f_name)
         dst_name = os.path.join(dst, f_name)
@@ -72,4 +100,14 @@ def copy_all(src, dst):
             shutil.copy2(src_name, dst_name)
 
 def wget(uri, directory):
+    """
+    Fetch a file.
+
+    Args:
+        uri: URI.
+        directory: Directory where file should be saved.
+
+    Returns:
+        Nonzero in case of a failure.
+    """
     return os.system('wget -P ' + directory + ' ' + uri)
