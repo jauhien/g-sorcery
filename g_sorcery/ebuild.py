@@ -89,8 +89,9 @@ class EbuildGeneratorFromFile(EbuildGenerator):
     """
     Ebuild generators that takes templates from files.
     """
-    def __init__(self, package_db):
+    def __init__(self, package_db, filename=""):
         super(EbuildGeneratorFromFile, self).__init__(package_db)
+        self.filename = filename
 
     def get_template(self, package, description):
         """
@@ -121,4 +122,4 @@ class EbuildGeneratorFromFile(EbuildGenerator):
         Returns:
             Template filename.
         """
-        return ""
+        return self.filename
