@@ -58,7 +58,7 @@ class TestDummyDB(BaseTest):
         db.generate()
         db2 = DummyDB(self.tempdir.name, self.packages)
         db2.read()
-        self.assertEqual(db.db, db2.db)
+        self.assertEqual(db.database, db2.database)
 
     def test_list_categories(self):
         db = DummyDB(self.tempdir.name, self.packages)
@@ -107,7 +107,7 @@ class TestDummyDB(BaseTest):
 
         os.chdir(prev)
 
-        self.assertEqual(src_db.db, db.db)
+        self.assertEqual(src_db.database, db.database)
 
     def test_sync_fail(self):
         db = DummyDB(os.path.join(self.tempdir.name, 'testdb'), self.packages)
