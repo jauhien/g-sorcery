@@ -111,3 +111,15 @@ def wget(uri, directory):
         Nonzero in case of a failure.
     """
     return os.system('wget -P ' + directory + ' ' + uri)
+
+def get_pkgpath():
+    """
+    Get package path.
+
+    Returns:
+        Package path.
+    """
+     root = __file__
+     if os.path.islink(root):
+         root = os.path.realpath(root)
+     return os.path.dirname(os.path.abspath(root))
