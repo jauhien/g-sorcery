@@ -47,7 +47,7 @@ class XMLGenerator(object):
                   empty, it defines a name for an attribute
                   that will distinguish different entries of a tag.
         required: Boolean that defines if a given tag is required.
-        subtags: List a subtags.
+        subtags: List of subtags.
 
     Data dictinonary format.
     ~~~~~~~~~~~~~~~~~~~~~~~~
