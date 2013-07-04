@@ -57,6 +57,7 @@ class ElpaDB(PackageDB):
             description = desc[2]
             deps = desc[1]
             dependencies = []
+            realname = entry[0].value()
             for dep in deps:
                 dep_pkg = self._s_get_package(dep[0], dep[1])
                 dependencies.append(dep_pkg)
@@ -65,6 +66,9 @@ class ElpaDB(PackageDB):
                           'description' : description,
                           'depend' : dependencies,
                           'rdepend' : dependencies,
+                          'homepage' : self.repo_uri,
+                          'repo_uri' : self.repo_uri,
+                          'realname' : realname
                           }
             self.add_package(pkg, properties)
             
