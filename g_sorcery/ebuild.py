@@ -98,7 +98,10 @@ class EbuildGenerator(object):
         result = []
         for line in ebuild:
             tmpl = string.Template(line)
-            result.append(tmpl.substitute(description))
+            line = tmpl.substitute(description)
+            line = substitute_list(line, description)
+            result.append(line)
+            
         return result
         
     def get_template(self, package, description):
