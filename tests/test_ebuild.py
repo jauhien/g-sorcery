@@ -89,8 +89,9 @@ class TestSubstituteList(BaseTest):
         desc = {'depend' : ['app-test/test1', 'app-test/test2'],
                 'iuse' : ['test', 'check']}
         result = ['a', 'test', 'DEPEND="app-test/test1\napp-test/test2"', 'IUSE="test check"']
-        self.assertEqual(ebuild.substitute_list(text, desc), result)
-        self.assertRaises(exceptions.DescriptionError, ebuild.substitute_list, text, {})
+        for idx, string in enumerate(text):
+            self.assertEqual(ebuild.substitute_list(string, desc), result[idx])
+        self.assertRaises(exceptions.DescriptionError, ebuild.substitute_list, text[2], {})
 
         
 def suite():
