@@ -11,7 +11,50 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
+import copy
+import re
 import string
+
+from .exceptions import DescriptionError
+
+def substitute_list(text, values):
+    """
+    Performs the template substitution. Variables are
+    substituted by lists.
+
+    Variable format.
+    ~~~~~~~~~~~~~~~~
+
+    #[n ]#name#
+    'n': Separate list entries with '\n'.
+    ' ': Separate list entries with ' '.
+    name: Key in values dict.
+
+    Args:
+        text: List with template strings.
+        values: Dictionary with values.
+    """
+    result = copy.deepcopy(text)
+    regex = re.compile('#[n ]#\w+#')
+    for idx, line in enumerate(result):
+        match = regex.search(line)
+        if not match:
+                continue
+        group = match.group()
+        new_line = (group[1] == 'n')
+        key = group[3:-1]
+        if not key in values:
+            error = "missing key: " + key
+            raise DescriptionError(error)
+        lst = values[key]
+        if new_line:
+            sep = '\n'
+        else:
+            sep = ' '
+        repl = sep.join(lst)
+        result[idx] = regex.sub(repl, line)
+    return result
+
 
 class EbuildGenerator(object):
     """

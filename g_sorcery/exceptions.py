@@ -34,3 +34,6 @@ class FileJSONError(GSorceryError):
 
 class XMLGeneratorError(GSorceryError):
     pass
+
+class DescriptionError(GSorceryError):
+    pass

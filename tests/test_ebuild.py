@@ -13,7 +13,7 @@
 
 import os, tempfile, unittest
 
-from g_sorcery import ebuild, package_db
+from g_sorcery import ebuild, package_db, exceptions
 
 from tests.base import BaseTest
 
@@ -81,10 +81,22 @@ var: $$var""")
         self.assertEqual(ebuild, ['test', 'author: jauhien',
                                   'homepage: 127.0.0.1', 'var: $var'])
         
-    
+
+class TestSubstituteList(BaseTest):
+
+    def test_substitute_list(self):
+        text = ['a', 'test', 'DEPEND="#n#depend#"', 'IUSE="# #iuse#"']
+        desc = {'depend' : ['app-test/test1', 'app-test/test2'],
+                'iuse' : ['test', 'check']}
+        result = ['a', 'test', 'DEPEND="app-test/test1\napp-test/test2"', 'IUSE="test check"']
+        self.assertEqual(ebuild.substitute_list(text, desc), result)
+        self.assertRaises(exceptions.DescriptionError, ebuild.substitute_list, text, {})
+
+        
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestEbuildGenerator('test_process'))
     suite.addTest(TestEbuildGenerator('test_generate'))
     suite.addTest(TestEbuildGeneratorFromFile('test_generate'))
+    suite.addTest(TestSubstituteList('test_substitute_list'))
     return suite
