@@ -71,7 +71,11 @@ class ElpaDB(PackageDB):
                           'rdepend' : depend,
                           'homepage' : self.repo_uri,
                           'repo_uri' : self.repo_uri,
-                          'realname' : realname
+                          'realname' : realname,
+            #metadata entries
+                          'maintainer' : [{'email' : 'piatlicki@gmail.com',
+                                           'name' : 'Jauhien Piatlicki'}],
+                          'longdescription' : description
                           }
             self.add_package(pkg, properties)
             

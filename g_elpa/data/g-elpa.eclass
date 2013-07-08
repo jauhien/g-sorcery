@@ -35,17 +35,18 @@ GELPA_FETCH_CMD="wget"
 inherit elisp
 
 if [ x${DIGEST_SOURCES} = x]; then
-	EXPORT_FUNCTIONS src_{compile,install}
-else
 	EXPORT_FUNCTIONS src_{unpack,compile,install}
+else
+	EXPORT_FUNCTIONS src_{compile,install}
+fi
+
+if [[ ${PKG_TYPE} != "single" ]]; then
+	SUFFIX="${PKG_TYPE}"
+else
+	SUFFIX="el"
 fi
 
 g-elpa_fetch() {
-	if [[ ${PKG_TYPE} != "single" ]]; then
-		SUFFIX="${PKG_TYPE}"
-	else
-		SUFFIX="el"
-	fi
 	addwrite "${GELPA_STORE_DIR}"
 	pushd "${GELPA_STORE_DIR}" >/dev/null || die "can't chdir to ${GELPA_STORE_DIR}"
 	local SOURCEFILE=${REALNAME}-${PV}.${SUFFIX}
