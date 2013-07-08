@@ -72,7 +72,7 @@ class TestDummyDB(BaseTest):
         categories = list(set([x.category for x in self.packages]))
         for category in categories:
             package_names = list(set([x.name for x in self.packages if x.category == category]))
-            self.assertEqual(package_names, db.list_package_names(category))
+            self.assertEqual(package_names.sort(), db.list_package_names(category).sort())
         self.assertRaises(exceptions.InvalidKeyError, db.list_package_names, 'no_such_category')
 
     def test_list_package_versions(self):
@@ -82,8 +82,9 @@ class TestDummyDB(BaseTest):
         for category in categories:
             package_names = list(set([x.name for x in self.packages if x.category == category]))
             for name in package_names:
-                versions = [x.version for x in self.packages if x.category == category and x.name == name]
-                self.assertEqual(versions, db.list_package_versions(category, name))
+                versions = [x.version for x in self.packages 
+                            if x.category == category and x.name == name]
+                self.assertEqual(versions.sort(), db.list_package_versions(category, name).sort())
         self.assertRaises(exceptions.InvalidKeyError, db.list_package_versions, 'no_such_category', 'a')
         self.assertRaises(exceptions.InvalidKeyError, db.list_package_versions,
                           categories[0], 'no_such_package')
