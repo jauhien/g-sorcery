@@ -28,7 +28,7 @@ class TestBin(BaseTest):
         self.binary = os.path.join(binpath, 'g-sorcery')
 
     def test_g_sorcery(self):
-        self.assertEqual(subprocess.check_output(self.binary),  b'g-sorcery\n')
+        self.assertEqual(subprocess.check_output(self.binary), b'No backend specified\n')
 
     def test_nonexistent_backend(self):
         prev = os.getcwd()
@@ -50,15 +50,15 @@ class TestBin(BaseTest):
         os.chdir(self.tempdir.name)
         os.system('ln -s ' + self.binary + ' g-dummy')
         os.system('echo {\\"package\\": \\"dummy_backend\\"} > ./g-dummy.json')
-        self.assertEqual(subprocess.check_output('./g-dummy').decode("utf-8")[:-1],
-                         dummyBackend.instance.test())
+        self.assertEqual(subprocess.check_output(['./g-dummy', 'test']).decode("utf-8")[:-1],
+                         'test')
         os.chdir(prev)
 
 class TestGSorcery(BaseTest):
 
     def test_get_backend(self):
         self.assertEqual(g_sorcery.get_backend('nonexistent_backend'), None)
-        self.assertEqual(g_sorcery.get_backend('dummy_backend'), dummyBackend.instance)
+        self.assertEqual(g_sorcery.get_backend('dummy_backend').dispatcher, dummyBackend.dispatcher)
 
 def suite():
     suite = unittest.TestSuite()

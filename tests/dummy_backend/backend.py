@@ -5,10 +5,11 @@ class Test(object):
     def __init__(self):
         self.tst = 'test backend'
     
-    def test(self):
-        return('test')
+    def __call__(self, args):
+        print(args[0])
+        return 0
 
     def __eq__(self, other):
         return self.tst == other.tst
 
-instance = Test()
+dispatcher = Test()

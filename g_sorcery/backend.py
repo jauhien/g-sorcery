@@ -130,3 +130,6 @@ class Backend(object):
         metadata = self.metadata_generator.generate(
             Package(category, name, version))
         return metadata
+
+    def __call__(self, args):
+        pass
