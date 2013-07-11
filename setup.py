@@ -2,8 +2,6 @@
 
 from distutils.core import setup
 
-from g_sorcery.version import VERSION
-
 setup(name          = 'g-sorcery',
       version       = '0.1_alpha',
       description   = 'g-sorcery framework for automated ebuild generators',
