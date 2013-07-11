@@ -11,6 +11,6 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-from g_sorcery.dispatcher import Dispatcher
+from g_sorcery.backend import Backend
 
 from g_elpa import ebuild

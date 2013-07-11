@@ -19,13 +19,12 @@ from .exceptions import FileJSONError
 
 def main():
     name = os.path.basename(sys.argv[0])
-    shift = 1
     if name == 'g-sorcery':
         if len(sys.argv) < 2:
             print("No backend specified")
             return 0
         name = sys.argv[1]
-        shift = 2
+        sys.argv.pop(1)
     else:
         cfg = name + '.json'
         cfg_path = None
@@ -44,7 +43,7 @@ def main():
             sys.stderr.write('g-sorcery error in config file for ' + name + ': ' + str(e) + '\n')
             return -1
         backend = get_backend(config['package'])
-        return backend.dispatcher(sys.argv[shift:])
+        return backend.instance(sys.argv, config)
 
 def get_backend(package):
     try:

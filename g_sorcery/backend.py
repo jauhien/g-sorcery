@@ -18,118 +18,67 @@ from .package_db import Package
 class Backend(object):
     """
     Backend for a repository.
+
+    Command format is as follows:
+    g-backend [-o overlay_dir] command
+    
+    where command is one of the following:
+    sync [-u url]
+    list
+    search word
+    generate package_name
+    generate-tree [-d --digest]
+    install package_name [portage flags]
+    
+    If no overlay directory is given the default one from backend config is used.
     """
     
-    def __init__(self, package_db_class, ebuild_generator_class,
-                 metadata_generator_class, directory,
-                 repo_uri="", db_uri="", sync_db=True, eclass_dir=""):
+    def __init__(self, package_db_class,
+                 ebuild_g_with_digest_class, ebuild_g_without_digest_class,
+                 metadata_g_class, sync_db=True):
         self.sync_db = sync_db
-        self.repo_uri = repo_uri
-        self.db_uri = db_uri
-        self.eclass_dir = eclass_dir
+        self.package_db_class = package_db_class
+        self.ebuild_g_with_digest_class = ebuild_g_with_digest_class
+        self.ebuild_g_without_digest_class = ebuild_g_without_digest_class
+        self.metadata_g_class = metadata_g_class
 
-        self.directory = directory
-        self.backend_data_dir = os.path.join(directory, '.backend_data')
-        os.makedirs(self.backend_data_dir)
-        db_dir = os.path.join(self.backend_data_dir, 'db')
-        self.package_db = package_db_class(db_dir,
-                            repo_uri = self.repo_uri,
-                            db_uri = self.db_uri)
+        self.parser = argparse.ArgumentParser(description='Automatic ebuild generator.')
+        self.parser.add_argument('-o', '--overlay')
 
-        self.repo_uri = self.package_db.repo_uri
-        self.db_uri = self.package_db.db_uri
+        subparsers = self.parser.add_subparsers()
 
-        self.ebuild_generator = ebuild_generator_class(self.package_db)
-        self.metadata_generator = metadata_generator_class(self.package_db)
+        p_sync = subparsers.add_parser('sync')
+        p_sync.add_argument('-u', '--url')
+        p_sync.set_defaults(func=self.sync)
 
-    def sync(self):
-        """
-        Synchronize package database.
-        If self.sync_db is set synchronizes with generated database,
-        if it is unset synchronizes with a repository.
-        """        
-        if self.sync_db and not self.db_uri:
-            Exception("No uri for syncing provided.")
-        if not self.sync_db and not self.repo_uri:
-            Exception("No repo uri provided.")
-        if self.sync_db:
-            self.package_db.sync()
-        else:
-            self.package_db.generate()
+        p_list = subparsers.add_parser('list')
+        p_list.set_defaults(func=self.list)
 
-    def list_ebuilds(self):
-        """
-        List all the packages in a database.
+        p_generate = subparsers.add_parser('generate')
+        p_generate.add_argument('pkgname')
+        p_generate.set_defaults(func=self.generate)
 
-        Returns:
-            List of all packages in a databes
-            with package_db.Package entries.
-        """
-        return self.package_db.list_all_packages()
+        p_generate_tree = subparsers.add_parser('generate-tree')
+        p_generate_tree.set_defaults(func=self.generate_tree)
+        
+        p_install = subparsers.add_parser('install')
+        p_install.add_argument('pkgname')
+        p_install.set_defaults(func=self.install)
 
-    def generate_ebuild(self, package):
-        """
-        Generate ebuild for a specified package.
+    def sync(self, args):
+        pass
 
-        Args:
-            package: package_db.Package instance.
+    def list(self, args):
+        pass
 
-        Returns:
-            Ebuild source as a list of strings.
-        """
-        return self.ebuild_generator.generate(package)
+    def generate(self, args):
+        pass
 
-    def list_eclasses(self):
-        """
-        List all eclasses.
+    def generate_tree(self, args):
+        pass
 
-        Returns:
-            List of all eclasses with string entries.
-        """
-        result = []
-        if self.eclass_dir:
-            for f_name in glob.iglob(os.path.join(self.eclass_dir, '*.eclass')):
-                result.append(os.path.basename(f_name)[:-7])
-        return result
-
-    def generate_eclass(self, eclass):
-        """
-        Generate a given eclass.
-
-        Args:
-            eclass: String containing eclass name.
-
-        Returns:
-            Eclass source as a list of strings.
-        """
-        if not self.eclass_dir:
-            Exception('No eclass dir')
-        f_name = os.path.join(self.eclass_dir, eclass + '.eclass')
-        if not os.path.isfile(f_name):
-            Exception('No eclass ' + eclass)
-        with open(f_name, 'r') as f:
-            eclass = f.read().split('\n')
-            if eclass[-1] == '':
-                eclass = eclass[:-1]
-        return eclass
-
-    def generate_metadata(self, category, name):
-        """
-        Generate metadata for a given package.
-
-        Args:
-            category: category name
-            name: package name
-
-        Returns:
-            Generated metadata as a list of strings.
-            It uses the most recent version of a package
-            to look for data for generation.
-        """
-        version = self.package_db.get_max_version(category, name)
-        metadata = self.metadata_generator.generate(
-            Package(category, name, version))
-        return metadata
-
+    def install(self,args):
+        pass
+        
     def __call__(self, args):
         pass
