@@ -37,3 +37,12 @@ class XMLGeneratorError(GSorceryError):
 
 class DescriptionError(GSorceryError):
     pass
+
+class DependencyError(GSorceryError):
+    pass
+
+class EclassError(GSorceryError):
+    pass
+
+class DigestError(GSorceryError):
+    pass

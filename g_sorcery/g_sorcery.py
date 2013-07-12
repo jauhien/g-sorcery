@@ -41,6 +41,7 @@ def main():
     backend = get_backend(config['package'])
     return backend.instance(sys.argv[2:], config)
 
+
 def get_backend(package):
     try:
         module = importlib.import_module(package + '.backend')

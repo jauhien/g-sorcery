@@ -396,6 +396,21 @@ class PackageDB(object):
         """
         return list(self.categories)
 
+    def in_category(self, category, name):
+        """
+        Tests whether a package is in a given category.
+
+        Args:
+            category: Category name.
+            name: Package name.
+
+        Returns:
+            Boolean value.
+        """
+        if not category or (not category in self.categories):
+            raise InvalidKeyError('No such category: ' + category)
+        return (category + '/' + name) in self.database
+
     def list_package_names(self, category):
         """
         List package names in a category.

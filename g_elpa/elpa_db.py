@@ -72,6 +72,8 @@ class ElpaDB(PackageDB):
                           'homepage' : self.repo_uri,
                           'repo_uri' : self.repo_uri,
                           'realname' : realname,
+            #eclass entry
+                          'eclasses' : ['g-elpa'],
             #metadata entries
                           'maintainer' : [{'email' : 'piatlicki@gmail.com',
                                            'name' : 'Jauhien Piatlicki'}],

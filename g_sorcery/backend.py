@@ -17,6 +17,7 @@ import os
 import sys
 
 from .package_db import Package
+from .exceptions import DependencyError, DigestError
 
 class Backend(object):
     """
@@ -38,12 +39,13 @@ class Backend(object):
     
     def __init__(self, package_db_class,
                  ebuild_g_with_digest_class, ebuild_g_without_digest_class,
-                 metadata_g_class, sync_db=True):
+                 eclass_g_class, metadata_g_class, sync_db=True):
         self.db_dir = '.db'
         self.sync_db = sync_db
         self.package_db_class = package_db_class
         self.ebuild_g_with_digest_class = ebuild_g_with_digest_class
         self.ebuild_g_without_digest_class = ebuild_g_without_digest_class
+        self.eclass_g_class = eclass_g_class
         self.metadata_g_class = metadata_g_class
 
         self.parser = argparse.ArgumentParser(description='Automatic ebuild generator.')
@@ -69,7 +71,7 @@ class Backend(object):
         p_install.add_argument('pkgname')
         p_install.set_defaults(func=self.install)
 
-    def get_db_path(self, args, config):
+    def get_overlay(self, args, config):
         overlay = args.overlay
         if not overlay:
             if not 'default_overlay' in config:
@@ -78,11 +80,10 @@ class Backend(object):
             else:
                 overlay = config['default_overlay']
         overlay = args.overlay
-        db_path = os.path.join(overlay, self.db_dir)
-        return db_path
+        return overlay
 
     def sync(self, args, config):
-        db_path = self.get_db_path(args, config)
+        db_path = os.path.join(self.get_overlay(args, config), self.db_dir)
         if not db_path:
             return -1
         url = args.url
@@ -112,7 +113,7 @@ class Backend(object):
         return 0
 
     def list(self, args, config):
-        db_path = self.get_db_path(args, config)
+        db_path = os.path.join(self.get_overlay(args, config), self.db_dir)
         if not db_path:
             return -1
         pkg_db = self.package_db_class(db_path)
@@ -121,7 +122,7 @@ class Backend(object):
             categories = pkg_db.list_categories()
             for category in categories:
                 print('Category ' + category + ':')
-                print()
+                print('\n')
                 packages = pkg_db.list_package_names(category)
                 for pkg in packages:
                     max_ver = pkg_db.get_max_version(category, pkg)
@@ -129,20 +130,155 @@ class Backend(object):
                     desc = pkg_db.get_package_description(Package(category, pkg, max_ver))
                     print('  ' + pkg + ': ' + desc['description'])
                     print('    Available versions: ' + ' '.join(versions))
-                    print()
+                    print('\n')
         except Exception as e:
             sys.stderr.write('List failed: ' + str(e) + '\n')
             return -1
         return 0
 
     def generate(self, args, config):
-        db_path = self.get_db_path(args, config)
+        overlay = self.get_overlay(args, config)
+        db_path = os.path.join(overlay, self.db_dir)
         if not db_path:
             return -1
         pkg_db = self.package_db_class(db_path)
         pkg_db.read()
-        
 
+        pkgname = args.pkgname
+
+        parts = pkgname.split('/')
+
+        category = None
+        
+        if len(parts) == 1:
+            name = parts[0]
+        elif len(parts) == 2:
+            category = parts[0]
+            name = parts[1]
+        else:
+            sys.stderr.write('Bad package name: ' + pkgname + '\n')
+            return -1
+
+        if not category:
+            all_categories = pkg_db.list_categories()
+            categories = []
+            for cat in all_categories:
+                if pkg_db.in_category(cat, name):
+                    categories.append(cat)
+
+            if not len(categories):
+                sys.stderr.write('No package with name ' + pkgname + ' found\n')
+                return -1
+                    
+            if len(categories) > 1:
+                sys.stderr.write('Ambiguous packagename: ' + pkgname + '\n')
+                sys.stderr.write('Please select one of the following packages:\n')
+                for cat in categories:
+                    sys.stderr.write('    ' + cat + '/' + pkgname + '\n')
+                return -1
+                
+            category = categories[0]
+        versions = pkg_db.list_package_versions(category, name)
+        dependencies = set()
+        try:
+            for version in versions:
+                dependencies |= self.solve_dependencies(pkg_db, Package(category, name, version))[0]
+        except Exception as e:
+            sys.stderr.write('Dependency solving failed: ' + str(e) + '\n')
+            return -1
+        
+        eclasses = []
+        for package in dependencies:
+            eclasses += pkg_db.get_package_description(package)['eclasses']
+        eclasses = list(set(eclasses))
+        self.generate_eclasses(overlay, eclasses)
+        self.generate_ebuilds(pkg_db, overlay, dependencies, True)
+        self.generate_metadatas(pkg_db, overlay, dependencies)
+        self.digest(overlay)
+        return 0
+
+    def generate_ebuilds(self, package_db, overlay, packages, digest=False):
+        if digest:
+            ebuild_g = self.ebuild_g_with_digest_class(package_db)
+        else:
+            ebuild_g = self.ebuild_g_without_digest_class(package_db)
+        for package in packages:
+            category = package.category
+            name = package.name
+            version = package.version
+            path = os.path.join(overlay, category, name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            source = ebuild_g.generate(package)
+            with open(os.path.join(path, name + '-' + version + '.ebuild'), 'w') as f:
+                for line in source:
+                    f.write(line + '\n')
+
+
+    def generate_metadatas(self, package_db, overlay, packages):
+        metadata_g = self.metadata_g_class(package_db)
+        for package in packages:
+            path = os.path.join(overlay, package.category, package.name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            source = metadata_g.generate(package)
+            with open(os.path.join(path, 'metadata.xml'), 'w') as f:
+                for line in source:
+                    f.write(line + '\n')
+
+    def generate_eclasses(self, overlay, eclasses):
+        eclass_g = self.eclass_g_class()
+        path = os.path.join(overlay, 'eclass')
+        if not os.path.exists(path):
+            os.makedirs(path)
+        for eclass in eclasses:
+            source = eclass_g.generate(eclass)
+        with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
+            for line in source:
+                f.write(line + '\n')
+
+
+    def solve_dependencies(self, package_db, package, solved_deps=None, unsolved_deps=None):
+        if not solved_deps:
+            solved_deps = set()
+        if not unsolved_deps:
+            unsolved_deps = set()
+        if package in solved_deps:
+            return solved_deps
+        if package in unsolved_deps:
+            error = 'circular dependency for ' + package.category + '/' + \
+              package.name + '-' + package.version
+            raise DependencyError(error)
+        unsolved_deps.add(package)
+        found = True
+        try:
+            desc = package_db.get_package_description(package)
+        except KeyError as e:
+            found = False
+        if not found:
+            error = "package " + package.category + '/' + \
+                package.name + '-' + package.version + " not found"
+            raise DependencyError(error)
+        
+        dependencies = desc["dependencies"]
+        for pkg in dependencies:
+            solved_deps, unsolved_deps = self.solve_dependencies(package_db,
+                                                                 Package(pkg[0], pkg[1], pkg[2]),
+                                                                 solved_deps, unsolved_deps)
+        
+        solved_deps.add(package)
+        unsolved_deps.remove(package)
+        
+        return (solved_deps, unsolved_deps)
+
+
+    def digest(self, overlay):
+        prev = os.getcwd()
+        os.chdir(overlay)
+        if os.system("repoman manifest"):
+            raise DigestError('repoman manifest failed')
+        os.chdir(prev)
+        
     def generate_tree(self, args, config):
         pass
 

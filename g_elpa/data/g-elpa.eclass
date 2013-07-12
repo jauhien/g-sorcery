@@ -34,11 +34,7 @@ GELPA_FETCH_CMD="wget"
 
 inherit elisp
 
-if [ x${DIGEST_SOURCES} = x]; then
-	EXPORT_FUNCTIONS src_{unpack,compile,install}
-else
-	EXPORT_FUNCTIONS src_{compile,install}
-fi
+EXPORT_FUNCTIONS src_{unpack,compile,install}
 
 if [[ ${PKG_TYPE} != "single" ]]; then
 	SUFFIX="${PKG_TYPE}"
@@ -58,7 +54,9 @@ g-elpa_fetch() {
 }
 
 g-elpa_src_unpack() {
-	g-elpa_fetch
+	if [[ x${DIGEST_SOURCES} = x ]]; then
+		g-elpa_fetch
+	fi
 	if [[ ${PKG_TYPE} != "single" ]]; then
 		unpack ${P}.${PKG_TYPE}
 	else
