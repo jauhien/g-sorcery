@@ -8,7 +8,7 @@ setup(name          = 'g-sorcery',
       author        = 'Jauhien Piatlicki',
       author_email  = 'piatlicki@gmail.com',
       packages      = ['g_sorcery', 'g_elpa'],
-      scripts       = ['bin/g-sorcery'],
+      scripts       = ['bin/g-sorcery', 'bin/g-elpa'],
       data_files    = [('/etc/g-sorcery/', ['g-elpa.json']),],
       license       = 'GPL',
       )

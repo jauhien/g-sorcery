@@ -12,5 +12,10 @@
 """
 
 from g_sorcery.backend import Backend
+from g_sorcery.metadata import MetadataGenerator
 
-from g_elpa import ebuild
+from .elpa_db import ElpaDB
+from .ebuild import ElpaEbuildWithDigestGenerator, ElpaEbuildWithoutDigestGenerator
+
+instance = Backend(ElpaDB, ElpaEbuildWithDigestGenerator,
+                   ElpaEbuildWithoutDigestGenerator, MetadataGenerator, sync_db=False)
