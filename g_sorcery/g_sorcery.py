@@ -25,11 +25,13 @@ else:
 
 from .fileutils import FileJSON
 from .exceptions import FileJSONError
+from .logger import Logger
 
 def main():
+    logger = Logger()
     if len(sys.argv) < 2:
-        print("No backend specified")
-        return 0
+        logger.error("no backend specified")
+        return -1
     name = sys.argv[1]
     cfg = name + '.json'
     cfg_path = None
@@ -39,13 +41,13 @@ def main():
             cfg_path = path
             break
     if not cfg_path:
-        sys.stderr.write('g-sorcery error: no config file for ' + name + ' backend\n')
+        logger.error('no config file for ' + name + ' backend\n')
         return -1
     cfg_f = FileJSON(cfg_path, cfg, ['package'])
     try:
         config = cfg_f.read()
     except FileJSONError as e:
-        sys.stderr.write('g-sorcery error in config file for ' + name + ': ' + str(e) + '\n')
+        logger.error('error loading config file for ' + name + ': ' + str(e) + '\n')
         return -1
     backend = get_backend(config['package'])
 
@@ -58,7 +60,7 @@ def main():
             config_file = None
 
     if not config_file:
-        sys.stderr.write('g-sorcery error: no global config file\n')
+        logger.error('no global config file\n')
         return -1
     
     global_config = configparser.ConfigParser()

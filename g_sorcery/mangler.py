@@ -13,6 +13,7 @@
 
 import os
 
+from .logger import Logger
 
 class PackageManager(object):
     """
@@ -20,11 +21,14 @@ class PackageManager(object):
     """
 
     executable = ""
+    logger = Logger()
     
     def __init__(self):
         pass
 
     def run_command(self, *args):
+        command = self.executable + " " + " ".join(args)
+        self.logger.info("running a package mangler: " + command)
         return os.system(self.executable + " " + " ".join(args))
 
     def install(self, pkgname, *args):

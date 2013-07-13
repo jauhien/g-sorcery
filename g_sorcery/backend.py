@@ -25,6 +25,7 @@ else:
 
 from .g_collections import Package
 from .exceptions import DependencyError, DigestError
+from .logger import Logger
 from .mangler import package_managers
 
 class Backend(object):
@@ -80,11 +81,13 @@ class Backend(object):
         p_install.add_argument('pkgmanager_flags', nargs=argparse.REMAINDER)
         p_install.set_defaults(func=self.install)
 
+        self.logger = Logger()
+
     def get_overlay(self, args, config, global_config):
         overlay = args.overlay
         if not overlay:
             if not 'default_overlay' in config:
-               print("No overlay given, exiting.")
+               self.logger.error("no overlay given, exiting.")
                return None
             else:
                 overlay = config['default_overlay']
@@ -99,25 +102,25 @@ class Backend(object):
         if self.sync_db:
             pkg_db = self.package_db_class(db_path, db_uri=url)
             if not pkg_db.db_uri:
-                sys.stderr.write('No url given\n')
+                self.logger.error('no url given\n')
                 return -1
         else:
             pkg_db = self.package_db_class(db_path, repo_uri=url)
             if not pkg_db.repo_uri:
-                sys.stderr.write('No url given\n')
+                self.logger.error('no url given\n')
                 return -1
 
         if self.sync_db:
             try:
                 pkg_db.sync(db_uri=url)
             except Exception as e:
-                sys.stderr.write('Sync failed: ' + str(e) + '\n')
+                self.logger.error('sync failed: ' + str(e) + '\n')
                 return -1
         else:
             try:
                 pkg_db.generate(repo_uri=url)
             except Exception as e:
-                sys.stderr.write('Sync failed: ' + str(e) + '\n')
+                self.logger.error('sync failed: ' + str(e) + '\n')
                 return -1
         return 0
 
@@ -141,7 +144,7 @@ class Backend(object):
                     print('    Available versions: ' + ' '.join(versions))
                     print('\n')
         except Exception as e:
-            sys.stderr.write('List failed: ' + str(e) + '\n')
+            self.logger.error('list failed: ' + str(e) + '\n')
             return -1
         return 0
 
@@ -165,7 +168,7 @@ class Backend(object):
             category = parts[0]
             name = parts[1]
         else:
-            sys.stderr.write('Bad package name: ' + pkgname + '\n')
+            self.logger.error('bad package name: ' + pkgname + '\n')
             return -1
 
         if not category:
@@ -176,14 +179,14 @@ class Backend(object):
                     categories.append(cat)
 
             if not len(categories):
-                sys.stderr.write('No package with name ' + pkgname + ' found\n')
+                self.logger.error('no package with name ' + pkgname + ' found\n')
                 return -1
                     
             if len(categories) > 1:
-                sys.stderr.write('Ambiguous packagename: ' + pkgname + '\n')
-                sys.stderr.write('Please select one of the following packages:\n')
+                self.logger.error('ambiguous packagename: ' + pkgname + '\n')
+                self.logger.error('please select one of the following packages:\n')
                 for cat in categories:
-                    sys.stderr.write('    ' + cat + '/' + pkgname + '\n')
+                    self.logger.error('    ' + cat + '/' + pkgname + '\n')
                 return -1
                 
             category = categories[0]
@@ -193,7 +196,7 @@ class Backend(object):
             for version in versions:
                 dependencies |= self.solve_dependencies(pkg_db, Package(category, name, version))[0]
         except Exception as e:
-            sys.stderr.write('Dependency solving failed: ' + str(e) + '\n')
+            self.logger.error('dependency solving failed: ' + str(e) + '\n')
             return -1
         
         eclasses = []
@@ -207,6 +210,7 @@ class Backend(object):
         return 0
 
     def generate_ebuilds(self, package_db, overlay, packages, digest=False):
+        self.logger.info("ebuild generation")
         if digest:
             ebuild_g = self.ebuild_g_with_digest_class(package_db)
         else:
@@ -215,6 +219,7 @@ class Backend(object):
             category = package.category
             name = package.name
             version = package.version
+            self.logger.info("    generating " + category + '/' + name + '-' + version)
             path = os.path.join(overlay, category, name)
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -225,6 +230,7 @@ class Backend(object):
 
 
     def generate_metadatas(self, package_db, overlay, packages):
+        self.logger.info("metadata generation")
         metadata_g = self.metadata_g_class(package_db)
         for package in packages:
             path = os.path.join(overlay, package.category, package.name)
@@ -236,11 +242,13 @@ class Backend(object):
                     f.write(line + '\n')
 
     def generate_eclasses(self, overlay, eclasses):
+        self.logger.info("eclasses generation")
         eclass_g = self.eclass_g_class()
         path = os.path.join(overlay, 'eclass')
         if not os.path.exists(path):
             os.makedirs(path)
         for eclass in eclasses:
+            self.logger.info("    generating " + eclass + " eclass")
             source = eclass_g.generate(eclass)
         with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
             for line in source:
@@ -282,6 +290,7 @@ class Backend(object):
 
 
     def digest(self, overlay):
+        self.logger.info("digesting overlay")
         prev = os.getcwd()
         os.chdir(overlay)
         if os.system("repoman manifest"):
@@ -300,7 +309,7 @@ class Backend(object):
             package_manager = None
         if  package_manager:
             if not package_manager in package_managers:
-                sys.stderr.write('Not supportes package manager: ' + package_manager + '\n')
+                self.logger.error('not supported package manager: ' + package_manager + '\n')
                 return -1
             package_manager_class = package_managers[package_manager]
         package_manager = package_manager_class()
