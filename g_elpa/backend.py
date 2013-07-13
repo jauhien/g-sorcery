@@ -16,14 +16,15 @@ import os
 from g_sorcery.backend import Backend
 from g_sorcery.metadata import MetadataGenerator
 from g_sorcery.eclass import EclassGenerator
+from g_sorcery.fileutils import get_pkgpath
 
 from .elpa_db import ElpaDB
 from .ebuild import ElpaEbuildWithDigestGenerator, ElpaEbuildWithoutDigestGenerator
-from .fileutils import get_pkgpath
+
 
 class ElpaEclassGenerator(EclassGenerator):
     def __init__(self):
-        super(ElpaEclassGenerator, self).__init__(os.path.join(get_pkgpath(), 'data'))
+        super(ElpaEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
         
 
 instance = Backend(ElpaDB,

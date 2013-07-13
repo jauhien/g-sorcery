@@ -141,14 +141,15 @@ def wget(uri, directory):
     """
     return os.system('wget -P ' + directory + ' ' + uri)
 
-def get_pkgpath():
+def get_pkgpath(root = None):
     """
     Get package path.
 
     Returns:
         Package path.
     """
-    root = __file__
+    if not root:
+        root = __file__
     if os.path.islink(root):
         root = os.path.realpath(root)
     return os.path.dirname(os.path.abspath(root))
