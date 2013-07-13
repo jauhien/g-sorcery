@@ -60,7 +60,7 @@ class EbuildGenerator(object):
             except ValueError as e:
                 error = str(e)
             if error:
-                error = "sunstitution failed in line '" + line + "': " + error
+                error = "substitution failed in line '" + line + "': " + error
                 raise DependencyError(error)
             result.append(line)
             
