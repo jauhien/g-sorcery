@@ -11,13 +11,19 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import configparser
+
 import importlib
 import os
 import sys
 
-from .fileutils import FileJSON
+from .compatibility import py2k
 
+if py2k:
+    import ConfigParser as configparser
+else:
+    import configparser
+
+from .fileutils import FileJSON
 from .exceptions import FileJSONError
 
 def main():

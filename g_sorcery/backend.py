@@ -294,8 +294,7 @@ class Backend(object):
                 return -1
             package_manager_class = package_managers[package_manager]
         package_manager = package_manager_class()
-        package_manager.install(args.pkgname)
-        
+        package_manager.install(args.pkgname, *args.pkgmanager_flags)
         
     def __call__(self, args, config, global_config):
         args = self.parser.parse_args(args)
