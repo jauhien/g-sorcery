@@ -26,7 +26,7 @@ from .exceptions import DBStructureError, IntegrityError, \
 
 from .fileutils import FileJSON, FilePkgDesc, hash_file, copy_all, wget
 
-from .collections import Package
+from .g_collections import Package
 
 class PackageDB(object):
     """

@@ -16,7 +16,7 @@ import glob
 import os
 import sys
 
-from .collections import Package
+from .g_collections import Package
 from .exceptions import DependencyError, DigestError
 
 class Backend(object):

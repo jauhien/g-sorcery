@@ -14,7 +14,7 @@
 import json, os, shutil
 
 from .exceptions import FileJSONError
-from .collections import Package, elist
+from .g_collections import Package, elist
 
 class FileJSON(object):
     """
