@@ -16,6 +16,13 @@ import glob
 import os
 import sys
 
+from .compatibility import py2k
+
+if py2k:
+    import ConfigParser as configparser
+else:
+    import configparser
+
 from .g_collections import Package
 from .exceptions import DependencyError, DigestError
 from .mangler import package_managers
@@ -286,9 +293,12 @@ class Backend(object):
 
     def install(self, args, config, global_config):
         self.generate(args, config, global_config)
-        package_manager_class = package_managers["portage"]
-        if "package_manager" in global_config:
-            package_manager = global_config["package_manager"]
+        try:
+            package_manager = global_config.get("main", "package_manager")
+        except configparser.NoOptionError:    
+            package_manager_class = package_managers["portage"]
+            package_manager = None
+        if  package_manager:
             if not package_manager in package_managers:
                 sys.stderr.write('Not supportes package manager: ' + package_manager + '\n')
                 return -1

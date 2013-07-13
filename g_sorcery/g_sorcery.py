@@ -49,19 +49,21 @@ def main():
         return -1
     backend = get_backend(config['package'])
 
-    cfg_path = None
+    config_file = None
     for path in '.', '~', '/etc/g-sorcery':
-        current = os.path.join(path, "g-sorcery.cfg")
-        if (os.path.isfile(current)):
-            cfg_path = path
+        config_file = os.path.join(path, "g-sorcery.cfg")
+        if (os.path.isfile(config_file)):
             break
-    if not cfg_path:
+        else:
+            config_file = None
+
+    if not config_file:
         sys.stderr.write('g-sorcery error: no global config file\n')
         return -1
     
     global_config = configparser.ConfigParser()
-    global_config.read(cfg_path)
-    
+    global_config.read(config_file)
+
     return backend.instance(sys.argv[2:], config, global_config)
 
 
