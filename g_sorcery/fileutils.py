@@ -14,22 +14,25 @@
 import json, os, shutil
 
 from .exceptions import FileJSONError
+from .collections import Package, elist
 
 class FileJSON(object):
     """
     Class for JSON files.
     """
-    def __init__(self, directory, name, mandatories):
+    def __init__(self, directory, name, mandatories, loadconv=None):
         """
         Args:
             directory: File directory.
             name: File name.
             mandatories: List of requiered keys.
+            loadconv: Type change values on loading.
         """
         self.directory = os.path.abspath(directory)
         self.name = name
         self.path = os.path.join(directory, name)
         self.mandatories = mandatories
+        self.loadconv = loadconv
 
     def read(self):
         """
@@ -49,6 +52,12 @@ class FileJSON(object):
             for key in self.mandatories:
                 if not key in content:
                     raise FileJSONError('lack of mandatory key: ' + key)
+                
+        if self.loadconv:
+            for key, conv in self.loadconv.items():
+                if key in content:
+                    content[key] = conv(content[key])
+        
         return content
 
     def write(self, content):
@@ -62,6 +71,26 @@ class FileJSON(object):
             os.makedirs(self.directory)
         with open(self.path, 'w') as f:
             json.dump(content, f, indent=2, sort_keys=True)
+
+            
+def package_conv(lst):
+    return Package(lst[0], lst[1], lst[2])
+
+def dependencies_conv(dependencies):
+    result = []
+    for dependency in dependencies:
+        result.append(package_conv(dependency))
+    return result
+
+def depend_conv(depend):
+    return elist(depend, separator='\n\t')
+            
+class FilePkgDesc(FileJSON):
+    def __init__(self, directory, name, mandatories):
+        loadconv = {'dependencies' : dependencies_conv,
+                    'depend' : depend_conv,
+                    'rdepend' : depend_conv}
+        super(FilePkgDesc, self).__init__(directory, name, mandatories, loadconv)
 
 
 def hash_file(name, hasher, blocksize=65536):

@@ -11,48 +11,7 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import copy
-import re
-import string
-
-from .exceptions import DescriptionError
-
-def substitute_list(string, values):
-    """
-    Performs the template substitution. Variables are
-    substituted by lists.
-
-    Variable format.
-    ~~~~~~~~~~~~~~~~
-
-    #[n ]#name#
-    'n': Separate list entries with '\n'.
-    ' ': Separate list entries with ' '.
-    name: Key in values dict.
-
-    Args:
-        text: Template string.
-        values: Dictionary with values.
-    """
-    regex = re.compile('#[n ]#\w+#')
-    match = regex.search(string)
-    if not match:
-        return string
-    group = match.group()
-    new_line = (group[1] == 'n')
-    key = group[3:-1]
-    if not key in values:
-        error = "missing key: " + key
-        raise DescriptionError(error)
-    lst = values[key]
-    if new_line:
-        sep = '\n'
-    else:
-        sep = ' '
-    repl = sep.join(lst)
-    result = regex.sub(repl, string)
-    return result
-
+from .exceptions import DependencyError
 
 class EbuildGenerator(object):
     """
@@ -95,9 +54,14 @@ class EbuildGenerator(object):
         """
         result = []
         for line in ebuild:
-            tmpl = string.Template(line)
-            line = tmpl.substitute(description)
-            line = substitute_list(line, description)
+            error = ""
+            try:
+                line = line % description
+            except ValueError as e:
+                error = str(e)
+            if error:
+                error = "sunstitution failed in line '" + line + "': " + error
+                raise DependencyError(error)
             result.append(line)
             
         return result

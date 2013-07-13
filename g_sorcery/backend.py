@@ -16,7 +16,7 @@ import glob
 import os
 import sys
 
-from .package_db import Package
+from .collections import Package
 from .exceptions import DependencyError, DigestError
 
 class Backend(object):
@@ -263,7 +263,7 @@ class Backend(object):
         dependencies = desc["dependencies"]
         for pkg in dependencies:
             solved_deps, unsolved_deps = self.solve_dependencies(package_db,
-                                                                 Package(pkg[0], pkg[1], pkg[2]),
+                                                                 pkg,
                                                                  solved_deps, unsolved_deps)
         
         solved_deps.add(package)

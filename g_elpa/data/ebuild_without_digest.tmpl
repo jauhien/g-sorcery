@@ -3,14 +3,14 @@
 
 EAPI=5
 
-REPO_URI="$repo_uri"
-PKG_TYPE="$source_type"
-REALNAME="$realname"
+REPO_URI="%(repo_uri)s"
+PKG_TYPE="%(source_type)s"
+REALNAME="%(realname)s"
 
 inherit g-elpa
 
-DESCRIPTION="$description"
-HOMEPAGE="$homepage"
+DESCRIPTION="%(description)s"
+HOMEPAGE="%(homepage)s"
 SRC_URI=""
 LICENSE="GPL-2"
 
@@ -18,5 +18,5 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-DEPEND="#n#depend#"
-RDEPEND="#n#rdepend#"
+DEPEND="%(depend)s"
+RDEPEND="%(rdepend)s"

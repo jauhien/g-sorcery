@@ -11,18 +11,22 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
+import glob
+import hashlib
+import os
+import shutil
+import tarfile
+
+import portage
+
 from .compatibility import TemporaryDirectory
 
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
 
-from .fileutils import FileJSON, hash_file, copy_all, wget
+from .fileutils import FileJSON, FilePkgDesc, hash_file, copy_all, wget
 
-import portage
-
-import collections, glob, hashlib, os, shutil, tarfile
-
-Package = collections.namedtuple("Package", "category name version")
+from .collections import Package
 
 class PackageDB(object):
     """
@@ -242,7 +246,7 @@ class PackageDB(object):
             if not category or (not category in self.categories):
                 raise DBStructureError('Non existent: ' + category)
             for version, content in versions.items():
-                f = FileJSON(os.path.join(self.directory, category, name),
+                f = FilePkgDesc(os.path.join(self.directory, category, name),
                     version + '.json', [])
                 f.write(content)
                 self.additional_write_version(category, name, version)
@@ -323,7 +327,7 @@ class PackageDB(object):
                 pkgname = category + '/' + name
                 self.database[pkgname] = {}
                 for version in versions:
-                    f = FileJSON(package_path, version + '.json', [])
+                    f = FilePkgDesc(package_path, version + '.json', [])
                     description = f.read()
                     self.database[pkgname][version] = description
                     self.additional_read_version(category, name, version)

@@ -22,7 +22,8 @@ if py2k:
 else:
     from urllib.parse import urljoin
 
-from g_sorcery.package_db import Package, PackageDB
+from g_sorcery.collections import Package
+from g_sorcery.package_db import PackageDB
 from g_sorcery.fileutils import wget
 from g_sorcery.exceptions import SyncError
 
