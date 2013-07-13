@@ -11,7 +11,10 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import importlib, os, sys
+import configparser
+import importlib
+import os
+import sys
 
 from .fileutils import FileJSON
 
@@ -39,7 +42,21 @@ def main():
         sys.stderr.write('g-sorcery error in config file for ' + name + ': ' + str(e) + '\n')
         return -1
     backend = get_backend(config['package'])
-    return backend.instance(sys.argv[2:], config)
+
+    cfg_path = None
+    for path in '.', '~', '/etc/g-sorcery':
+        current = os.path.join(path, "g-sorcery.cfg")
+        if (os.path.isfile(current)):
+            cfg_path = path
+            break
+    if not cfg_path:
+        sys.stderr.write('g-sorcery error: no global config file\n')
+        return -1
+    
+    global_config = configparser.ConfigParser()
+    global_config.read(cfg_path)
+    
+    return backend.instance(sys.argv[2:], config, global_config)
 
 
 def get_backend(package):

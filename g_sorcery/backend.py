@@ -18,6 +18,7 @@ import sys
 
 from .g_collections import Package
 from .exceptions import DependencyError, DigestError
+from .mangler import package_managers
 
 class Backend(object):
     """
@@ -69,9 +70,10 @@ class Backend(object):
         
         p_install = subparsers.add_parser('install')
         p_install.add_argument('pkgname')
+        p_install.add_argument('pkgmanager_flags', nargs=argparse.REMAINDER)
         p_install.set_defaults(func=self.install)
 
-    def get_overlay(self, args, config):
+    def get_overlay(self, args, config, global_config):
         overlay = args.overlay
         if not overlay:
             if not 'default_overlay' in config:
@@ -82,8 +84,8 @@ class Backend(object):
         overlay = args.overlay
         return overlay
 
-    def sync(self, args, config):
-        db_path = os.path.join(self.get_overlay(args, config), self.db_dir)
+    def sync(self, args, config, global_config):
+        db_path = os.path.join(self.get_overlay(args, config, global_config), self.db_dir)
         if not db_path:
             return -1
         url = args.url
@@ -112,8 +114,8 @@ class Backend(object):
                 return -1
         return 0
 
-    def list(self, args, config):
-        db_path = os.path.join(self.get_overlay(args, config), self.db_dir)
+    def list(self, args, config, global_config):
+        db_path = os.path.join(self.get_overlay(args, config, global_config), self.db_dir)
         if not db_path:
             return -1
         pkg_db = self.package_db_class(db_path)
@@ -136,8 +138,8 @@ class Backend(object):
             return -1
         return 0
 
-    def generate(self, args, config):
-        overlay = self.get_overlay(args, config)
+    def generate(self, args, config, global_config):
+        overlay = self.get_overlay(args, config, global_config)
         db_path = os.path.join(overlay, self.db_dir)
         if not db_path:
             return -1
@@ -279,12 +281,22 @@ class Backend(object):
             raise DigestError('repoman manifest failed')
         os.chdir(prev)
         
-    def generate_tree(self, args, config):
+    def generate_tree(self, args, config, global_config):
         pass
 
-    def install(self, args, config):
-        pass
+    def install(self, args, config, global_config):
+        self.generate(args, config, global_config)
+        package_manager_class = package_managers["portage"]
+        if "package_manager" in global_config:
+            package_manager = global_config["package_manager"]
+            if not package_manager in package_managers:
+                sys.stderr.write('Not supportes package manager: ' + package_manager + '\n')
+                return -1
+            package_manager_class = package_managers[package_manager]
+        package_manager = package_manager_class()
+        package_manager.install(args.pkgname)
         
-    def __call__(self, args, config):
+        
+    def __call__(self, args, config, global_config):
         args = self.parser.parse_args(args)
-        return args.func(args, config)
+        return args.func(args, config, global_config)
