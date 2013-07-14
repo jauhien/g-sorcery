@@ -24,30 +24,32 @@ class EbuildGenerator(object):
         """
         self.package_db = package_db
 
-    def generate(self, package):
+    def generate(self, package, ebuild_data=None):
         """
         Generate an ebuild for a package.
 
         Args:
             package: package_db.Package instance.
+            ebuild_data: Dictionary with ebuild data.
 
         Returns:
             Ebuild source as a list of strings.
         """
         #a possible exception should be catched in the caller
-        description = self.package_db.get_package_description(package)
-        ebuild = self.get_template(package, description)
-        ebuild = self.process(ebuild, description)
-        ebuild = self.postprocess(ebuild, description)
+        if not ebuild_data:
+            ebuild_data = self.package_db.get_package_description(package)
+        ebuild = self.get_template(package, ebuild_data)
+        ebuild = self.process(ebuild, ebuild_data)
+        ebuild = self.postprocess(ebuild, ebuild_data)
         return ebuild
 
-    def process(self, ebuild, description):
+    def process(self, ebuild, ebuild_data):
         """
         Fill ebuild tamplate with data.
 
         Args:
             ebuild: Ebuild template.
-            description: Dictionary with ebuild description.
+            ebuild_data: Dictionary with ebuild data.
 
         Returns:
             Ebuild source as a list of strings.
@@ -56,7 +58,7 @@ class EbuildGenerator(object):
         for line in ebuild:
             error = ""
             try:
-                line = line % description
+                line = line % ebuild_data
             except ValueError as e:
                 error = str(e)
             if error:
@@ -66,13 +68,13 @@ class EbuildGenerator(object):
             
         return result
         
-    def get_template(self, package, description):
+    def get_template(self, package, ebuild_data):
         """
         Generate ebuild tamplate. Should be overriden.
 
         Args:
             package: package_db.Package instance.
-            description: Dictionary with ebuild description.
+            ebuild_data: Dictionary with ebuild data.
 
         Returns:
             Ebuild template.
@@ -80,13 +82,13 @@ class EbuildGenerator(object):
         ebuild = []
         return ebuild
         
-    def postprocess(self, ebuild, description):
+    def postprocess(self, ebuild, ebuild_data):
         """
         Hook to be overriden.
 
         Args:
             ebuild: Ebuild source as a list of strings.
-            description: Dictionary with ebuild description.
+            ebuild_data: Dictionary with ebuild data.
 
         Returns:
             Ebuild source as a list of strings.
@@ -101,31 +103,31 @@ class EbuildGeneratorFromFile(EbuildGenerator):
         super(EbuildGeneratorFromFile, self).__init__(package_db)
         self.filename = filename
 
-    def get_template(self, package, description):
+    def get_template(self, package, ebuild_data):
         """
         Generate ebuild tamplate.
 
         Args:
             package: package_db.Package instance.
-            description: Dictionary with ebuild description.
+            ebuild_data: Dictionary with ebuild data.
 
         Returns:
             Ebuild template.
         """
-        name = self.get_template_file(package, description)
+        name = self.get_template_file(package, ebuild_data)
         with open(name, 'r') as f:
             ebuild = f.read().split('\n')
             if ebuild[-1] == '':
                 ebuild = ebuild[:-1]
         return ebuild
 
-    def get_template_file(self, package, description):
+    def get_template_file(self, package, ebuild_data):
         """
         Get template filename for a package. Should be overriden.
         
         Args:
             package: package_db.Package instance.
-            description: Dictionary with ebuild description.
+            ebuild_data: Dictionary with ebuild data.
 
         Returns:
             Template filename.

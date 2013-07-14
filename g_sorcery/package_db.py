@@ -19,7 +19,7 @@ import tarfile
 
 import portage
 
-from .compatibility import TemporaryDirectory
+from .compatibility import py2k, TemporaryDirectory
 
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
@@ -27,6 +27,7 @@ from .exceptions import DBStructureError, IntegrityError, \
 from .fileutils import FileJSON, FilePkgDesc, hash_file, copy_all, wget
 
 from .g_collections import Package
+
 
 class PackageDB(object):
     """
@@ -53,6 +54,61 @@ class PackageDB(object):
         ...
     
     """
+
+    class Iterator(object):
+        """
+        Iterator class over the package database.
+        """
+        def __init__(self, package_db):
+            self.pkg_iter = iter(package_db.database.items())
+            try:
+                self.pkgname, self.vers_dict = next(self.pkg_iter)
+            except StopIteration:
+                self.pkgname, self.vers_dict = None, None
+            if self.vers_dict:
+                self.vers_iter = iter(self.vers_dict.items())
+            else:
+                self.vers_iter = None
+
+        def __iter__(self):
+            return self
+
+        if py2k:
+            def next(self):
+                if not self.vers_iter:
+                    raise StopIteration
+                ver, ebuild_data = None, None
+                while not ver:
+                    try:
+                        ver, ebuild_data = next(self.vers_iter)
+                    except StopIteration:
+                        ver, ebuild_data = None, None
+
+                    if not ver:
+                        self.pkgname, self.vers_dict = next(self.pkg_iter)
+                        self.vers_iter = iter(self.vers_dict.items())
+
+                category, name = self.pkgname.split('/')
+                return (Package(category, name, ver), ebuild_data)
+        else:
+            def __next__(self):
+                if not self.vers_iter:
+                    raise StopIteration
+                ver, ebuild_data = None, None
+                while not ver:
+                    try:
+                        ver, ebuild_data = next(self.vers_iter)
+                    except StopIteration:
+                        ver, ebuild_data = None, None
+
+                    if not ver:
+                        self.pkgname, self.vers_dict = next(self.pkg_iter)
+                        self.vers_iter = iter(self.vers_dict.items())
+
+                category, name = self.pkgname.split('/')
+                return (Package(category, name, ver), ebuild_data)
+
+
     def __init__(self, directory, repo_uri="", db_uri=""):
         """
         Args:
@@ -69,6 +125,9 @@ class PackageDB(object):
         self.reset_uri(repo_uri, db_uri)
         self.reset_db()
 
+    def __iter__(self):
+        return(PackageDB.Iterator(self))
+        
     def reset_uri(self, repo_uri="", db_uri=""):
         """
         Reset URI information.

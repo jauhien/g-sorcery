@@ -75,6 +75,7 @@ class Backend(object):
         p_generate.set_defaults(func=self.generate)
 
         p_generate_tree = subparsers.add_parser('generate-tree')
+        p_generate_tree.add_argument('-d', '--digest', action='store_true')
         p_generate_tree.set_defaults(func=self.generate_tree)
         
         p_install = subparsers.add_parser('install')
@@ -84,7 +85,7 @@ class Backend(object):
 
         self.logger = Logger()
 
-    def get_overlay(self, args, config, global_config):
+    def _get_overlay(self, args, config, global_config):
         overlay = args.overlay
         if not overlay:
             if not 'default_overlay' in config:
@@ -95,8 +96,17 @@ class Backend(object):
         overlay = args.overlay
         return overlay
 
+    def _get_package_db(self, args, config, global_config):
+        overlay = self._get_overlay(args, config, global_config)
+        db_path = os.path.join(overlay, self.db_dir)
+        if not db_path:
+            return -1
+        pkg_db = self.package_db_class(db_path)
+        return pkg_db
+
     def sync(self, args, config, global_config):
-        db_path = os.path.join(self.get_overlay(args, config, global_config), self.db_dir)
+        overlay = self._get_overlay(args, config, global_config)
+        db_path = os.path.join(overlay, self.db_dir)
         if not db_path:
             return -1
         url = args.url
@@ -147,10 +157,7 @@ class Backend(object):
         return 0
 
     def list(self, args, config, global_config):
-        db_path = os.path.join(self.get_overlay(args, config, global_config), self.db_dir)
-        if not db_path:
-            return -1
-        pkg_db = self.package_db_class(db_path)
+        pkg_db = self._get_package_db(args, config, global_config)
         pkg_db.read()
         try:
             categories = pkg_db.list_categories()
@@ -171,11 +178,8 @@ class Backend(object):
         return 0
 
     def generate(self, args, config, global_config):
-        overlay = self.get_overlay(args, config, global_config)
-        db_path = os.path.join(overlay, self.db_dir)
-        if not db_path:
-            return -1
-        pkg_db = self.package_db_class(db_path)
+        overlay = self._get_overlay(args, config, global_config)
+        pkg_db = self._get_package_db(args, config, global_config)
         pkg_db.read()
 
         pkgname = args.pkgname
@@ -272,9 +276,9 @@ class Backend(object):
         for eclass in eclasses:
             self.logger.info("    generating " + eclass + " eclass")
             source = eclass_g.generate(eclass)
-        with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
-            for line in source:
-                f.write(line + '\n')
+            with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
+                for line in source:
+                    f.write(line + '\n')
 
 
     def solve_dependencies(self, package_db, package, solved_deps=None, unsolved_deps=None):
@@ -320,7 +324,48 @@ class Backend(object):
         os.chdir(prev)
         
     def generate_tree(self, args, config, global_config):
-        pass
+        self.logger.info("tree generation")
+        overlay = self._get_overlay(args, config, global_config)
+        pkg_db = self._get_package_db(args, config, global_config)
+        pkg_db.read()
+        
+        if args.digest:
+            ebuild_g = self.ebuild_g_with_digest_class(pkg_db)
+        else:
+            ebuild_g = self.ebuild_g_without_digest_class(pkg_db)
+        metadata_g = self.metadata_g_class(pkg_db)
+        
+        for package, ebuild_data in pkg_db:
+            category = package.category
+            name = package.name
+            version = package.version
+            self.logger.info("    generating " + category + '/' + name + '-' + version)
+            path = os.path.join(overlay, category, name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            source = ebuild_g.generate(package, ebuild_data)
+            with open(os.path.join(path, name + '-' + version + '.ebuild'), 'w') as f:
+                for line in source:
+                    f.write(line + '\n')
+
+            source = metadata_g.generate(package)
+            with open(os.path.join(path, 'metadata.xml'), 'w') as f:
+                for line in source:
+                    f.write(line + '\n')
+
+        eclass_g = self.eclass_g_class()
+        path = os.path.join(overlay, 'eclass')
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        for eclass in eclass_g.list():
+            source = eclass_g.generate(eclass)
+            with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
+                for line in source:
+                    f.write(line + '\n')
+
+        self.digest(overlay)
+
 
     def install(self, args, config, global_config):
         self.generate(args, config, global_config)
