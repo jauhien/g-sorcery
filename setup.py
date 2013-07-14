@@ -11,6 +11,7 @@ setup(name          = 'g-sorcery',
       package_data  = {'g_elpa': ['data/*']},
       scripts       = ['bin/g-sorcery', 'bin/g-elpa'],
       data_files    = [('/etc/g-sorcery/', ['g-elpa.json']),
-                       ('/etc/g-sorcery/', ['g-sorcery.cfg'])],
+                       ('/etc/g-sorcery/', ['g-sorcery.cfg']),
+                       ('/etc/layman/overlays/', ['g-elpa-overlays.xml'])],
       license       = 'GPL',
       )
