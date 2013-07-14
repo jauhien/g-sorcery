@@ -13,7 +13,7 @@
 
 import os, tempfile, unittest
 
-from g_sorcery import ebuild, package_db, exceptions
+from g_sorcery import ebuild, package_db, exceptions, g_collections
 
 from tests.base import BaseTest
 
@@ -34,7 +34,7 @@ class DummyDB(package_db.PackageDB):
 
 class DummyEbuildGenerator(ebuild.EbuildGenerator):
     def get_template(self, ebuild, description):
-        tmpl = ["test", "author: $author", "homepage: $homepage", "var: $$var"]
+        tmpl = ["test", "author: %(author)s", "homepage: %(homepage)s", "var: $var"]
         return tmpl
 
 
@@ -43,7 +43,7 @@ class TestEbuildGenerator(BaseTest):
     def test_process(self):
         eg = DummyEbuildGenerator(None)
         tst_dict = {"a" : "d", "b" : "e", "c" : "f"}
-        ebuild = ["$a", "$b", "$c"]
+        ebuild = ["%(a)s", "%(b)s", "%(c)s"]
         ebuild = eg.process(ebuild, tst_dict)
         self.assertEqual(ebuild, ["d", "e", "f"])
 
@@ -73,31 +73,18 @@ class TestEbuildGeneratorFromFile(BaseTest):
         tmpl = os.path.join(self.tempdir.name, 'tst.tmpl')
         with open(tmpl, 'w') as f:
             f.write("""test
-author: $author
-homepage: $homepage
-var: $$var""")
+author: %(author)s
+homepage: %(homepage)s
+var: $var""")
         eg = DummyEbuildGeneratorFromFile(db, tmpl)
         ebuild = eg.generate(package)
         self.assertEqual(ebuild, ['test', 'author: jauhien',
                                   'homepage: 127.0.0.1', 'var: $var'])
         
-
-class TestSubstituteList(BaseTest):
-
-    def test_substitute_list(self):
-        text = ['a', 'test', 'DEPEND="#n#depend#"', 'IUSE="# #iuse#"']
-        desc = {'depend' : ['app-test/test1', 'app-test/test2'],
-                'iuse' : ['test', 'check']}
-        result = ['a', 'test', 'DEPEND="app-test/test1\napp-test/test2"', 'IUSE="test check"']
-        for idx, string in enumerate(text):
-            self.assertEqual(ebuild.substitute_list(string, desc), result[idx])
-        self.assertRaises(exceptions.DescriptionError, ebuild.substitute_list, text[2], {})
-
         
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestEbuildGenerator('test_process'))
     suite.addTest(TestEbuildGenerator('test_generate'))
     suite.addTest(TestEbuildGeneratorFromFile('test_generate'))
-    suite.addTest(TestSubstituteList('test_substitute_list'))
     return suite

@@ -121,7 +121,7 @@ class TestElpaDB(BaseTest):
                 deps.append(package_db.Package('app-emacs',
                                                d[0],
                                                '.'.join(map(str, d[1]))))
-                depend.append('app-emacs' + '/' + d[0] + '-' + '.'.join(map(str, d[1])))
+                depend.append('app-emacs' + '/' + d[0])
 
             dependencies = description['dependencies']
             for d in dependencies:
