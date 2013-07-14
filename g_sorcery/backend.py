@@ -36,7 +36,7 @@ class Backend(object):
     g-backend [-o overlay_dir] command
     
     where command is one of the following:
-    sync [-u url]
+    sync [-u url] [-r repository]
     list
     search word
     generate package_name
@@ -64,6 +64,7 @@ class Backend(object):
 
         p_sync = subparsers.add_parser('sync')
         p_sync.add_argument('-u', '--url')
+        p_sync.add_argument('-r', '--repository')
         p_sync.set_defaults(func=self.sync)
 
         p_list = subparsers.add_parser('list')
@@ -99,12 +100,33 @@ class Backend(object):
         if not db_path:
             return -1
         url = args.url
+        repository = args.repository
+        if repository:
+            if not "repositories" in config:
+                self.logger.error("repository " + repository + 
+                                  " specified, but there is no repositories entry in config")
+                return -1
+            repositories = config["repositories"]
+            if not repository in repositories:
+                self.logger.error("repository " + repository + " not found")
+                return -1
+            repository = repositories[repository]
         if self.sync_db:
+            if repository:
+                if not "db_uri" in repository:
+                    self.logger.error("no db_uri in " + repository + " config")
+                    return -1
+                url = repository["db_uri"]
             pkg_db = self.package_db_class(db_path, db_uri=url)
             if not pkg_db.db_uri:
                 self.logger.error('no url given\n')
                 return -1
         else:
+            if repository:
+                if not "repo_uri" in repository:
+                    self.logger.error("no repo_uri in " + repository + " config")
+                    return -1
+                url = repository["repo_uri"]
             pkg_db = self.package_db_class(db_path, repo_uri=url)
             if not pkg_db.repo_uri:
                 self.logger.error('no url given\n')

@@ -1,3 +1,14 @@
 {
-    "package": "g_elpa"
+  "package": "g_elpa", 
+  "repositories": {
+    "gnu-elpa": {
+      "repo_uri": "http://elpa.gnu.org/packages/"
+    }, 
+    "marmalade": {
+      "repo_uri": "http://marmalade-repo.org/packages/"
+    }, 
+    "melpa": {
+      "repo_uri": "http://melpa.milkbox.net/packages/"
+    }
+  }
 }
