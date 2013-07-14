@@ -328,6 +328,11 @@ class Backend(object):
         overlay = self._get_overlay(args, config, global_config)
         pkg_db = self._get_package_db(args, config, global_config)
         pkg_db.read()
+
+        os.system('rm -rf ' + overlay + '/*')
+        os.makedirs(os.path.join(overlay, 'profiles'))
+        os.system("echo " + os.path.basename(overlay) + '>' + \
+                  os.path.join(overlay, 'profiles', 'repo_name'))
         
         if args.digest:
             ebuild_g = self.ebuild_g_with_digest_class(pkg_db)
@@ -363,7 +368,7 @@ class Backend(object):
             with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
                 for line in source:
                     f.write(line + '\n')
-
+                    
         self.digest(overlay)
 
 
