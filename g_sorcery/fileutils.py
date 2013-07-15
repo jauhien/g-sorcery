@@ -197,4 +197,4 @@ def fast_manifest(directory):
                 for m in manifest]
 
     with open(os.path.join(directory, "Manifest"), 'w') as f:
-        f.write('\n'.join(manifest))
+        f.write('\n'.join(manifest) + '\n')

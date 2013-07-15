@@ -489,6 +489,9 @@ class PackageDB(object):
         res = [x.split('/')[1] for x in self.database if x.split('/')[0] == category]
         return res
 
+    def list_catpkg_names(self):
+        return list(self.database)
+
     def list_package_versions(self, category, name):
         """
         List package versions.

@@ -24,6 +24,7 @@ else:
     import configparser
 
 from .g_collections import Package
+from .fileutils import fast_manifest
 from .exceptions import DependencyError, DigestError
 from .logger import Logger
 from .mangler import package_managers
@@ -319,6 +320,12 @@ class Backend(object):
         if os.system("repoman manifest"):
             raise DigestError('repoman manifest failed')
         os.chdir(prev)
+
+    def fast_digest(self, overlay, pkgnames):
+        self.logger.info("fast digesting overlay")
+        for pkgname in pkgnames:
+            directory = os.path.join(overlay, pkgname)
+            fast_manifest(directory)
         
     def generate_tree(self, args, config, global_config):
         self.logger.info("tree generation")
@@ -362,9 +369,12 @@ class Backend(object):
             source = eclass_g.generate(eclass)
             with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
                 f.write('\n'.join(source))
-                    
-        self.digest(overlay)
 
+        if args.digest:
+            self.digest(overlay)
+        else:
+            pkgnames = pkg_db.list_catpkg_names()
+            self.fast_digest(overlay, pkgnames)
 
     def install(self, args, config, global_config):
         self.generate(args, config, global_config)
