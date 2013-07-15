@@ -53,3 +53,14 @@ package is very alpha and unstable.
 
 sync, list, install and generate-tree commands work. For layman integration
 you'll need patch layman from git with layman-git-g-sorcery.patch.
+
+Testing process:
+a) Ebuild generation in a given overlay:
+    - create an overlay
+    - run `g-elpa -o path_to_overlay sync -r gnu-elpa'
+    - run `g-elpa -o path_to_overlay list'
+    - run `g-elpa -o path_to_overlay install packagename portage_flags'
+
+b) Integration with layman:
+    - install layman from git patched with `layman-git-g-sorcery.patch'
+    - run `sudo layman -a gnu-elpa'
