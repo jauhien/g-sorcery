@@ -251,8 +251,7 @@ class Backend(object):
                 os.makedirs(path)
             source = ebuild_g.generate(package)
             with open(os.path.join(path, name + '-' + version + '.ebuild'), 'w') as f:
-                for line in source:
-                    f.write(line + '\n')
+                f.write('\n'.join(source))
 
 
     def generate_metadatas(self, package_db, overlay, packages):
@@ -264,8 +263,7 @@ class Backend(object):
                 os.makedirs(path)
             source = metadata_g.generate(package)
             with open(os.path.join(path, 'metadata.xml'), 'w') as f:
-                for line in source:
-                    f.write(line + '\n')
+                f.write('\n'.join(source))
 
     def generate_eclasses(self, overlay, eclasses):
         self.logger.info("eclasses generation")
@@ -277,8 +275,7 @@ class Backend(object):
             self.logger.info("    generating " + eclass + " eclass")
             source = eclass_g.generate(eclass)
             with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
-                for line in source:
-                    f.write(line + '\n')
+                f.write('\n'.join(source))
 
 
     def solve_dependencies(self, package_db, package, solved_deps=None, unsolved_deps=None):
@@ -350,13 +347,11 @@ class Backend(object):
                 os.makedirs(path)
             source = ebuild_g.generate(package, ebuild_data)
             with open(os.path.join(path, name + '-' + version + '.ebuild'), 'w') as f:
-                for line in source:
-                    f.write(line + '\n')
+                f.write('\n'.join(source))
 
             source = metadata_g.generate(package)
             with open(os.path.join(path, 'metadata.xml'), 'w') as f:
-                for line in source:
-                    f.write(line + '\n')
+                f.write('\n'.join(source))
 
         eclass_g = self.eclass_g_class()
         path = os.path.join(overlay, 'eclass')
@@ -366,8 +361,7 @@ class Backend(object):
         for eclass in eclass_g.list():
             source = eclass_g.generate(eclass)
             with open(os.path.join(path, eclass + '.eclass'), 'w') as f:
-                for line in source:
-                    f.write(line + '\n')
+                f.write('\n'.join(source))
                     
         self.digest(overlay)
 
