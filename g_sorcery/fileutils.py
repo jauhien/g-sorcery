@@ -11,7 +11,11 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import json, os, shutil
+import glob
+import json
+import hashlib
+import os
+import shutil
 
 from .exceptions import FileJSONError
 from .g_collections import Package, elist
@@ -153,3 +157,44 @@ def get_pkgpath(root = None):
     if os.path.islink(root):
         root = os.path.realpath(root)
     return os.path.dirname(os.path.abspath(root))
+
+class ManifestEntry:
+    def __init__(self, directory, name, ftype):
+        self.directory = directory
+        self.name = name
+        self.ftype = ftype
+        self.digest()
+
+    def digest(self):
+        h_sha256 = hashlib.new('SHA256')
+        h_sha512 = hashlib.new('SHA512')
+        h_whirlpool = hashlib.new('whirlpool')
+        with open(os.path.join(self.directory, self.name), 'rb') as f:
+            src = f.read()
+        h_sha256.update(src)
+        h_sha512.update(src)
+        h_whirlpool.update(src)
+        self.size = str(len(src))
+        self.sha256 = h_sha256.hexdigest()
+        self.sha512 = h_sha512.hexdigest()
+        self.whirlpool = h_whirlpool.hexdigest()
+
+
+def fast_manifest(directory):
+    manifest = []
+    metadata = os.path.join(directory, "metadata.xml")
+
+    for aux in glob.glob(os.path.join(directory, "files/*")):
+        manifest.append(ManifestEntry(os.path.dirname(aux), os.path.basename(aux), "AUX"))
+    for ebuild in glob.glob(os.path.join(directory, "*.ebuild")):
+        manifest.append(ManifestEntry(directory, os.path.basename(ebuild), "EBUILD"))
+    if (os.path.isfile(metadata)):
+        manifest.append(ManifestEntry(directory, "metadata.xml", "MISC"))
+
+    manifest = [" ".join([m.ftype, m.name, m.size,
+                          "SHA256", m.sha256, "SHA512", m.sha512,
+                          "WHIRLPOOL", m.whirlpool])
+                for m in manifest]
+
+    with open(os.path.join(directory, "Manifest"), 'w') as f:
+        f.write('\n'.join(manifest))
