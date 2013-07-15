@@ -57,7 +57,8 @@ class ElpaDB(PackageDB):
             source_type = desc[3].value()
 
             allowed_ords = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
-              set(range(ord('0'), ord('9'))) | set(list(map(ord,['+', '_', '-'])))            
+              set(range(ord('0'), ord('9'))) | set(list(map(ord,
+                    ['+', '_', '-', ' ', '.', '(', ')', '[', ']', '{', '}', ','])))            
             description = "".join([x for x in desc[2] if ord(x) in allowed_ords])
             
             deps = desc[1]
