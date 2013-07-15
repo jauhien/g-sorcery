@@ -55,7 +55,11 @@ class ElpaDB(PackageDB):
             desc = entry[2].value()
             pkg = self._s_get_package(entry[0], desc[0])
             source_type = desc[3].value()
-            description = desc[2]
+
+            allowed_ords = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
+              set(range(ord('0'), ord('9'))) | set(list(map(ord,['+', '_', '-'])))            
+            description = "".join([x for x in desc[2] if ord(x) in allowed_ords])
+            
             deps = desc[1]
             dependencies = []
             depend = []
