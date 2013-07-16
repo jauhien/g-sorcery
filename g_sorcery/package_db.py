@@ -387,8 +387,8 @@ class PackageDB(object):
                 self.database[pkgname] = {}
                 for version in versions:
                     f = FilePkgDesc(package_path, version + '.json', [])
-                    description = f.read()
-                    self.database[pkgname][version] = description
+                    ebuild_data = f.read()
+                    self.database[pkgname][version] = ebuild_data
                     self.additional_read_version(category, name, version)
                 self.additional_read_package(category, name)
             self.additional_read_category(category)
@@ -430,16 +430,16 @@ class PackageDB(object):
             description = {}
         self.categories[category] = description
 
-    def add_package(self, package, description=None):
+    def add_package(self, package, ebuild_data=None):
         """
         Add a package.
 
         Args:
             package: package_db.Package instance.
-            description: Dictionary with package description.
+            ebuild_data: Dictionary with package description.
         """
-        if not description:
-            description = {}
+        if not ebuild_data:
+            ebuild_data = {}
         category = package.category
         name = package.name
         version = package.version
@@ -448,7 +448,7 @@ class PackageDB(object):
             raise InvalidKeyError('Non-existent category: ' + category)
         if pkgname and not pkgname in self.database:
             self.database[pkgname] = {}
-        self.database[pkgname][version] = description
+        self.database[pkgname][version] = ebuild_data
 
     def list_categories(self):
         """

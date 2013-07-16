@@ -50,23 +50,34 @@ class ElpaDB(PackageDB):
             raise SyncError('sync failed: ' + self.repo_uri + ' bad archive contents format')
 
         self.add_category('app-emacs')
+
+        PKG_INFO = 2
+        PKG_NAME = 0
+
+        INFO_VERSION = 0
+        INFO_DEPENDENCIES = 1
+        INFO_DESCRIPTION = 2
+        INFO_SRC_TYPE = 3
+
+        DEP_NAME = 0
+        DEP_VERSION = 1
         
         for entry in sexpdata.cdr(archive_contents):
-            desc = entry[2].value()
-            pkg = self._s_get_package(entry[0], desc[0])
-            source_type = desc[3].value()
+            desc = entry[PKG_INFO].value()
+            pkg = self._s_get_package(entry[PKG_NAME], desc[INFO_VERSION])
+            source_type = desc[INFO_SRC_TYPE].value()
 
             allowed_ords = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
               set(range(ord('0'), ord('9'))) | set(list(map(ord,
                     ['+', '_', '-', ' ', '.', '(', ')', '[', ']', '{', '}', ','])))            
-            description = "".join([x for x in desc[2] if ord(x) in allowed_ords])
+            description = "".join([x for x in desc[INFO_DESCRIPTION] if ord(x) in allowed_ords])
             
-            deps = desc[1]
+            deps = desc[INFO_DEPENDENCIES]
             dependencies = []
             depend = []
-            realname = entry[0].value()
+            realname = entry[PKG_NAME].value()
             for dep in deps:
-                dep_pkg = self._s_get_package(dep[0], dep[1])
+                dep_pkg = self._s_get_package(dep[DEP_NAME], dep[DEP_VERSION])
                 dependencies.append(dep_pkg)
                 depend.append(dep_pkg.category + '/' + dep_pkg.name)
                 
