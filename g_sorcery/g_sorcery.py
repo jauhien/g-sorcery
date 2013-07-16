@@ -70,9 +70,11 @@ def main():
 
 
 def get_backend(package):
+    logger = Logger()
     try:
         module = importlib.import_module(package + '.backend')
-    except ImportError:
+    except ImportError as error:
+        logger.error("error importing backend: " + str(error))
         return None
     
     return module

@@ -1,0 +1,8 @@
+{
+  "package": "gs_ctan", 
+  "repositories": {
+    "ctan": {
+      "repo_uri": "http://mirror.ctan.org/systems/texlive/tlnet/"
+    }
+  }
+}
