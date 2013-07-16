@@ -15,7 +15,7 @@
 # @ECLASS-VARIABLE: REPO_URI
 # @DESCRIPTION: address of a repository of elisp packages
 #
-# @ECLASS-VARIABLE: PKG_TYPE
+# @ECLASS-VARIABLE: SOURCE_TYPE
 # @DESCRIPTION: type of a package (single or tar)
 #
 # @ECLASS-VARIABLE: DIGEST_SOURCES
@@ -36,8 +36,8 @@ inherit elisp
 
 EXPORT_FUNCTIONS src_{unpack,compile,install}
 
-if [[ ${PKG_TYPE} != "single" ]]; then
-	SUFFIX="${PKG_TYPE}"
+if [[ ${SOURCE_TYPE} != "single" ]]; then
+	SUFFIX="${SOURCE_TYPE}"
 else
 	SUFFIX="el"
 fi
@@ -57,8 +57,8 @@ g-elpa_src_unpack() {
 	if [[ x${DIGEST_SOURCES} = x ]]; then
 		g-elpa_fetch
 	fi
-	if [[ ${PKG_TYPE} != "single" ]]; then
-		unpack ${P}.${PKG_TYPE}
+	if [[ ${SOURCE_TYPE} != "single" ]]; then
+		unpack ${P}.${SOURCE_TYPE}
 	else
 		cp ${DISTDIR}/${P}.el . || die
 	fi
