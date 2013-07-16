@@ -43,7 +43,7 @@ class ElpaEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
     def __init__(self, package_db):
 
         vars_before_inherit = \
-          ["repo_uri", "source_type", "realname", ("digest_sources", "yes")]
+          ["repo_uri", "source_type", "realname"]
 
         inherit = ["g-elpa"]
         
