@@ -31,18 +31,12 @@ class ElpaDB(PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
         super(ElpaDB, self).__init__(directory, repo_uri, db_uri)
 
-    def _load_archive_contents(self, archive_contents_f):
-        try:
-            archive_contents = sexpdata.load(archive_contents_f)
-        except Exception as e:
-            raise SyncError('sync failed: ' + self.repo_uri + ': ' + str(e))
-        return archive_contents
-        
+
     def generate_tree(self):
         ac_uri = urljoin(self.repo_uri, 'archive-contents')
 
-        archive_contents = load_remote_file(ac_uri, self._load_archive_contents)['archive-contents']
-
+        archive_contents = load_remote_file(ac_uri, sexpdata.load)['archive-contents']
+        
         if sexpdata.car(archive_contents) != 1:
             raise SyncError('sync failed: ' + self.repo_uri + ' bad archive contents format')
 
