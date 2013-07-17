@@ -212,8 +212,7 @@ def _call_loader(f_name, loader, open_file = True, open_mode = 'r'):
     return {os.path.basename(f_name): data}
 
 
-def load_remote_file(uri, loader, open_file = True, open_mode='r',
-                     process_unpacked_as_directory = False):
+def load_remote_file(uri, loader, open_file = True, open_mode='r'):
     download_dir = TemporaryDirectory()
     loaded_data = {}
     if wget(uri, download_dir.name):
@@ -223,14 +222,16 @@ def load_remote_file(uri, loader, open_file = True, open_mode='r',
             unpack_dir = TemporaryDirectory()
             with tarfile.open(f_name) as f:
                 f.extractall(unpack_dir.name)
-            if process_unpacked_as_directory:
-                loaded_data.update(_call_loader(unpack_dir.name, loader, open_file=False))
-            else:
-                for uf_name in glob.glob(os.path.join(unpack_dir, "*")):
-                    loaded_data.update(_call_loader(uf_name, loader,
+            for uf_name in glob.glob(os.path.join(unpack_dir, "*")):
+                loaded_data.update(_call_loader(uf_name, loader,
                                     open_file=open_file, open_mode=open_mode))
             del unpack_dir
         else:
+            name, extention = os.path.splitext(f_name)
+            if (extention == ".xz"):
+                if (os.system("xz -d " + f_name)):
+                    raise DownloadingError("xz failed: " + f_name + " from " + uri)
+                f_name = name
             loaded_data.update(_call_loader(f_name, loader,
                                 open_file=open_file, open_mode=open_mode))
     del download_dir

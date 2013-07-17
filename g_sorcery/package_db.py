@@ -179,7 +179,7 @@ class PackageDB(object):
         data = self.download_data()
         self.parse_data(data)
 
-    def load_data(self):
+    def load_data(self, data_f):
         pass
 
     def parse_data(data):
@@ -197,7 +197,6 @@ class PackageDB(object):
                 decuri["loader"] = self.load_data
                 decuri["open_file"] = True
                 decuri["open_mode"] = "r"
-                decuri["process_unpacked_as_directory"] = False
             else:
                 decuri = uri
                 if not "loader" in decuri:
@@ -206,8 +205,6 @@ class PackageDB(object):
                     decuri["open_file"] = True
                 if not "open_mode" in decuri:
                     decuri["open_mode"] = "r"
-                if not "process_unpacked_as_directory" in decuri:
-                    decuri["process_unpacked_as_directory"] = False
             decoded.append(decuri)
         return decoded
         
