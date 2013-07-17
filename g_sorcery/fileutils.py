@@ -16,8 +16,10 @@ import json
 import hashlib
 import os
 import shutil
+import tarfile
 
-from .exceptions import FileJSONError
+from .compatibility import TemporaryDirectory
+from .exceptions import FileJSONError, DownloadingError
 from .g_collections import Package, elist
 
 class FileJSON(object):
@@ -198,3 +200,38 @@ def fast_manifest(directory):
 
     with open(os.path.join(directory, "Manifest"), 'w') as f:
         f.write('\n'.join(manifest) + '\n')
+
+
+def _call_loader(f_name, loader, open_file = True, open_mode = 'r'):
+    data = None
+    if open_file:
+        with open(f_name, open_mode) as f:
+            data = loader(f)
+    else:
+        data = loader(f_name)
+    return {os.path.basename(f_name): data}
+
+
+def load_remote_file(uri, loader, open_file = True, open_mode='r',
+                     process_unpacked_as_directory = False):
+    download_dir = TemporaryDirectory()
+    loaded_data = {}
+    if wget(uri, download_dir.name):
+        raise DownloadingError("wget failed: " + uri)
+    for f_name in glob.glob(os.path.join(download_dir.name, "*")):
+        if tarfile.is_tarfile(f_name):
+            unpack_dir = TemporaryDirectory()
+            with tarfile.open(f_name) as f:
+                f.extractall(unpack_dir.name)
+            if process_unpacked_as_directory:
+                loaded_data.update(_call_loader(unpack_dir.name, loader, open_file=False))
+            else:
+                for uf_name in glob.glob(os.path.join(unpack_dir, "*")):
+                    loaded_data.update(_call_loader(uf_name, loader,
+                                    open_file=open_file, open_mode=open_mode))
+            del unpack_dir
+        else:
+            loaded_data.update(_call_loader(f_name, loader,
+                                open_file=open_file, open_mode=open_mode))
+    del download_dir
+    return loaded_data

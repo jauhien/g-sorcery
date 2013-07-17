@@ -24,28 +24,25 @@ else:
 
 from g_sorcery.g_collections import Package
 from g_sorcery.package_db import PackageDB
-from g_sorcery.fileutils import wget
+from g_sorcery.fileutils import load_remote_file
 from g_sorcery.exceptions import SyncError
 
 class ElpaDB(PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
         super(ElpaDB, self).__init__(directory, repo_uri, db_uri)
 
-    def generate_tree(self):
-        tempdir = TemporaryDirectory()
-        
-        ac_uri = urljoin(self.repo_uri, 'archive-contents')
-        if wget(ac_uri, tempdir.name):
-            raise SyncError('sync failed: ' + self.repo_uri)
-
+    def _load_archive_contents(self, archive_contents_f):
         try:
-            with open(os.path.join(tempdir.name, 'archive-contents')) as f:
-                archive_contents = sexpdata.load(f)
+            archive_contents = sexpdata.load(archive_contents_f)
         except Exception as e:
             raise SyncError('sync failed: ' + self.repo_uri + ': ' + str(e))
-
-        del tempdir
+        return archive_contents
         
+    def generate_tree(self):
+        ac_uri = urljoin(self.repo_uri, 'archive-contents')
+
+        archive_contents = load_remote_file(ac_uri, self._load_archive_contents)['archive-contents']
+
         if sexpdata.car(archive_contents) != 1:
             raise SyncError('sync failed: ' + self.repo_uri + ' bad archive contents format')
 

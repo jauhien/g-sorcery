@@ -46,3 +46,6 @@ class EclassError(GSorceryError):
 
 class DigestError(GSorceryError):
     pass
+
+class DownloadingError(GSorceryError):
+    pass
