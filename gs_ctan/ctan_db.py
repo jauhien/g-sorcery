@@ -27,9 +27,9 @@ class CtanDB(PackageDB):
         tlpdb_uri = self.repo_uri + "/tlpkg/texlive.tlpdb.xz"
         return [tlpdb_uri]
         
-    def load_data(self, data_f):
+    def parse_data(self, data_f):
         data = data_f.read()
         return data
 
-    def parse_data(self, data):
+    def process_data(self, data):
         print(data)

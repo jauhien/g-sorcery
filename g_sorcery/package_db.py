@@ -177,12 +177,12 @@ class PackageDB(object):
         Generate tree
         """
         data = self.download_data()
-        self.parse_data(data)
+        self.process_data(data)
 
-    def load_data(self, data_f):
+    def parse_data(self, data_f):
         pass
 
-    def parse_data(data):
+    def process_data(data):
         pass
 
     def get_download_uries(self):
@@ -194,13 +194,13 @@ class PackageDB(object):
             decuri = {}
             if isinstance(uri, basestring):
                 decuri["uri"] = uri
-                decuri["loader"] = self.load_data
+                decuri["parser"] = self.parse_data
                 decuri["open_file"] = True
                 decuri["open_mode"] = "r"
             else:
                 decuri = uri
-                if not "loader" in decuri:
-                    decuri["loader"] = self.load_data
+                if not "parser" in decuri:
+                    decuri["parser"] = self.parse_data
                 if not "open_file" in decuri:
                     decuri["open_file"] = True
                 if not "open_mode" in decuri:

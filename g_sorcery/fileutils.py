@@ -202,17 +202,17 @@ def fast_manifest(directory):
         f.write('\n'.join(manifest) + '\n')
 
 
-def _call_loader(f_name, loader, open_file = True, open_mode = 'r'):
+def _call_parser(f_name, parser, open_file = True, open_mode = 'r'):
     data = None
     if open_file:
         with open(f_name, open_mode) as f:
-            data = loader(f)
+            data = parser(f)
     else:
-        data = loader(f_name)
+        data = parser(f_name)
     return {os.path.basename(f_name): data}
 
 
-def load_remote_file(uri, loader, open_file = True, open_mode='r'):
+def load_remote_file(uri, parser, open_file = True, open_mode='r'):
     download_dir = TemporaryDirectory()
     loaded_data = {}
     if wget(uri, download_dir.name):
@@ -223,7 +223,7 @@ def load_remote_file(uri, loader, open_file = True, open_mode='r'):
             with tarfile.open(f_name) as f:
                 f.extractall(unpack_dir.name)
             for uf_name in glob.glob(os.path.join(unpack_dir, "*")):
-                loaded_data.update(_call_loader(uf_name, loader,
+                loaded_data.update(_call_parser(uf_name, parser,
                                     open_file=open_file, open_mode=open_mode))
             del unpack_dir
         else:
@@ -232,7 +232,7 @@ def load_remote_file(uri, loader, open_file = True, open_mode='r'):
                 if (os.system("xz -d " + f_name)):
                     raise DownloadingError("xz failed: " + f_name + " from " + uri)
                 f_name = name
-            loaded_data.update(_call_loader(f_name, loader,
+            loaded_data.update(_call_parser(f_name, parser,
                                 open_file=open_file, open_mode=open_mode))
     del download_dir
     return loaded_data

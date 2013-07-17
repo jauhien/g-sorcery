@@ -33,9 +33,9 @@ class ElpaDB(PackageDB):
 
     def get_download_uries(self):
         ac_uri = urljoin(self.repo_uri, 'archive-contents')
-        return [{"uri" : ac_uri, "loader" : sexpdata.load}]
+        return [{"uri" : ac_uri, "parser" : sexpdata.load}]
 
-    def parse_data(self, data):
+    def process_data(self, data):
 
         archive_contents = data['archive-contents']
 
