@@ -104,7 +104,7 @@ class TestElpaDB(BaseTest):
     def test_generate(self):
         edb = elpa_db.ElpaDB(os.path.join(self.tempdir.name, 'db'),
                              repo_uri = 'http://127.0.0.1:8080')
-        self.assertRaises(exceptions.SyncError, edb.generate)
+        self.assertRaises(exceptions.DownloadingError, edb.generate)
 
         fill_database(edb, packages, self.tempdir.name)
 
