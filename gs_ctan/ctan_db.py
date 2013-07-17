@@ -23,14 +23,13 @@ class CtanDB(PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
         super(CtanDB, self).__init__(directory, repo_uri, db_uri)
 
-    def generate_tree(self):
-        tempdir = TemporaryDirectory()
+    def get_download_uries(self):
+        tlpdb_uri = self.repo_uri + "/tlpkg/texlive.tlpdb.xz"
+        return [tlpdb_uri]
+        
+    def load_data(self, data_f):
+        data = data_f.read()
+        return data
 
-        print(self.repo_uri)
-        tlpdb_uri = self.repo_uri + '/tlpkg/texlive.tlpdb.xz'
-        if wget(tlpdb_uri, tempdir.name):
-            raise SyncError('sync failed: ' + self.repo_uri)
-
-        del tempdir
-
-        print("works")
+    def parse_data(self, data):
+        print(data)
