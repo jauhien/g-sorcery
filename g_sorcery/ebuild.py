@@ -49,7 +49,7 @@ class EbuildGenerator(object):
 
     def process(self, ebuild, ebuild_data):
         """
-        Fill ebuild tamplate with data.
+        Fill ebuild template with data.
 
         Args:
             ebuild: Ebuild template.
@@ -74,7 +74,7 @@ class EbuildGenerator(object):
         
     def get_template(self, package, ebuild_data):
         """
-        Generate ebuild tamplate. Should be overriden.
+        Generate ebuild template. Should be overriden.
 
         Args:
             package: package_db.Package instance.
@@ -109,7 +109,7 @@ class EbuildGeneratorFromFile(EbuildGenerator):
 
     def get_template(self, package, ebuild_data):
         """
-        Generate ebuild tamplate.
+        Generate ebuild template.
 
         Args:
             package: package_db.Package instance.
@@ -153,7 +153,7 @@ class DefaultEbuildGenerator(EbuildGenerator):
         self.template.append("")
 
         if hasattr(layout, "vars_before_inherit"):
-            self._append_vars_to_tamplate(layout.vars_before_inherit)
+            self._append_vars_to_template(layout.vars_before_inherit)
             self.template.append("")
 
         if hasattr(layout, "inherit"):
@@ -161,14 +161,14 @@ class DefaultEbuildGenerator(EbuildGenerator):
             self.template.append("")
 
         if hasattr(layout, "vars_after_inherit"):
-            self._append_vars_to_tamplate(layout.vars_after_inherit)
+            self._append_vars_to_template(layout.vars_after_inherit)
             self.template.append("")
 
         self.template.append('DESCRIPTION="%(description)s"')
         self.template.append("")
 
         if hasattr(layout, "vars_after_description"):
-            self._append_vars_to_tamplate(layout.vars_after_description)
+            self._append_vars_to_template(layout.vars_after_description)
             self.template.append("")
 
         self.template.append('SLOT="0"')
@@ -176,11 +176,11 @@ class DefaultEbuildGenerator(EbuildGenerator):
         self.template.append("")
 
         if hasattr(layout, "vars_after_keywords"):
-            self._append_vars_to_tamplate(layout.vars_after_keywords)
+            self._append_vars_to_template(layout.vars_after_keywords)
             self.template.append("")
         
 
-    def _append_vars_to_tamplate(self, variables):
+    def _append_vars_to_template(self, variables):
         VAR_NAME = 0
         VAR_VALUE = 1
 
