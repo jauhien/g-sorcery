@@ -24,7 +24,7 @@ from .compatibility import py2k, TemporaryDirectory
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
 
-from .fileutils import FileJSON, FilePkgDesc, hash_file, copy_all, wget
+from .fileutils import FileJSON, FilePkgDesc, hash_file, load_remote_file, copy_all, wget
 
 from .g_collections import Package
 
@@ -175,10 +175,49 @@ class PackageDB(object):
     def generate_tree(self):
         """
         Generate tree
-
-        Should be implemented in a subclass
         """
+        data = self.download_data()
+        self.parse_data(data)
+
+    def load_data(self):
         pass
+
+    def parse_data(data):
+        pass
+
+    def get_download_uries(self):
+        pass
+
+    def decode_download_uries(self, uries):
+        decoded = []
+        for uri in uries:
+            decuri = {}
+            if isinstance(uri, basestring):
+                decuri["uri"] = uri
+                decuri["loader"] = self.load_data
+                decuri["open_file"] = True
+                decuri["open_mode"] = "r"
+                decuri["process_unpacked_as_directory"] = False
+            else:
+                decuri = uri
+                if not "loader" in decuri:
+                    decuri["loader"] = self.load_data
+                if not "open_file" in decuri:
+                    decuri["open_file"] = True
+                if not "open_mode" in decuri:
+                    decuri["open_mode"] = "r"
+                if not "process_unpacked_as_directory" in decuri:
+                    decuri["process_unpacked_as_directory"] = False
+            decoded.append(decuri)
+        return decoded
+        
+    def download_data(self):
+        uries = self.get_download_uries()
+        uries = self.decode_download_uries(uries)
+        data = {}
+        for uri in uries:
+            data.update(load_remote_file(**uri))
+        return data
 
     def sync(self, db_uri=""):
         """
