@@ -59,6 +59,11 @@ class CtanDB(PackageDB):
                     res_entry[current_key]["files"] = []
                 elif not line[KEY]:
                     res_entry[current_key]["files"].append(" ".join(line[VALUE:]))
+                elif line[KEY] == "depend":
+                    if "depend" in res_entry:
+                        res_entry["depend"].append(" ".join(line[VALUE:]))
+                    else:
+                        res_entry["depend"] = [" ".join(line[VALUE:])]
                 else:
                     if previous_key == line[KEY]:
                         res_entry[previous_key] += " " + " ".join(line[VALUE:])
