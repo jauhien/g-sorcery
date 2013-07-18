@@ -76,7 +76,54 @@ class CtanDB(PackageDB):
         return result
 
     def process_data(self, data):
+
+        self.add_category('dev-tex')
+
         for entry in data["texlive.tlpdb"]:
-            for key, value in entry.items():
-                print(key + ": " + str(value))
+
+            realname = entry["name"]
+            
+            #todo: work on common data vars processing: external deps, filtering etc.
+            #at the moment just copy necessary code from elpa_db.py
+            allowed_ords = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
+              set(range(ord('0'), ord('9'))) | set(list(map(ord,
+                    ['+', '_', '-', ' ', '.', '(', ')', '[', ']', '{', '}', ','])))
+
+            if "shortdesc" in entry:                
+                description = entry["shortdesc"]
+            else:
+                description = entry["name"]
+            description = "".join([x for x in description if ord(x) in allowed_ords])
+
+            if "longdesc" in entry:
+                longdescription = entry["longdesc"]
+                longdescription = "".join([x for x in longdescription if ord(x) in allowed_ords])
+            else:
+                longdescription = description
+
+            if "catalogue-version" in entry:
+                version = entry["catalogue-version"]
+            else:
+                version = entry["revision"]
+
+            #todo: convert to gentoo licenses
+            if "catalogue-license" in entry:
+                license = entry["catalogue-license"]
+            else:
+                license = "unknown"
+
+            if "catalogue-ctan" in entry:
+                source_type = "zip"
+                base_src_uri = "http://www.ctan.org/tex-archive"
+                catalogue = entry["catalogue-ctan"]
+            else:
+                source_type = "tar.xz"
+                base_src_uri = "http://mirror.ctan.org/systems/texlive/tlnet/archive"
+                catalogue = ""
+
+            print("dev-tex/" + realname + "-" + version)
+            print("    license: " + license)
+            print("    " + description)
+            print
+            print("    " + longdescription)
             print
