@@ -13,13 +13,30 @@
 
 import itertools
 import os
+import re
+import sys
 
+import portage
+
+from g_sorcery.g_collections import Dependency, Package, serializable_elist
+from g_sorcery.logger import Logger
 from g_sorcery.package_db import PackageDB
 from g_sorcery.exceptions import SyncError
 
 class CtanDB(PackageDB):
     def __init__(self, directory, repo_uri="", db_uri=""):
         super(CtanDB, self).__init__(directory, repo_uri, db_uri)
+        
+        logger = Logger()
+        gentoo_arch = portage.settings['ARCH']
+        self.arch = ""
+        if gentoo_arch == "x86":
+            self.arch = "i386-linux"
+        elif gentoo_arch == "amd64":
+            self.arch = "x86_64-linux"
+        else:
+            logger.warning("not supported arch: " + gentoo_arch)
+
 
     def get_download_uries(self):
         tlpdb_uri = self.repo_uri + "/tlpkg/texlive.tlpdb.xz"
@@ -44,7 +61,7 @@ class CtanDB(PackageDB):
         VALUE = 1
         FILES_LENGTH = len("files")
         
-        for entry in data:
+        for entry in data:     
             res_entry = {}
             previous_key = ""
             current_key = ""
@@ -71,16 +88,30 @@ class CtanDB(PackageDB):
                         res_entry[line[KEY]] = " ".join(line[VALUE:])
                         previous_key = line[KEY]
                         current_key = ""
+
+            parts = res_entry["name"].split(".")
+            if len(parts) > 1:
+                if parts[1] != self.arch:
+                    continue
+
             result.append(res_entry)
         
         return result
 
     def process_data(self, data):
+        
+        category = "dev-tex"
+        
+        self.add_category(category)
 
-        self.add_category('dev-tex')
+        ARCH_LENGTH = len("ARCH")
 
-        for entry in data["texlive.tlpdb"]:
+        data = data["texlive.tlpdb"]
 
+        self.number_of_packages = len(data)
+        self.written_number = 0
+
+        for entry in data:
             realname = entry["name"]
             
             #todo: work on common data vars processing: external deps, filtering etc.
@@ -103,6 +134,10 @@ class CtanDB(PackageDB):
 
             if "catalogue-version" in entry:
                 version = entry["catalogue-version"]
+                #todo better version checking and processing
+                match_object = re.match("^[0-9\.]+[a-z]?$", version)
+                if not match_object:
+                    version = entry["revision"]
             else:
                 version = entry["revision"]
 
@@ -121,9 +156,50 @@ class CtanDB(PackageDB):
                 base_src_uri = "http://mirror.ctan.org/systems/texlive/tlnet/archive"
                 catalogue = ""
 
-            print("dev-tex/" + realname + "-" + version)
-            print("    license: " + license)
-            print("    " + description)
-            print
-            print("    " + longdescription)
-            print
+            dependencies = serializable_elist(separator="\n\t")
+
+            if "depend" in entry:
+                for dependency in entry["depend"]:
+                    if dependency[-ARCH_LENGTH:] == "ARCH":
+                        dependency = dependency[:-ARCH_LENGTH] + self.arch
+                    dependencies.append(Dependency(category, dependency))
+
+            ebuild_data = {"realname" : realname,
+                           "description" : description,
+                           "homepage" : "http://tug.org/texlive/",
+                           "license" : license,
+                           "source_type" : source_type,
+                           "base_src_uri" : base_src_uri,
+                           "catalogue" : catalogue,
+                           "dependencies" : dependencies,
+                           "depend" : dependencies,
+                           "rdepend" : dependencies,
+            #eclass entry
+            #'eclasses' : ['gs-ctan'],
+            #metadata entries
+                          'maintainer' : [{'email' : 'piatlicki@gmail.com',
+                                           'name' : 'Jauhien Piatlicki'}],
+                          'longdescription' : longdescription
+                          }
+
+            self.add_package(Package(category, realname, version), ebuild_data)
+
+        logger = Logger()
+        logger.info("writing database")
+
+    def additional_write_version(self, category, package, version):
+        chars = ['-','\\','|','/']
+        show = chars[self.written_number % 4]
+        percent = (self.written_number * 100)/self.number_of_packages
+        length = 20
+        progress = (percent * 20)/100
+        blank = 20 - progress
+        
+        sys.stdout.write("\r %s [%s%s] %s%%" % (show, "#" * progress, " " * blank, percent))
+        sys.stdout.flush()
+        self.written_number += 1
+
+    def additional_write_category(self, category):
+        sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * 20, 100))
+        sys.stdout.flush()
+        print("")
