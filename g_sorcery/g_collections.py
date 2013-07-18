@@ -16,6 +16,8 @@
 
 import collections
 
+import portage
+
 class elist(list):
     '''Custom list type which adds a customized __str__()
     and takes an optional separator argument
@@ -45,3 +47,25 @@ class elist(list):
         return self._sep_.join(self)
 
 Package = collections.namedtuple("Package", "category name version")
+
+
+class Dependency(object):
+
+    __slots__ = ('atom', 'category', 'package', 'version', 'operator')
+
+    def __init__(self, category, package, version="", operator=""):
+        atom_str = operator + category + "/" + package
+        if version:            
+            atom_str += "-" + str(version)
+        object.__setattr__(self, "atom", portage.dep.Atom(atom_str))
+        object.__setattr__(self, "category", category)
+        object.__setattr__(self, "package", package)
+        object.__setattr__(self, "version", version)
+        object.__setattr__(self, "operator", operator)
+
+    def __setattr__(self, name, value):
+        raise AttributeError("Dependency instances are immutable",
+                             self.__class__, name, value)
+
+    def __str__(self):
+        return str(self.atom)
