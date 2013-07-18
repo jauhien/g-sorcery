@@ -44,7 +44,7 @@ class elist(list):
         '''Custom output function
         'x.__str__() <==> str(separator.join(x))'
         '''
-        return self._sep_.join(self)
+        return self._sep_.join(map(str, self))
 
 Package = collections.namedtuple("Package", "category name version")
 
