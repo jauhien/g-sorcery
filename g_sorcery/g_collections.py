@@ -77,6 +77,8 @@ class serializable_elist(object):
         return serializable_elist(value["data"], separator = value["separator"])
 
 
+#todo: replace Package with something better
+
 class Package(object):
 
     __slots__ = ('category', 'name', 'version')
@@ -93,6 +95,8 @@ class Package(object):
     def deserialize(cls, value):
         return Package(*value)
 
+
+#todo equality operator for Dependency, as it can be used in backend dependency solving algorithm
 
 class Dependency(object):
 
