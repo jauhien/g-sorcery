@@ -11,6 +11,7 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
+from .compatibility import basestring
 from .exceptions import DependencyError
 
 class EbuildGenerator(object):

@@ -27,3 +27,17 @@ if py2k:
             shutil.rmtree(self.name)
 else:
     from tempfile import TemporaryDirectory
+
+#basestring removed in py3k
+#fix for it from https://github.com/oxplot/fysom/issues/1
+
+if py2k:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
+else:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str,bytes)

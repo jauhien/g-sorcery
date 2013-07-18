@@ -19,7 +19,7 @@ import tarfile
 
 import portage
 
-from .compatibility import py2k, TemporaryDirectory
+from .compatibility import basestring, py2k, TemporaryDirectory
 
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
