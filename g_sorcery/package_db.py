@@ -24,7 +24,7 @@ from .compatibility import basestring, py2k, TemporaryDirectory
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
 
-from .fileutils import FileJSON, FilePkgDesc, hash_file, load_remote_file, copy_all, wget
+from .fileutils import FileJSON, hash_file, load_remote_file, copy_all, wget
 
 from .g_collections import Package
 
@@ -341,7 +341,7 @@ class PackageDB(object):
             if not category or (not category in self.categories):
                 raise DBStructureError('Non existent: ' + category)
             for version, content in versions.items():
-                f = FilePkgDesc(os.path.join(self.directory, category, name),
+                f = FileJSON(os.path.join(self.directory, category, name),
                     version + '.json', [])
                 f.write(content)
                 self.additional_write_version(category, name, version)
@@ -422,7 +422,7 @@ class PackageDB(object):
                 pkgname = category + '/' + name
                 self.database[pkgname] = {}
                 for version in versions:
-                    f = FilePkgDesc(package_path, version + '.json', [])
+                    f = FileJSON(package_path, version + '.json', [])
                     ebuild_data = f.read()
                     self.database[pkgname][version] = ebuild_data
                     self.additional_read_version(category, name, version)

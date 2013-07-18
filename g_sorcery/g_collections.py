@@ -46,7 +46,52 @@ class elist(list):
         '''
         return self._sep_.join(map(str, self))
 
-Package = collections.namedtuple("Package", "category name version")
+
+class serializable_elist(object):
+
+    __slots__ = ('data')
+    
+    def __init__(self, iterable=None, separator=' '):
+        '''
+        iterable: initialize from iterable's items
+        separator: string used to join list members with for __str__()
+        '''
+        self.data = elist(iterable or [], separator)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __str__(self):
+        '''Custom output function
+        '''
+        return str(self.data)
+
+    def append(self, x):
+        self.data.append(x)
+
+    def serialize(self):
+        return {"separator": self.data._sep_, "data" : self.data}
+
+    @classmethod
+    def deserialize(cls, value):
+        return serializable_elist(value["data"], separator = value["separator"])
+
+
+class Package(object):
+
+    __slots__ = ('category', 'name', 'version')
+
+    def __init__(self, category, package, version):
+        self.category = category
+        self.name = package
+        self.version = version
+
+    def serialize(self):
+        return [self.category, self.name, self.version]
+
+    @classmethod
+    def deserialize(cls, value):
+        return Package(*value)
 
 
 class Dependency(object):
@@ -69,3 +114,22 @@ class Dependency(object):
 
     def __str__(self):
         return str(self.atom)
+
+    def serialize(self):
+        return str(self)
+
+    @classmethod
+    def deserialize(cls, value):
+        atom = portage.dep.Atom(value)
+        operator = portage.dep.get_operator(atom)
+        cpv = portage.dep.dep_getcpv(atom)
+        category, rest = portage.catsplit(cpv)
+
+        if operator:
+            package, version, revision = portage.pkgsplit(rest)
+        else:
+            package = rest
+            version = ""
+            operator = ""
+
+        return Dependency(category, package, version, operator)

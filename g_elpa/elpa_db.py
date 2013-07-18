@@ -22,7 +22,7 @@ if py2k:
 else:
     from urllib.parse import urljoin
 
-from g_sorcery.g_collections import Package
+from g_sorcery.g_collections import Package, serializable_elist
 from g_sorcery.package_db import PackageDB
 from g_sorcery.fileutils import load_remote_file
 from g_sorcery.exceptions import SyncError
@@ -67,7 +67,7 @@ class ElpaDB(PackageDB):
             
             deps = desc[INFO_DEPENDENCIES]
             dependencies = []
-            depend = []
+            depend = serializable_elist(separator="\n\t")
             realname = entry[PKG_NAME].value()
             for dep in deps:
                 dep_pkg = self._s_get_package(dep[DEP_NAME], dep[DEP_VERSION])

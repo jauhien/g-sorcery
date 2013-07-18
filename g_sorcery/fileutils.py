@@ -20,13 +20,13 @@ import tarfile
 
 from .compatibility import TemporaryDirectory
 from .exceptions import FileJSONError, DownloadingError
-from .g_collections import Package, elist
+from .serialization import JSONSerializer, deserializeHook
 
 class FileJSON(object):
     """
     Class for JSON files.
     """
-    def __init__(self, directory, name, mandatories, loadconv=None):
+    def __init__(self, directory, name, mandatories=[]):
         """
         Args:
             directory: File directory.
@@ -38,7 +38,6 @@ class FileJSON(object):
         self.name = name
         self.path = os.path.join(directory, name)
         self.mandatories = mandatories
-        self.loadconv = loadconv
 
     def read(self):
         """
@@ -51,18 +50,13 @@ class FileJSON(object):
             for key in self.mandatories:
                 content[key] = ""
             with open(self.path, 'w') as f:
-                json.dump(content, f, indent=2, sort_keys=True)
+                json.dump(content, f, indent=2, sort_keys=True, cls=JSONSerializer)
         else:
             with open(self.path, 'r') as f:
-                content = json.load(f)
+                content = json.load(f, object_hook=deserializeHook)
             for key in self.mandatories:
                 if not key in content:
                     raise FileJSONError('lack of mandatory key: ' + key)
-                
-        if self.loadconv:
-            for key, conv in self.loadconv.items():
-                if key in content:
-                    content[key] = conv(content[key])
         
         return content
 
@@ -76,27 +70,7 @@ class FileJSON(object):
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         with open(self.path, 'w') as f:
-            json.dump(content, f, indent=2, sort_keys=True)
-
-            
-def package_conv(lst):
-    return Package(lst[0], lst[1], lst[2])
-
-def dependencies_conv(dependencies):
-    result = []
-    for dependency in dependencies:
-        result.append(package_conv(dependency))
-    return result
-
-def depend_conv(depend):
-    return elist(depend, separator='\n\t')
-            
-class FilePkgDesc(FileJSON):
-    def __init__(self, directory, name, mandatories):
-        loadconv = {'dependencies' : dependencies_conv,
-                    'depend' : depend_conv,
-                    'rdepend' : depend_conv}
-        super(FilePkgDesc, self).__init__(directory, name, mandatories, loadconv)
+            json.dump(content, f, indent=2, sort_keys=True, cls=JSONSerializer)
 
 
 def hash_file(name, hasher, blocksize=65536):
