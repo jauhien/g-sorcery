@@ -109,7 +109,7 @@ class PackageDB(object):
                 return (Package(category, name, ver), ebuild_data)
 
 
-    def __init__(self, directory, repo_uri="", db_uri=""):
+    def __init__(self, directory, config = None):
         """
         Args:
             directory: database directory.
@@ -117,11 +117,28 @@ class PackageDB(object):
             db_uri: URI for synchronization with remote database.
         """
         self.URI_NAME = 'uri.json'
-        self.INFO_NAME = 'info.json'
+        self.CONFIG_NAME = 'config.json'
         self.CATEGORIES_NAME = 'categories.json'
         self.PACKAGES_NAME = 'packages.json'
         self.VERSIONS_NAME = 'versions.json'
         self.directory = os.path.abspath(directory)
+        if config:
+            self.config = config
+            config_f = FileJSON(self.directory, self.CONFIG_NAME, [])
+            config_f.write(self.config)
+        else:
+            self.config = {}
+
+        if "repo_uri" in self.config:
+            repo_uri = self.config["repo_uri"]
+        else:
+            repo_uri = ""
+
+        if "db_uri" in self.config:
+            db_uri = self.config["db_uri"]
+        else:
+            db_uri = ""
+
         self.reset_uri(repo_uri, db_uri)
         self.reset_db()
 
@@ -155,7 +172,6 @@ class PackageDB(object):
         Reset database.
         """
         self.database = {}
-        self.info = {}
         self.categories = {}
 
     def generate(self, repo_uri=""):
@@ -277,7 +293,7 @@ class PackageDB(object):
         categories = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         categories = categories.read()
         manifest = {}
-        names = [self.INFO_NAME, self.CATEGORIES_NAME, self.URI_NAME]
+        names = [self.CONFIG_NAME, self.CATEGORIES_NAME, self.URI_NAME]
         for name in names:
             manifest[name] = hash_file(os.path.join(self.directory, name),
                                       hashlib.md5())
@@ -306,7 +322,7 @@ class PackageDB(object):
         result = True
         errors = []
         
-        names = [self.INFO_NAME, self.CATEGORIES_NAME, self.URI_NAME]
+        names = [self.CONFIG_NAME, self.CATEGORIES_NAME, self.URI_NAME]
         for name in names:
             if not name in manifest:
                 raise DBStructureError('Bad manifest: no ' + name + ' entry')
@@ -331,9 +347,9 @@ class PackageDB(object):
         """
         Write database.
         """
-        info_f = FileJSON(self.directory, self.INFO_NAME, [])
+        config_f = FileJSON(self.directory, self.CONFIG_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        info_f.write(self.info)
+        config_f.write(self.config)
         categories_f.write(self.categories)
 
         for pkgname, versions in self.database.items():
@@ -393,9 +409,9 @@ class PackageDB(object):
         sane, errors = self.check_manifest()
         if not sane:
             raise IntegrityError('Manifest error: ' + str(errors))
-        info_f = FileJSON(self.directory, self.INFO_NAME, [])
+        config_f = FileJSON(self.directory, self.CONFIG_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        self.info = info_f.read()
+        self.config = config_f.read()
         self.categories = categories_f.read()
         for category in self.categories:
             category_path = os.path.join(self.directory, category)

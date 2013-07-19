@@ -24,8 +24,8 @@ from g_sorcery.package_db import PackageDB
 from g_sorcery.exceptions import SyncError
 
 class CtanDB(PackageDB):
-    def __init__(self, directory, repo_uri="", db_uri=""):
-        super(CtanDB, self).__init__(directory, repo_uri, db_uri)
+    def __init__(self, directory, config = None):
+        super(CtanDB, self).__init__(directory, config)
         
         logger = Logger()
         gentoo_arch = portage.settings['ARCH']

@@ -28,8 +28,8 @@ from g_sorcery.fileutils import load_remote_file
 from g_sorcery.exceptions import SyncError
 
 class ElpaDB(PackageDB):
-    def __init__(self, directory, repo_uri="", db_uri=""):
-        super(ElpaDB, self).__init__(directory, repo_uri, db_uri)
+    def __init__(self, directory, config = None):
+        super(ElpaDB, self).__init__(directory, config)
 
     def get_download_uries(self):
         ac_uri = urljoin(self.repo_uri, 'archive-contents')

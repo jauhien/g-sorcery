@@ -112,6 +112,8 @@ class Backend(object):
             return -1
         url = args.url
         repository = args.repository
+        repository_config = {}
+
         if repository:
             if not "repositories" in config:
                 self.logger.error("repository " + repository + 
@@ -121,37 +123,33 @@ class Backend(object):
             if not repository in repositories:
                 self.logger.error("repository " + repository + " not found")
                 return -1
-            repository = repositories[repository]
+            repository_config = repositories[repository]
+        else:
+            if url:
+                repository_config = {"repo_uri" : url, "db_uri" : url}
+            else:
+                self.logger.error('no url given\n')
+                
         if self.sync_db:
-            if repository:
-                if not "db_uri" in repository:
-                    self.logger.error("no db_uri in " + repository + " config")
-                    return -1
-                url = repository["db_uri"]
-            pkg_db = self.package_db_class(db_path, db_uri=url)
+            pkg_db = self.package_db_class(db_path, repository_config)
             if not pkg_db.db_uri:
                 self.logger.error('no url given\n')
                 return -1
         else:
-            if repository:
-                if not "repo_uri" in repository:
-                    self.logger.error("no repo_uri in " + repository + " config")
-                    return -1
-                url = repository["repo_uri"]
-            pkg_db = self.package_db_class(db_path, repo_uri=url)
+            pkg_db = self.package_db_class(db_path, repository_config)
             if not pkg_db.repo_uri:
                 self.logger.error('no url given\n')
                 return -1
 
         if self.sync_db:
             try:
-                pkg_db.sync(db_uri=url)
+                pkg_db.sync()
             except Exception as e:
                 self.logger.error('sync failed: ' + str(e) + '\n')
                 return -1
         else:
             try:
-                pkg_db.generate(repo_uri=url)
+                pkg_db.generate()
             except Exception as e:
                 self.logger.error('sync failed: ' + str(e) + '\n')
                 return -1
