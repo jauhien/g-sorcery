@@ -113,6 +113,10 @@ class CtanDB(PackageDB):
 
         for entry in data:
             realname = entry["name"]
+
+            parts = realname.split(".")
+            if len(parts) > 1:
+                realname = "_".join(parts)
             
             #todo: work on common data vars processing: external deps, filtering etc.
             #at the moment just copy necessary code from elpa_db.py
@@ -163,7 +167,7 @@ class CtanDB(PackageDB):
             if "depend" in entry:
                 for dependency in entry["depend"]:
                     if dependency[-ARCH_LENGTH:] == "ARCH":
-                        dependency = dependency[:-ARCH_LENGTH] + self.arch
+                        dependency = dependency[:-ARCH_LENGTH-1] + "_" + self.arch
                     dependencies.append(Dependency(category, dependency))
 
             ebuild_data = {"realname" : realname,
