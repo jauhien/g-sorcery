@@ -135,7 +135,7 @@ class CtanDB(PackageDB):
             if "catalogue-version" in entry:
                 version = entry["catalogue-version"]
                 #todo better version checking and processing
-                match_object = re.match("^[0-9\.]+[a-z]?$", version)
+                match_object = re.match("(^[0-9]+[a-z]?$)|(^[0-9][0-9\.]+[0-9][a-z]?$)", version)
                 if not match_object:
                     version = entry["revision"]
             else:
@@ -149,11 +149,11 @@ class CtanDB(PackageDB):
 
             if "catalogue-ctan" in entry:
                 source_type = "zip"
-                base_src_uri = "http://www.ctan.org/tex-archive"
-                catalogue = entry["catalogue-ctan"]
+                base_src_uri = "ftp://tug.ctan.org/pub/tex-archive"
+                catalogue = entry["catalogue-ctan"][:-len(realname)]
             else:
                 source_type = "tar.xz"
-                base_src_uri = "http://mirror.ctan.org/systems/texlive/tlnet/archive"
+                base_src_uri = "http://mirror.ctan.org/systems/texlive/tlnet/archive/"
                 catalogue = ""
 
             dependencies = serializable_elist(separator="\n\t")
@@ -175,11 +175,11 @@ class CtanDB(PackageDB):
                            "depend" : dependencies,
                            "rdepend" : dependencies,
             #eclass entry
-            #'eclasses' : ['gs-ctan'],
+                           'eclasses' : ['gs-ctan'],
             #metadata entries
-                          'maintainer' : [{'email' : 'piatlicki@gmail.com',
-                                           'name' : 'Jauhien Piatlicki'}],
-                          'longdescription' : longdescription
+                           'maintainer' : [{'email' : 'piatlicki@gmail.com',
+                                            'name' : 'Jauhien Piatlicki'}],
+                           'longdescription' : longdescription
                           }
 
             self.add_package(Package(category, realname, version), ebuild_data)

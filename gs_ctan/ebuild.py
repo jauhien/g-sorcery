@@ -29,7 +29,7 @@ class CtanEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         inherit = ["gs-ctan"]
         
         vars_after_description = \
-          ["homepage", "license"]
+          ["homepage", ("src_uri", ""), "license"]
 
         vars_after_keywords = \
           ["depend", "rdepend"]
