@@ -190,9 +190,9 @@ class CtanDB(PackageDB):
     def additional_write_version(self, category, package, version):
         chars = ['-','\\','|','/']
         show = chars[self.written_number % 4]
-        percent = (self.written_number * 100)/self.number_of_packages
+        percent = (self.written_number * 100)//self.number_of_packages
         length = 20
-        progress = (percent * 20)/100
+        progress = (percent * 20)//100
         blank = 20 - progress
         
         sys.stdout.write("\r %s [%s%s] %s%%" % (show, "#" * progress, " " * blank, percent))
