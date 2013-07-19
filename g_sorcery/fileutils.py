@@ -202,7 +202,7 @@ def load_remote_file(uri, parser, open_file = True, open_mode='r'):
             del unpack_dir
         else:
             name, extention = os.path.splitext(f_name)
-            if (extention == ".xz"):
+            if extention in [".xz", ".lzma"]:
                 if (os.system("xz -d " + f_name)):
                     raise DownloadingError("xz failed: " + f_name + " from " + uri)
                 f_name = name
