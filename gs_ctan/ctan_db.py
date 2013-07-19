@@ -150,11 +150,14 @@ class CtanDB(PackageDB):
             if "catalogue-ctan" in entry:
                 source_type = "zip"
                 base_src_uri = "ftp://tug.ctan.org/pub/tex-archive"
-                catalogue = entry["catalogue-ctan"][:-len(realname)]
+                catalogue = entry["catalogue-ctan"]
+                homepage = "http://www.ctan.org/tex-archive" + catalogue
+                catalogue = catalogue[:-len(realname)]
             else:
                 source_type = "tar.xz"
                 base_src_uri = "http://mirror.ctan.org/systems/texlive/tlnet/archive/"
                 catalogue = ""
+                homepage = "http://www.ctan.org/tex-archive/systems/texlive/tlnet"
 
             dependencies = serializable_elist(separator="\n\t")
 
@@ -166,7 +169,7 @@ class CtanDB(PackageDB):
 
             ebuild_data = {"realname" : realname,
                            "description" : description,
-                           "homepage" : "http://tug.org/texlive/",
+                           "homepage" : homepage,
                            "license" : license,
                            "source_type" : source_type,
                            "base_src_uri" : base_src_uri,
