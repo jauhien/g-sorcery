@@ -207,14 +207,14 @@ class PackageDB(object):
     def process_data(data):
         pass
 
-    def convert_license(self, license_name):
-        result = license_name
+    def convert(self, dict_name, value):
+        result = value
         for config in [self.common_config, self.config]:
             if config:
-                if "licenses" in config:
-                    licenses = config["licenses"]
-                    if license_name in licenses:
-                        result = licenses[license_name]
+                if dict_name in config:
+                    transform = config[dict_name]
+                    if value in transform:
+                        result = transform[value]
         return result
 
     def get_download_uries(self):

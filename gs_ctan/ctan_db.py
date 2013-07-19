@@ -146,7 +146,7 @@ class CtanDB(PackageDB):
                 version = entry["revision"]
 
             if "catalogue-license" in entry:
-                license = self.convert_license(entry["catalogue-license"])
+                license = self.convert("licenses", entry["catalogue-license"])
             else:
                 license = "unknown"
 
