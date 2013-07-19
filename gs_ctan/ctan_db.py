@@ -141,9 +141,8 @@ class CtanDB(PackageDB):
             else:
                 version = entry["revision"]
 
-            #todo: convert to gentoo licenses
             if "catalogue-license" in entry:
-                license = entry["catalogue-license"]
+                license = self.convert_license(entry["catalogue-license"])
             else:
                 license = "unknown"
 

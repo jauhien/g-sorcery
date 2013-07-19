@@ -4,5 +4,22 @@
     "ctan": {
       "repo_uri": "http://mirror.ctan.org/systems/texlive/tlnet/"
     }
+  },
+  "common_config": {
+    "licenses": {
+     "apache2": "Apache-2.0",
+     "artistic": "Artistic",
+     "Artistic2": "Artistic-2",
+     "gpl": "GPL-1",
+     "gpl2": "GPL-2",
+     "gpl3": "GPL-3",
+     "knuth": "TeX",
+     "lgpl": "LGPL-2",
+     "lgpl2.1": "LGPL-2.1",
+     "lppl": "LPPL-1.2",
+     "lppl1": "LPPL-1.2",
+     "lppl1.2": "LPPL-1.2",
+     "lppl1.3": "LPPL-1.3c"
+    }
   }
 }
