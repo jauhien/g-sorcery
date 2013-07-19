@@ -114,6 +114,11 @@ class Backend(object):
         repository = args.repository
         repository_config = {}
 
+        if "common_config" in config:
+            common_config = config["common_config"]
+        else:
+            common_config = {}
+        
         if repository:
             if not "repositories" in config:
                 self.logger.error("repository " + repository + 
@@ -131,12 +136,12 @@ class Backend(object):
                 self.logger.error('no url given\n')
                 
         if self.sync_db:
-            pkg_db = self.package_db_class(db_path, repository_config)
+            pkg_db = self.package_db_class(db_path, repository_config, common_config)
             if not pkg_db.db_uri:
                 self.logger.error('no url given\n')
                 return -1
         else:
-            pkg_db = self.package_db_class(db_path, repository_config)
+            pkg_db = self.package_db_class(db_path, repository_config, common_config)
             if not pkg_db.repo_uri:
                 self.logger.error('no url given\n')
                 return -1
