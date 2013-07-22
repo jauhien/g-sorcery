@@ -39,7 +39,11 @@ GSCTAN_FETCH_CMD="wget"
 
 inherit latex-package
 
-EXPORT_FUNCTIONS src_unpack
+if [[ ${SOURCE_TYPE} = "zip" ]]; then
+	EXPORT_FUNCTIONS src_unpack
+else
+	EXPORT_FUNCTIONS src_{unpack,install}
+fi
 
 SUFFIX="${SOURCE_TYPE}"
 
@@ -55,9 +59,24 @@ gs-ctan_fetch() {
 }
 
 gs-ctan_src_unpack() {
-	if [[ x${DIGEST_SOURCES} = x ]]; then
-		gs-ctan_fetch
+	if [[ ${SOURCE_TYPE} = "zip" ]]; then
+		if [[ x${DIGEST_SOURCES} = x ]]; then
+			gs-ctan_fetch
+		fi
+		unpack ${P}.${SUFFIX}
+		mv ${PN} ${P} || die
+	else
+		if [[ x${DIGEST_SOURCES} = x ]]; then
+			gs-ctan_fetch
+		fi
+		mkdir ${S} || die
+		cd ${S} || die
+		unpack ${P}.${SUFFIX}
+		rm -rf tlpkg || die
 	fi
-	unpack ${P}.${SUFFIX}
-	mv ${PN} ${P} || die
+}
+
+gs-ctan_src_install() {
+	insinto ${TEXMF}
+	doins -r *
 }
