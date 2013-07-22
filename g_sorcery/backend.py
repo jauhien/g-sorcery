@@ -284,8 +284,10 @@ class Backend(object):
         
         dependencies = desc["dependencies"]
         for pkg in dependencies:
-            solved_deps, unsolved_deps = self.solve_dependencies(package_db,
-                                                                 pkg,
+            versions = package_db.list_package_versions(pkg.category, pkg.package)
+            for version in versions:            
+                solved_deps, unsolved_deps = self.solve_dependencies(package_db,
+                                                                 Package(pkg.category, pkg.package, version),
                                                                  solved_deps, unsolved_deps)
         
         solved_deps.add(package)

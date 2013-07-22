@@ -62,19 +62,16 @@ class ElpaDBGenerator(DBGenerator):
             description = "".join([x for x in desc[INFO_DESCRIPTION] if ord(x) in allowed_ords])
             
             deps = desc[INFO_DEPENDENCIES]
-            dependencies = []
-            depend = serializable_elist(separator="\n\t")
+            dependencies = serializable_elist(separator="\n\t")
             realname = entry[PKG_NAME].value()
             for dep in deps:
-                dep_pkg = self._s_get_package(dep[DEP_NAME], dep[DEP_VERSION])
-                dependencies.append(dep_pkg)
-                depend.append(Dependency(dep_pkg.category, dep_pkg.name))
+                dependencies.append(Dependency("app-emacs", dep[DEP_NAME].value()))
                 
             properties = {'source_type' : source_type,
                           'description' : description,
                           'dependencies' : dependencies,
-                          'depend' : depend,
-                          'rdepend' : depend,
+                          'depend' : dependencies,
+                          'rdepend' : dependencies,
                           'homepage' : repo_uri,
                           'repo_uri' : repo_uri,
                           'realname' : realname,
