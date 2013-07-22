@@ -153,6 +153,7 @@ class CtanDBGenerator(DBGenerator):
                 homepage = "http://www.ctan.org/tex-archive" + catalogue
                 catalogue = catalogue[:-len(realname)]
             else:
+                continue #todo: work with tlpkg packages
                 source_type = "tar.xz"
                 base_src_uri = "http://mirror.ctan.org/systems/texlive/tlnet/archive/"
                 catalogue = ""
