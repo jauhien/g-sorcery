@@ -14,18 +14,17 @@
 import itertools
 import os
 import re
-import sys
 
 import portage
 
 from g_sorcery.g_collections import Dependency, Package, serializable_elist
-from g_sorcery.logger import Logger
-from g_sorcery.package_db import PackageDB
+from g_sorcery.package_db import DBGenerator
 from g_sorcery.exceptions import SyncError
+from g_sorcery.logger import Logger
 
-class CtanDB(PackageDB):
-    def __init__(self, directory, config = None, common_config = None):
-        super(CtanDB, self).__init__(directory, config, common_config)
+class CtanDBGenerator(DBGenerator):
+    def __init__(self, package_db_class):
+        super(CtanDBGenerator, self).__init__(package_db_class)
         
         logger = Logger()
         gentoo_arch = portage.settings['ARCH']
@@ -38,8 +37,8 @@ class CtanDB(PackageDB):
             logger.warning("not supported arch: " + gentoo_arch)
 
 
-    def get_download_uries(self):
-        tlpdb_uri = self.repo_uri + "/tlpkg/texlive.tlpdb.xz"
+    def get_download_uries(self, common_config, config):
+        tlpdb_uri = config["repo_uri"] + "/tlpkg/texlive.tlpdb.xz"
         return [tlpdb_uri]
         
     def parse_data(self, data_f):
@@ -98,18 +97,15 @@ class CtanDB(PackageDB):
         
         return result
 
-    def process_data(self, data):
+    def process_data(self, pkg_db, data, common_config, config):
         
         category = "dev-tex"
         
-        self.add_category(category)
+        pkg_db.add_category(category)
 
         ARCH_LENGTH = len("ARCH")
 
         data = data["texlive.tlpdb"]
-
-        self.number_of_packages = len(data)
-        self.written_number = 0
 
         for entry in data:
             realname = entry["name"]
@@ -146,7 +142,7 @@ class CtanDB(PackageDB):
                 version = entry["revision"]
 
             if "catalogue-license" in entry:
-                license = self.convert("licenses", entry["catalogue-license"])
+                license = self.convert([common_config, config], "licenses", entry["catalogue-license"])
             else:
                 license = "unknown"
 
@@ -188,24 +184,4 @@ class CtanDB(PackageDB):
                            'longdescription' : longdescription
                           }
 
-            self.add_package(Package(category, realname, version), ebuild_data)
-
-        logger = Logger()
-        logger.info("writing database")
-
-    def additional_write_version(self, category, package, version):
-        chars = ['-','\\','|','/']
-        show = chars[self.written_number % 4]
-        percent = (self.written_number * 100)//self.number_of_packages
-        length = 20
-        progress = (percent * 20)//100
-        blank = 20 - progress
-        
-        sys.stdout.write("\r %s [%s%s] %s%%" % (show, "#" * progress, " " * blank, percent))
-        sys.stdout.flush()
-        self.written_number += 1
-
-    def additional_write_category(self, category):
-        sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * 20, 100))
-        sys.stdout.flush()
-        print("")
+            pkg_db.add_package(Package(category, realname, version), ebuild_data)

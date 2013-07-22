@@ -19,7 +19,7 @@ from g_sorcery.ebuild import EbuildGenerator
 from g_sorcery.eclass import EclassGenerator
 from g_sorcery.fileutils import get_pkgpath
 
-from .ctan_db import CtanDB
+from .ctan_db import CtanDBGenerator
 from .ebuild import CtanEbuildWithoutDigestGenerator
 
 
@@ -28,6 +28,6 @@ class CtanEclassGenerator(EclassGenerator):
         super(CtanEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
         
 
-instance = Backend(CtanDB,
+instance = Backend(CtanDBGenerator,
                    EbuildGenerator, CtanEbuildWithoutDigestGenerator,
-                   CtanEclassGenerator, MetadataGenerator, sync_db=False)
+                   CtanEclassGenerator, MetadataGenerator)

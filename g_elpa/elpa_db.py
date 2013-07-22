@@ -23,26 +23,22 @@ else:
     from urllib.parse import urljoin
 
 from g_sorcery.g_collections import Dependency, Package, serializable_elist
-from g_sorcery.package_db import PackageDB
-from g_sorcery.fileutils import load_remote_file
+from g_sorcery.package_db import DBGenerator
 from g_sorcery.exceptions import SyncError
 
-class ElpaDB(PackageDB):
-    def __init__(self, directory, config = None, common_config = None):
-        super(ElpaDB, self).__init__(directory, config, common_config)
-
-    def get_download_uries(self):
-        ac_uri = urljoin(self.repo_uri, 'archive-contents')
+class ElpaDBGenerator(DBGenerator):
+    def get_download_uries(self, common_config, config):
+        ac_uri = urljoin(config["repo_uri"], 'archive-contents')
         return [{"uri" : ac_uri, "parser" : sexpdata.load}]
 
-    def process_data(self, data):
-
+    def process_data(self, pkg_db, data, common_config, config):
         archive_contents = data['archive-contents']
+        repo_uri = config["repo_uri"]
 
         if sexpdata.car(archive_contents) != 1:
-            raise SyncError('sync failed: ' + self.repo_uri + ' bad archive contents format')
+            raise SyncError('sync failed: ' + repo_uri + ' bad archive contents format')
 
-        self.add_category('app-emacs')
+        pkg_db.add_category('app-emacs')
 
         PKG_INFO = 2
         PKG_NAME = 0
@@ -79,8 +75,8 @@ class ElpaDB(PackageDB):
                           'dependencies' : dependencies,
                           'depend' : depend,
                           'rdepend' : depend,
-                          'homepage' : self.repo_uri,
-                          'repo_uri' : self.repo_uri,
+                          'homepage' : repo_uri,
+                          'repo_uri' : repo_uri,
                           'realname' : realname,
             #eclass entry
                           'eclasses' : ['g-elpa'],
@@ -89,7 +85,7 @@ class ElpaDB(PackageDB):
                                            'name' : 'Jauhien Piatlicki'}],
                           'longdescription' : description
                           }
-            self.add_package(pkg, properties)
+            pkg_db.add_package(pkg, properties)
             
     
     def _s_get_package(self, name, version):

@@ -15,6 +15,7 @@ import glob
 import hashlib
 import os
 import shutil
+import sys
 import tarfile
 
 import portage
@@ -23,10 +24,9 @@ from .compatibility import basestring, py2k, TemporaryDirectory
 
 from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
-
 from .fileutils import FileJSON, hash_file, load_remote_file, copy_all, wget
-
 from .g_collections import Package
+from .logger import Logger
 
 
 class PackageDB(object):
@@ -109,69 +109,21 @@ class PackageDB(object):
                 return (Package(category, name, ver), ebuild_data)
 
 
-    def __init__(self, directory, config = None, common_config = None):
+    def __init__(self, directory):
         """
         Args:
             directory: database directory.
             repo_uri: Repository URI.
             db_uri: URI for synchronization with remote database.
         """
-        self.URI_NAME = 'uri.json'
-        self.CONFIG_NAME = 'config.json'
-        self.COMMON_CONFIG_NAME = 'common_config.json'
         self.CATEGORIES_NAME = 'categories.json'
         self.PACKAGES_NAME = 'packages.json'
         self.VERSIONS_NAME = 'versions.json'
         self.directory = os.path.abspath(directory)
-        if config:
-            self.config = config
-            config_f = FileJSON(self.directory, self.CONFIG_NAME, [])
-            config_f.write(self.config)
-
-            self.common_config = common_config
-            config_f = FileJSON(self.directory, self.COMMON_CONFIG_NAME, [])
-            config_f.write(self.common_config)
-        else:
-            self.config = {}
-            self.common_config = {}
-
-        if "repo_uri" in self.config:
-            repo_uri = self.config["repo_uri"]
-        else:
-            repo_uri = ""
-
-        if "db_uri" in self.config:
-            db_uri = self.config["db_uri"]
-        else:
-            db_uri = ""
-
-        self.reset_uri(repo_uri, db_uri)
         self.reset_db()
 
     def __iter__(self):
         return(PackageDB.Iterator(self))
-        
-    def reset_uri(self, repo_uri="", db_uri=""):
-        """
-        Reset URI information.
-
-        Args:
-            repo_uri: Repository URI.
-            db_uri: URI for synchronization with remote database.
-        """
-        uri_f = FileJSON(self.directory, self.URI_NAME, ['repo_uri', 'db_uri'])
-        uri = uri_f.read()
-        if not repo_uri:
-            self.repo_uri = uri['repo_uri']
-        else:
-            self.repo_uri = repo_uri
-        if not db_uri:
-            self.db_uri = uri['db_uri']
-        else:
-            self.db_uri = db_uri
-        uri['repo_uri'] = self.repo_uri
-        uri['db_uri'] = self.db_uri
-        uri_f.write(uri)
 
     def reset_db(self):
         """
@@ -180,85 +132,14 @@ class PackageDB(object):
         self.database = {}
         self.categories = {}
 
-    def generate(self, repo_uri=""):
-        """
-        Generate new package database
-
-        Args:
-            repo_uri: Repository URI
-        """
-        if repo_uri:
-            self.repo_uri = repo_uri
-        self.clean()
-        self.generate_tree()
-        self.write()
-        self.manifest()
-
-    def generate_tree(self):
-        """
-        Generate tree
-        """
-        data = self.download_data()
-        self.process_data(data)
-
-    def parse_data(self, data_f):
-        pass
-
-    def process_data(data):
-        pass
-
-    def convert(self, dict_name, value):
-        result = value
-        for config in [self.common_config, self.config]:
-            if config:
-                if dict_name in config:
-                    transform = config[dict_name]
-                    if value in transform:
-                        result = transform[value]
-        return result
-
-    def get_download_uries(self):
-        pass
-
-    def decode_download_uries(self, uries):
-        decoded = []
-        for uri in uries:
-            decuri = {}
-            if isinstance(uri, basestring):
-                decuri["uri"] = uri
-                decuri["parser"] = self.parse_data
-                decuri["open_file"] = True
-                decuri["open_mode"] = "r"
-            else:
-                decuri = uri
-                if not "parser" in decuri:
-                    decuri["parser"] = self.parse_data
-                if not "open_file" in decuri:
-                    decuri["open_file"] = True
-                if not "open_mode" in decuri:
-                    decuri["open_mode"] = "r"
-            decoded.append(decuri)
-        return decoded
-        
-    def download_data(self):
-        uries = self.get_download_uries()
-        uries = self.decode_download_uries(uries)
-        data = {}
-        for uri in uries:
-            data.update(load_remote_file(**uri))
-        return data
-
-    def sync(self, db_uri=""):
+    def sync(self, db_uri):
         """
         Synchronize local database with remote database.
 
         Args:
             db_uri: URI for synchronization with remote database.
         """
-        if db_uri:
-            self.db_uri = db_uri
-        self.clean()
-        real_db_uri = self.get_real_db_uri()
+        real_db_uri = self.get_real_db_uri(db_uri)
         download_dir = TemporaryDirectory()
         if wget(real_db_uri, download_dir.name):
             raise SyncError('sync failed: ' + real_db_uri)
@@ -292,7 +173,7 @@ class PackageDB(object):
         
         self.read()
 
-    def get_real_db_uri(self):
+    def get_real_db_uri(self, db_uri):
         """
         Convert self.db_uri to URI where remote database can be
         fetched from.
@@ -300,7 +181,7 @@ class PackageDB(object):
         Returns:
             URI of remote database file.
         """
-        return self.db_uri
+        return db_uri
             
     def manifest(self):
         """
@@ -309,7 +190,7 @@ class PackageDB(object):
         categories = FileJSON(self.directory, self.CATEGORIES_NAME, [])
         categories = categories.read()
         manifest = {}
-        names = [self.CONFIG_NAME, self.COMMON_CONFIG_NAME, self.CATEGORIES_NAME, self.URI_NAME]
+        names = [self.CATEGORIES_NAME]
         for name in names:
             manifest[name] = hash_file(os.path.join(self.directory, name),
                                       hashlib.md5())
@@ -338,7 +219,7 @@ class PackageDB(object):
         result = True
         errors = []
         
-        names = [self.CONFIG_NAME, self.COMMON_CONFIG_NAME, self.CATEGORIES_NAME, self.URI_NAME]
+        names = [self.CATEGORIES_NAME]
         for name in names:
             if not name in manifest:
                 raise DBStructureError('Bad manifest: no ' + name + ' entry')
@@ -355,21 +236,26 @@ class PackageDB(object):
         """
         Clean database.
         """
-        shutil.rmtree(self.directory)
-        self.reset_uri(self.repo_uri, self.db_uri)
+        if os.path.exists(self.directory):
+            shutil.rmtree(self.directory)
         self.reset_db()
+        self.write()
+        self.manifest()
 
     def write(self):
         """
         Write database.
         """
-        config_f = FileJSON(self.directory, self.CONFIG_NAME, [])
-        common_config_f = FileJSON(self.directory, self.COMMON_CONFIG_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        config_f.write(self.config)
-        common_config_f.write(self.common_config)
         categories_f.write(self.categories)
 
+        if self.database:
+            logger = Logger()
+            logger.info("writing database")
+
+        number_of_packages = len(list(self.database))
+        written_number = 0
+        
         for pkgname, versions in self.database.items():
             category, name = pkgname.split('/')
             if not category or (not category in self.categories):
@@ -391,10 +277,28 @@ class PackageDB(object):
             pkgs.append(name)
             f.write(pkgs)
 
+            chars = ['-','\\','|','/']
+            show = chars[written_number % 4]
+            percent = (written_number * 100)//number_of_packages
+            length = 20
+            progress = (percent * 20)//100
+            blank = 20 - progress
+
+            sys.stdout.write("\r %s [%s%s] %s%%" % (show, "#" * progress, " " * blank, percent))
+            sys.stdout.flush()
+            written_number += 1
+
+            
+
         for category in self.categories:
             self.additional_write_category(category)
             
         self.additional_write()
+
+        if self.database:
+            sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * 20, 100))
+            sys.stdout.flush()
+            print("")
 
     def additional_write_version(self, category, package, version):
         """
@@ -427,11 +331,7 @@ class PackageDB(object):
         sane, errors = self.check_manifest()
         if not sane:
             raise IntegrityError('Manifest error: ' + str(errors))
-        config_f = FileJSON(self.directory, self.CONFIG_NAME, [])
-        common_config_f = FileJSON(self.directory, self.COMMON_CONFIG_NAME, [])
         categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        self.config = config_f.read()
-        self.common_config = common_config_f.read()
         self.categories = categories_f.read()
         for category in self.categories:
             category_path = os.path.join(self.directory, category)
@@ -630,3 +530,89 @@ class PackageDB(object):
                               portage.pkgsplit(pkgname + '-' + max_ver)) > 0:
                 max_ver = version
         return max_ver
+
+
+class DBGenerator(object):
+    """
+    Generator for package databases.
+    Creates new databases or syncs with existing.
+    """
+
+    __slots__ = ('package_db_class')
+
+    def __init__(self, package_db_class=PackageDB):
+        self.package_db_class = package_db_class
+
+    def __call__(self, directory, repository, common_config=None, config=None, generate=True):
+        db_path = os.path.join(directory, repository, "db")
+        pkg_db = self.package_db_class(db_path)
+
+        config_f = FileJSON(os.path.join(directory, repository), "config.json", [])
+        if config:
+            config_f.write(config)
+        else:
+            config = config_f.read()
+
+        common_config_f = FileJSON(directory, "config.json", [])
+        if common_config:
+            common_config_f.write(common_config)
+        else:
+            common_config = common_config_f.read()
+
+        if generate:
+            pkg_db.clean()
+            self.generate_tree(pkg_db, common_config, config)
+            pkg_db.write() #todo: make db write on every add_package and only necessary info
+            pkg_db.manifest()
+        return pkg_db
+
+    def generate_tree(self, pkg_db, common_config, config):
+        data = self.download_data(common_config, config)
+        self.process_data(pkg_db, data, common_config, config)
+
+    def download_data(self, common_config, config):
+        uries = self.get_download_uries(common_config, config)
+        uries = self.decode_download_uries(uries)
+        data = {}
+        for uri in uries:
+            data.update(load_remote_file(**uri))
+        return data
+
+    def get_download_uries(self, common_config, config):
+        pass
+
+    def decode_download_uries(self, uries):
+        decoded = []
+        for uri in uries:
+            decuri = {}
+            if isinstance(uri, basestring):
+                decuri["uri"] = uri
+                decuri["parser"] = self.parse_data
+                decuri["open_file"] = True
+                decuri["open_mode"] = "r"
+            else:
+                decuri = uri
+                if not "parser" in decuri:
+                    decuri["parser"] = self.parse_data
+                if not "open_file" in decuri:
+                    decuri["open_file"] = True
+                if not "open_mode" in decuri:
+                    decuri["open_mode"] = "r"
+            decoded.append(decuri)
+        return decoded
+
+    def parse_data(self):
+        pass #todo: raise no implemeted or add some reasonable default
+
+    def process_data(self):
+        pass
+
+    def convert(self, configs, dict_name, value):
+        result = value
+        for config in configs:
+            if config:
+                if dict_name in config:
+                    transform = config[dict_name]
+                    if value in transform:
+                        result = transform[value]
+        return result

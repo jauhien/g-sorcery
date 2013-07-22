@@ -18,7 +18,7 @@ from g_sorcery.metadata import MetadataGenerator
 from g_sorcery.eclass import EclassGenerator
 from g_sorcery.fileutils import get_pkgpath
 
-from .elpa_db import ElpaDB
+from .elpa_db import ElpaDBGenerator
 from .ebuild import ElpaEbuildWithDigestGenerator, ElpaEbuildWithoutDigestGenerator
 
 
@@ -27,6 +27,6 @@ class ElpaEclassGenerator(EclassGenerator):
         super(ElpaEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
         
 
-instance = Backend(ElpaDB,
+instance = Backend(ElpaDBGenerator,
                    ElpaEbuildWithDigestGenerator, ElpaEbuildWithoutDigestGenerator,
-                   ElpaEclassGenerator, MetadataGenerator, sync_db=False)
+                   ElpaEclassGenerator, MetadataGenerator)

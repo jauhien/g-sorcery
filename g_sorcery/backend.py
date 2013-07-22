@@ -24,20 +24,21 @@ else:
     import configparser
 
 from .g_collections import Package
-from .fileutils import fast_manifest
+from .fileutils import fast_manifest, FileJSON
 from .exceptions import DependencyError, DigestError
 from .logger import Logger
 from .mangler import package_managers
+from .package_db import PackageDB
 
 class Backend(object):
     """
     Backend for a repository.
 
     Command format is as follows:
-    g-backend [-o overlay_dir] command
+    g-backend [-o overlay_dir] [-r repository] command
     
     where command is one of the following:
-    sync [-u url] [-r repository]
+    sync
     list
     search word
     generate package_name
@@ -47,12 +48,12 @@ class Backend(object):
     If no overlay directory is given the default one from backend config is used.
     """
     
-    def __init__(self, package_db_class,
+    def __init__(self, package_db_generator_class, 
                  ebuild_g_with_digest_class, ebuild_g_without_digest_class,
-                 eclass_g_class, metadata_g_class, sync_db=True):
-        self.db_dir = '.db'
+                 eclass_g_class, metadata_g_class, package_db_class=PackageDB, sync_db=False):
+        self.sorcery_dir = '.g-sorcery'
         self.sync_db = sync_db
-        self.package_db_class = package_db_class
+        self.package_db_generator = package_db_generator_class(package_db_class)
         self.ebuild_g_with_digest_class = ebuild_g_with_digest_class
         self.ebuild_g_without_digest_class = ebuild_g_without_digest_class
         self.eclass_g_class = eclass_g_class
@@ -60,12 +61,11 @@ class Backend(object):
 
         self.parser = argparse.ArgumentParser(description='Automatic ebuild generator.')
         self.parser.add_argument('-o', '--overlay')
+        self.parser.add_argument('-r', '--repository')
 
         subparsers = self.parser.add_subparsers()
 
         p_sync = subparsers.add_parser('sync')
-        p_sync.add_argument('-u', '--url')
-        p_sync.add_argument('-r', '--repository')
         p_sync.set_defaults(func=self.sync)
 
         p_list = subparsers.add_parser('list')
@@ -99,18 +99,15 @@ class Backend(object):
 
     def _get_package_db(self, args, config, global_config):
         overlay = self._get_overlay(args, config, global_config)
-        db_path = os.path.join(overlay, self.db_dir)
-        if not db_path:
-            return -1
-        pkg_db = self.package_db_class(db_path)
+        backend_path = os.path.join(overlay, self.sorcery_dir, config["package"])
+        repository = args.repository
+        pkg_db = self.package_db_generator(backend_path, repository, generate=False)
         return pkg_db
 
     def sync(self, args, config, global_config):
         overlay = self._get_overlay(args, config, global_config)
-        db_path = os.path.join(overlay, self.db_dir)
-        if not db_path:
-            return -1
-        url = args.url
+        backend_path = os.path.join(overlay, self.sorcery_dir, config["package"])
+        repository = args.repository
         repository = args.repository
         repository_config = {}
 
@@ -118,7 +115,7 @@ class Backend(object):
             common_config = config["common_config"]
         else:
             common_config = {}
-        
+
         if repository:
             if not "repositories" in config:
                 self.logger.error("repository " + repository + 
@@ -130,34 +127,15 @@ class Backend(object):
                 return -1
             repository_config = repositories[repository]
         else:
-            if url:
-                repository_config = {"repo_uri" : url, "db_uri" : url}
-            else:
-                self.logger.error('no url given\n')
+            self.logger.error('no repository given\n')
+            return -1
                 
         if self.sync_db:
-            pkg_db = self.package_db_class(db_path, repository_config, common_config)
-            if not pkg_db.db_uri:
-                self.logger.error('no url given\n')
-                return -1
+            pkg_db = self.package_db_generator(backend_path, repository,
+                            common_config, repository_config, generate=False)
+            pkg_db.sync(repository_config["db_uri"])
         else:
-            pkg_db = self.package_db_class(db_path, repository_config, common_config)
-            if not pkg_db.repo_uri:
-                self.logger.error('no url given\n')
-                return -1
-
-        if self.sync_db:
-            try:
-                pkg_db.sync()
-            except Exception as e:
-                self.logger.error('sync failed: ' + str(e) + '\n')
-                return -1
-        else:
-            try:
-                pkg_db.generate()
-            except Exception as e:
-                self.logger.error('sync failed: ' + str(e) + '\n')
-                return -1
+            pkg_db = self.package_db_generator(backend_path, repository, common_config, repository_config)
         return 0
 
     def list(self, args, config, global_config):
@@ -396,4 +374,33 @@ class Backend(object):
         
     def __call__(self, args, config, global_config):
         args = self.parser.parse_args(args)
+        info_f = FileJSON(os.path.join(args.overlay, self.sorcery_dir), "info.json", ["repositories"])
+        self.info = info_f.read()
+        repos = self.info["repositories"]
+        if args.repository:
+            if not repos:
+                repos = {}
+            back = config["package"]
+            if back in repos:
+                brepos = set(repos[back])
+            else:
+                brepos = set()
+            brepos.add(args.repository)
+            repos[back] = list(brepos)
+            self.info["repositories"] = repos
+            info_f.write(self.info)
+        else:
+            back = config["package"]
+            if back in repos:
+                brepos = repos[back]
+                if len(brepos) == 1:
+                    args.repository = brepos[0]
+                else:
+                    self.logger.error("No repository specified, possible values:")
+                    for repo in brepos:
+                        print("    " + repo)
+                    return -1
+            else:
+                self.logger.error("No repository for backend " + back + " in overlay " + args.overlay)
+                return -1
         return args.func(args, config, global_config)
