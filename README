@@ -42,9 +42,6 @@ Backend should have everything specific for a given 3rd party software
 provider: concrete algorithms for ebuild-generation, eclasses,
 databases with information about available software and so on.
 
-To test current code run `python3 scripts/run_tests.py' or
-`python2 scripts/run_tests.py'
-
 Note that for tests of an ELPA backend you'll need dev-python/sexpdata
 available in `jauhien' overlay (just do `layman -a jauhien')
 
@@ -57,10 +54,14 @@ you'll need patch layman from git with layman-git-g-sorcery.patch.
 Testing process:
 a) Ebuild generation in a given overlay:
     - create an overlay
-    - run `g-elpa -o path_to_overlay sync -r gnu-elpa'
-    - run `g-elpa -o path_to_overlay list'
-    - run `g-elpa -o path_to_overlay install packagename portage_flags'
+    - run `gs-elpa -o path_to_overlay  -r gnu-elpa sync'
+    - run `gs-elpa -o path_to_overlay list'
+    - run `gs-elpa -o path_to_overlay install packagename portage_flags'
 
 b) Integration with layman:
     - install layman from git patched with `layman-git-g-sorcery.patch'
     - run `sudo layman -a gnu-elpa'
+
+CTAN backend works now. So the same command may be used for testing it.
+You only should replace gs-elpa with gs-ctan. And use ctan repository,
+e.g. sync will look like `gs-ctan -o path_to_overlay  -r ctan sync'
