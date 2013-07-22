@@ -648,4 +648,3 @@ class DBGenerator(object):
                         result = True
                         break
         return result
-

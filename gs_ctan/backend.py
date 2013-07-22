@@ -15,12 +15,11 @@ import os
 
 from g_sorcery.backend import Backend
 from g_sorcery.metadata import MetadataGenerator
-from g_sorcery.ebuild import EbuildGenerator
 from g_sorcery.eclass import EclassGenerator
 from g_sorcery.fileutils import get_pkgpath
 
 from .ctan_db import CtanDBGenerator
-from .ebuild import CtanEbuildWithoutDigestGenerator
+from .ebuild import CtanEbuildWithoutDigestGenerator, CtanEbuildWithDigestGenerator
 
 
 class CtanEclassGenerator(EclassGenerator):
@@ -29,5 +28,5 @@ class CtanEclassGenerator(EclassGenerator):
         
 
 instance = Backend(CtanDBGenerator,
-                   EbuildGenerator, CtanEbuildWithoutDigestGenerator,
+                   CtanEbuildWithDigestGenerator, CtanEbuildWithoutDigestGenerator,
                    CtanEclassGenerator, MetadataGenerator)
