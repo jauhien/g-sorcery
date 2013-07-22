@@ -43,6 +43,7 @@
       "tuareg-mode", "twittering-mode", "typing", "u-vm-color", "uboat", "undo-tree", "uptimes",
       "vhdl-mode", "view-process", "vm", "volume", "w3mnav", "wanderlust", "whine", "wikipedia-mode", "xclip",
       "xrdb-mode", "xslide", "yaml-mode", "yasnippet", "yatex", "yc", "zenburn", "yyzenirc"
-    ]
+    ],
+    "external": {"emacs": "virtual/emacs"}
   }
 }

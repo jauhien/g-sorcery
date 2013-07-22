@@ -617,6 +617,28 @@ class DBGenerator(object):
                         result = transform[value]
         return result
 
+    def convert_dependency(self, configs, dependency, external=True):
+        external_dep = ""
+        for config in configs:
+            if config:
+                if "external" in config:
+                    ext_deps = config["external"]
+                    if dependency in ext_deps:
+                        external_dep = ext_deps[dependency]
+        if external_dep:
+            if external:
+                return self.convert_external_dependency(configs, dependency)
+            else:
+                return None
+        else:
+            return self.convert_internal_dependency(configs, dependency)
+
+    def convert_internal_dependency(self, configs, dependency):
+        return dependency
+
+    def convert_external_dependency(self, configs, dependency):
+        return dependency
+        
     def in_config(self, configs, list_name, value):
         result = False
         for config in configs:

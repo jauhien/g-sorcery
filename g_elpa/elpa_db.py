@@ -69,7 +69,9 @@ class ElpaDBGenerator(DBGenerator):
             deps = desc[INFO_DEPENDENCIES]
             dependencies = serializable_elist(separator="\n\t")
             for dep in deps:
-                dependencies.append(Dependency("app-emacs", dep[DEP_NAME].value()))
+                dep = self.convert_dependency([common_config, config], dep[DEP_NAME].value(), external = False)
+                if dep:
+                    dependencies.append(dep)
                 
             properties = {'source_type' : source_type,
                           'description' : description,
@@ -87,3 +89,6 @@ class ElpaDBGenerator(DBGenerator):
                           'longdescription' : description
                           }
             pkg_db.add_package(pkg, properties)
+
+    def convert_internal_dependency(self, configs, dependency):
+        return Dependency("app-emacs", dependency)
