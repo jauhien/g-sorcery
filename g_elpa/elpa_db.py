@@ -53,7 +53,12 @@ class ElpaDBGenerator(DBGenerator):
         
         for entry in sexpdata.cdr(archive_contents):
             desc = entry[PKG_INFO].value()
-            pkg = self._s_get_package(entry[PKG_NAME], desc[INFO_VERSION])
+            realname = entry[PKG_NAME].value()
+
+            if self.in_config([common_config, config], "exclude", realname):
+                continue
+
+            pkg = Package("app-emacs", realname, '.'.join(map(str, desc[INFO_VERSION])))
             source_type = desc[INFO_SRC_TYPE].value()
 
             allowed_ords = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
@@ -63,7 +68,6 @@ class ElpaDBGenerator(DBGenerator):
             
             deps = desc[INFO_DEPENDENCIES]
             dependencies = serializable_elist(separator="\n\t")
-            realname = entry[PKG_NAME].value()
             for dep in deps:
                 dependencies.append(Dependency("app-emacs", dep[DEP_NAME].value()))
                 
@@ -83,9 +87,3 @@ class ElpaDBGenerator(DBGenerator):
                           'longdescription' : description
                           }
             pkg_db.add_package(pkg, properties)
-            
-    
-    def _s_get_package(self, name, version):
-        category = 'app-emacs'
-        version = '.'.join(map(str, version))
-        return Package(category, name.value(), version)

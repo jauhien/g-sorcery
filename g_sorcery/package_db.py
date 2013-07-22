@@ -616,3 +616,14 @@ class DBGenerator(object):
                     if value in transform:
                         result = transform[value]
         return result
+
+    def in_config(self, configs, list_name, value):
+        result = False
+        for config in configs:
+            if config:
+                if list_name in config:
+                    if value in config[list_name]:
+                        result = True
+                        break
+        return result
+
