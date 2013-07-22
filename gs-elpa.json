@@ -1,5 +1,5 @@
 {
-  "package": "g_elpa", 
+  "package": "gs_elpa", 
   "repositories": {
     "gnu-elpa": {
       "repo_uri": "http://elpa.gnu.org/packages/"
