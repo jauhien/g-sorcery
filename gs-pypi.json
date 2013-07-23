@@ -1,0 +1,8 @@
+{
+  "package": "gs_pypi", 
+  "repositories": {
+    "pypi": {
+      "repo_uri": "https://pypi.python.org/pypi"
+    }
+  }
+}
