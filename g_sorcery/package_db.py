@@ -582,7 +582,7 @@ class DBGenerator(object):
         data.update(load_remote_file(**uri))
 
     def get_download_uries(self, common_config, config):
-        pass
+        return [config["repo_uri"]]
 
     def decode_download_uries(self, uries):
         decoded = []
@@ -607,7 +607,7 @@ class DBGenerator(object):
     def parse_data(self):
         pass #todo: raise no implemeted or add some reasonable default
 
-    def process_data(self):
+    def process_data(self, pkg_db, data, common_config, config):
         pass
 
     def convert(self, configs, dict_name, value):
