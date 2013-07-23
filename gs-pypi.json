@@ -2,7 +2,7 @@
   "package": "gs_pypi", 
   "repositories": {
     "pypi": {
-      "repo_uri": "https://pypi.python.org/pypi"
+      "repo_uri": "http://pypi.python.org/pypi"
     }
   }
 }
