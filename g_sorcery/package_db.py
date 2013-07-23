@@ -575,8 +575,11 @@ class DBGenerator(object):
         uries = self.decode_download_uries(uries)
         data = {}
         for uri in uries:
-            data.update(load_remote_file(**uri))
+            self.process_uri(uri, data)
         return data
+
+    def process_uri(self, uri, data):
+        data.update(load_remote_file(**uri))
 
     def get_download_uries(self, common_config, config):
         pass
