@@ -40,7 +40,7 @@ GSCTAN_FETCH_CMD="wget"
 inherit latex-package
 
 if [[ ${SOURCE_TYPE} = "zip" ]]; then
-	EXPORT_FUNCTIONS src_unpack
+	EXPORT_FUNCTIONS src_{unpack,compile,install}
 else
 	EXPORT_FUNCTIONS src_{unpack,install}
 fi
@@ -76,7 +76,27 @@ gs-ctan_src_unpack() {
 	fi
 }
 
+gs-ctan_src_compile() {
+	cd ${S} || die
+	latex-package_src_compile
+	for d in `ls -d -- */`; do
+		pushd ${d} || die
+		latex-package_src_compile
+		popd || die
+	done
+}
+
 gs-ctan_src_install() {
-	insinto ${TEXMF}
-	doins -r *
+	if [[ ${SOURCE_TYPE} = "zip" ]]; then
+		cd ${S} || die
+		latex-package_src_install
+		for d in `ls -d -- */`; do
+			pushd ${d} || die
+			latex-package_src_install
+			popd || die
+		done
+	else
+		insinto ${TEXMF}
+		doins -r *
+	fi
 }
