@@ -18,9 +18,11 @@ if py2k:
 else:
     import xmlrpc.client as xmlrpclib
 
+import datetime
+import re
 import sys
 
-from g_sorcery.g_collections import Package
+from g_sorcery.g_collections import Package, serializable_elist
 from g_sorcery.logger import Logger 
 from g_sorcery.package_db import DBGenerator
 
@@ -69,8 +71,36 @@ class PypiDBGenerator(DBGenerator):
         allowed_ords_pkg = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
             set(range(ord('0'), ord('9'))) | set(list(map(ord,
                 ['+', '_', '-'])))
+
+        allowed_ords_desc = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
+              set(range(ord('0'), ord('9'))) | set(list(map(ord,
+                    ['+', '_', '-', ' ', '.', '(', ')', '[', ']', '{', '}', ','])))
+
+        now = datetime.datetime.now()
+        pseudoversion = "%04d%02d%02d" % (now.year, now.month, now.day)
         
         for package, versions in data.items():
             package = "".join([x for x in package if ord(x) in allowed_ords_pkg])
             for version, ebuild_data in versions.items():
-                pkg_db.add_package(Package(category, package, version), ebuild_data)
+                description = ebuild_data["summary"]
+                description = "".join([x for x in description if ord(x) in allowed_ords_desc])
+                longdescription = ebuild_data["description"]
+                longdescription = "".join([x for x in longdescription if ord(x) in allowed_ords_desc])
+
+                pkgver = version            
+                match_object = re.match("(^[0-9]+[a-z]?$)|(^[0-9][0-9\.]+[0-9][a-z]?$)", pkgver)
+                if not match_object:
+                    pkgver = pseudoversion
+
+                dependencies = serializable_elist(separator="\n\t")
+                eclasses = ['gs-pypi']
+                maintainer = [{'email' : 'piatlicki@gmail.com',
+                               'name' : 'Jauhien Piatlicki'}]
+
+                ebuild_data["description"] = description
+                ebuild_data["longdescription"] = longdescription
+                ebuild_data["dependencies"] = dependencies
+                ebuild_data["eclasses"] = eclasses
+                ebuild_data["maintainer"] = maintainer
+
+                pkg_db.add_package(Package(category, package, pkgver), ebuild_data)
