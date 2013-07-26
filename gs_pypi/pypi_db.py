@@ -55,9 +55,24 @@ class PypiDBGenerator(DBGenerator):
             sys.stdout.flush()
             downloaded_number += 1
 
-            versions = client.package_releases(pkg)
+            versions = []
+            while not versions:
+                try:
+                    versions = client.package_releases(pkg)
+                except Exception as error:
+                    logger.warn("Something went wrong: " + str(error))
+                    logger.info("Trying again...")
+                    versions = []
+
             for version in versions:
-                data[pkg][version] = client.release_data(pkg, version)
+                data[pkg][version] = {}
+                while not data[pkg][version]:
+                    try:
+                        data[pkg][version] = client.release_data(pkg, version)
+                    except Exception as error:
+                        logger.warn("Something went wrong: " + str(error))
+                        logger.info("Trying again...")
+                        data[pkg][version] = {}
 
         sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * length, 100))
         sys.stdout.flush()
