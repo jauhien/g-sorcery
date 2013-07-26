@@ -108,7 +108,7 @@ def copy_all(src, dst):
         else:
             shutil.copy2(src_name, dst_name)
 
-def wget(uri, directory):
+def wget(uri, directory, output=""):
     """
     Fetch a file.
 
@@ -119,7 +119,11 @@ def wget(uri, directory):
     Returns:
         Nonzero in case of a failure.
     """
-    return os.system('wget -P ' + directory + ' ' + uri)
+    if output:
+        ret = os.system('wget ' + uri + ' -O ' + os.path.join(directory, output))
+    else:
+        ret = os.system('wget -P ' + directory + ' ' + uri)
+    return ret
 
 def get_pkgpath(root = None):
     """
@@ -186,10 +190,10 @@ def _call_parser(f_name, parser, open_file = True, open_mode = 'r'):
     return {os.path.basename(f_name): data}
 
 
-def load_remote_file(uri, parser, open_file = True, open_mode='r'):
+def load_remote_file(uri, parser, open_file = True, open_mode='r', output=""):
     download_dir = TemporaryDirectory()
     loaded_data = {}
-    if wget(uri, download_dir.name):
+    if wget(uri, download_dir.name, output):
         raise DownloadingError("wget failed: " + uri)
     for f_name in glob.glob(os.path.join(download_dir.name, "*")):
         if tarfile.is_tarfile(f_name):
