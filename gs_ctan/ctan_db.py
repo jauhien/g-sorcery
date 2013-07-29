@@ -113,6 +113,9 @@ class CtanDBGenerator(DBGenerator):
             parts = realname.split(".")
             if len(parts) > 1:
                 realname = "_".join(parts)
+
+            if self.in_config([common_config, config], "exclude", realname):
+                continue
             
             #todo: work on common data vars processing: external deps, filtering etc.
             #at the moment just copy necessary code from elpa_db.py
