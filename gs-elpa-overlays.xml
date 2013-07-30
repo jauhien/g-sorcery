@@ -9,7 +9,7 @@
       <email>piatlicki@gmail.com</email>
       <name>Jauhien Piatlicki</name>
     </owner>
-    <source type="g-sorcery">g-elpa gnu-elpa</source>
+    <source type="g-sorcery">gs-elpa gnu-elpa</source>
 </repo>
 <repo quality="experimental" status="unofficial">
     <name>marmalade</name>
@@ -19,7 +19,7 @@
       <email>piatlicki@gmail.com</email>
       <name>Jauhien Piatlicki</name>
     </owner>
-    <source type="g-sorcery">g-elpa marmalade</source>
+    <source type="g-sorcery">gs-elpa marmalade</source>
 </repo>
 <repo quality="experimental" status="unofficial">
     <name>melpa</name>
@@ -29,6 +29,6 @@
       <email>piatlicki@gmail.com</email>
       <name>Jauhien Piatlicki</name>
     </owner>
-    <source type="g-sorcery">g-elpa melpa</source>
+    <source type="g-sorcery">gs-elpa melpa</source>
 </repo>
 </repositories>
