@@ -42,14 +42,14 @@ else
 	SUFFIX="el"
 fi
 
+SOURCEFILE=${REALNAME}-${PV}.${SUFFIX}
+
 g-elpa_fetch() {
 	addwrite "${GELPA_STORE_DIR}"
 	pushd "${GELPA_STORE_DIR}" >/dev/null || die "can't chdir to ${GELPA_STORE_DIR}"
-	local SOURCEFILE=${REALNAME}-${PV}.${SUFFIX}
 	if [[ ! -f "${SOURCEFILE}" ]]; then
 		$GELPA_FETCH_CMD ${REPO_URI}${SOURCEFILE} || die
 	fi
-	cp  ${SOURCEFILE} ${DISTDIR}/${P}.${SUFFIX} || die
 	popd >/dev/null || die
 }
 
@@ -57,12 +57,13 @@ g-elpa_src_unpack() {
 	if [[ x${DIGEST_SOURCES} = x ]]; then
 		g-elpa_fetch
 	fi
+
 	if [[ ${SOURCE_TYPE} != "single" ]]; then
-		unpack ${P}.${SOURCE_TYPE}
+		tar xvf ${GELPA_STORE_DIR}/${SOURCEFILE} || die
 	else
-		cp ${DISTDIR}/${P}.el . || die
+		mkdir ${P} || die
+		cp ${GELPA_STORE_DIR}/${SOURCEFILE} ./${P} || die
 	fi
-	elisp_src_unpack || die
 }
 
 g-elpa_src_compile() {
