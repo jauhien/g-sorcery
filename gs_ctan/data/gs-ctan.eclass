@@ -46,15 +46,14 @@ else
 fi
 
 SUFFIX="${SOURCE_TYPE}"
+SOURCEFILE=${REALNAME}.${SUFFIX}
 
 gs-ctan_fetch() {
 	addwrite "${GSCTAN_STORE_DIR}"
 	pushd "${GSCTAN_STORE_DIR}" >/dev/null || die "can't chdir to ${GSCTAN_STORE_DIR}"
-	local SOURCEFILE=${REALNAME}.${SUFFIX}
 	if [[ ! -f "${SOURCEFILE}" ]]; then
 		$GSCTAN_FETCH_CMD ${BASE_SRC_URI}${CATALOGUE}${SOURCEFILE} || die
 	fi
-	cp  ${SOURCEFILE} ${DISTDIR}/${P}.${SUFFIX} || die
 	popd >/dev/null || die
 }
 
@@ -63,7 +62,8 @@ gs-ctan_src_unpack() {
 		if [[ x${DIGEST_SOURCES} = x ]]; then
 			gs-ctan_fetch
 		fi
-		unpack ${P}.${SUFFIX}
+		cp ${GSCTAN_STORE_DIR}/${SOURCEFILE} . || die
+		unzip ${SOURCEFILE} || die
 		mv ${PN} ${P} || die
 	else
 		if [[ x${DIGEST_SOURCES} = x ]]; then
@@ -71,7 +71,7 @@ gs-ctan_src_unpack() {
 		fi
 		mkdir ${S} || die
 		cd ${S} || die
-		unpack ${P}.${SUFFIX}
+		tar xvf ${GSCTAN_STORE_DIR}/${SOURCEFILE} || die
 		rm -rf tlpkg || die
 	fi
 }
