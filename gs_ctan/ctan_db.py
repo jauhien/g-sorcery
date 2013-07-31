@@ -110,11 +110,12 @@ class CtanDBGenerator(DBGenerator):
         for entry in data:
             realname = entry["name"]
 
-            parts = realname.split(".")
+            pkgname = realname
+            parts = pkgname.split(".")
             if len(parts) > 1:
-                realname = "_".join(parts)
+                pkgname = "_".join(parts)
 
-            if self.in_config([common_config, config], "exclude", realname):
+            if self.in_config([common_config, config], "exclude", pkgname):
                 continue
             
             #todo: work on common data vars processing: external deps, filtering etc.
@@ -187,4 +188,4 @@ class CtanDBGenerator(DBGenerator):
                            'longdescription' : longdescription
                           }
 
-            pkg_db.add_package(Package(category, realname, version), ebuild_data)
+            pkg_db.add_package(Package(category, pkgname, version), ebuild_data)
