@@ -87,6 +87,17 @@ class Backend(object):
         self.logger = Logger()
 
     def _get_overlay(self, args, config, global_config):
+        """
+        Get an overlay directory.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Overlay directory.
+        """
         overlay = args.overlay
         if not overlay:
             if not 'default_overlay' in config:
@@ -98,6 +109,17 @@ class Backend(object):
         return overlay
 
     def _get_package_db(self, args, config, global_config):
+        """
+        Get package database object.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Package database object.
+        """
         overlay = self._get_overlay(args, config, global_config)
         backend_path = os.path.join(overlay, self.sorcery_dir, config["package"])
         repository = args.repository
@@ -105,6 +127,17 @@ class Backend(object):
         return pkg_db
 
     def sync(self, args, config, global_config):
+        """
+        Synchronize or generate local database.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Exit status.
+        """
         overlay = self._get_overlay(args, config, global_config)
         backend_path = os.path.join(overlay, self.sorcery_dir, config["package"])
         repository = args.repository
@@ -139,6 +172,17 @@ class Backend(object):
         return 0
 
     def list(self, args, config, global_config):
+        """
+        List all available packages.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Exit status.
+        """
         pkg_db = self._get_package_db(args, config, global_config)
         pkg_db.read()
         try:
@@ -160,6 +204,17 @@ class Backend(object):
         return 0
 
     def generate(self, args, config, global_config):
+        """
+        Generate ebuilds for a given package and all its dependecies.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Exit status.
+        """
         overlay = self._get_overlay(args, config, global_config)
         pkg_db = self._get_package_db(args, config, global_config)
         pkg_db.read()
@@ -218,6 +273,16 @@ class Backend(object):
         return 0
 
     def generate_ebuilds(self, package_db, overlay, packages, digest=False):
+        """
+        Generate ebuilds for given packages.
+
+        Args:
+            package_db: Package database
+            overlay: Overlay directory.
+            packages: List of packages.
+            digest: whether sources should be digested in Manifest.
+        """
+
         self.logger.info("ebuild generation")
         if digest:
             ebuild_g = self.ebuild_g_with_digest_class(package_db)
@@ -237,6 +302,14 @@ class Backend(object):
 
 
     def generate_metadatas(self, package_db, overlay, packages):
+        """
+        Generate metada files for given packages.
+
+        Args:
+            package_db: Package database
+            overlay: Overlay directory.
+            packages: List of packages.
+        """
         self.logger.info("metadata generation")
         metadata_g = self.metadata_g_class(package_db)
         for package in packages:
@@ -248,6 +321,13 @@ class Backend(object):
                 f.write('\n'.join(source))
 
     def generate_eclasses(self, overlay, eclasses):
+        """
+        Generate given eclasses.
+
+        Args:
+            overlay: Overlay directory.
+            eclasses: List of eclasses.
+        """
         self.logger.info("eclasses generation")
         eclass_g = self.eclass_g_class()
         path = os.path.join(overlay, 'eclass')
@@ -261,6 +341,21 @@ class Backend(object):
 
 
     def solve_dependencies(self, package_db, package, solved_deps=None, unsolved_deps=None):
+        """
+        Solve dependencies.
+
+        Args:
+            package_db: Package database.
+            package: A package we want to solve dependencies for.
+            solved_deps: List of solved dependencies.
+            unsolved_deps: List of dependencies to be solved.
+
+        Returns:
+            A pair (solved_deps, unsolved_deps).
+
+        Note:
+            Each dependency is an object of class g_collections.Dependency.
+        """
         if not solved_deps:
             solved_deps = set()
         if not unsolved_deps:
@@ -297,6 +392,12 @@ class Backend(object):
 
 
     def digest(self, overlay):
+        """
+        Digest an overlay using repoman.
+
+        Args:
+            overlay: Overlay directory.
+        """
         self.logger.info("digesting overlay")
         prev = os.getcwd()
         os.chdir(overlay)
@@ -305,12 +406,30 @@ class Backend(object):
         os.chdir(prev)
 
     def fast_digest(self, overlay, pkgnames):
+        """
+        Digest an overlay using custom method faster than repoman.
+
+        Args:
+            overlay: Overlay directory.
+            pkgnames: List of full package names (category/package).
+        """
         self.logger.info("fast digesting overlay")
         for pkgname in pkgnames:
             directory = os.path.join(overlay, pkgname)
             fast_manifest(directory)
         
     def generate_tree(self, args, config, global_config):
+        """
+        Generate entire overlay.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Exit status.
+        """
         self.logger.info("tree generation")
         overlay = self._get_overlay(args, config, global_config)
         pkg_db = self._get_package_db(args, config, global_config)
@@ -360,6 +479,17 @@ class Backend(object):
             self.fast_digest(overlay, pkgnames)
 
     def install(self, args, config, global_config):
+        """
+        Install a package.
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Exit status.
+        """
         self.generate(args, config, global_config)
         try:
             package_manager = global_config.get("main", "package_manager")
