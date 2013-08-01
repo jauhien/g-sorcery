@@ -47,7 +47,8 @@ def main():
     try:
         config = cfg_f.read()
     except FileJSONError as e:
-        logger.error('error loading config file for ' + name + ': ' + str(e) + '\n')
+        logger.error('error loading config file for ' \
+                     + name + ': ' + str(e) + '\n')
         return -1
     backend = get_backend(config['package'])
 
