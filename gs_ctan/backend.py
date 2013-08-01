@@ -23,10 +23,14 @@ from .ebuild import CtanEbuildWithoutDigestGenerator, CtanEbuildWithDigestGenera
 
 
 class CtanEclassGenerator(EclassGenerator):
+    """
+    Implementation of eclass generator. Only specifies a data directory.
+    """
     def __init__(self):
         super(CtanEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
         
 
+#Backend instance to be loaded by g_sorcery
 instance = Backend(CtanDBGenerator,
                    CtanEbuildWithDigestGenerator, CtanEbuildWithoutDigestGenerator,
                    CtanEclassGenerator, MetadataGenerator)

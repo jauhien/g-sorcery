@@ -21,6 +21,9 @@ Layout = collections.namedtuple("Layout",
   
 
 class CtanEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
+    """
+    Implementation of ebuild generator without sources digesting.
+    """
     def __init__(self, package_db):
 
         vars_before_inherit = \
@@ -39,6 +42,9 @@ class CtanEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         super(CtanEbuildWithoutDigestGenerator, self).__init__(package_db, layout)
 
 class CtanEbuildWithDigestGenerator(DefaultEbuildGenerator):
+    """
+    Implementation of ebuild generator with sources digesting.
+    """
     def __init__(self, package_db):
 
         vars_before_inherit = \

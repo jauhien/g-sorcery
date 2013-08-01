@@ -12,17 +12,18 @@
 """
 
 import itertools
-import os
 import re
 
 import portage
 
 from g_sorcery.g_collections import Dependency, Package, serializable_elist
 from g_sorcery.package_db import DBGenerator
-from g_sorcery.exceptions import SyncError
 from g_sorcery.logger import Logger
 
 class CtanDBGenerator(DBGenerator):
+    """
+    Implementation of database generator for CTAN LaTeX backend.
+    """
     def __init__(self, package_db_class):
         super(CtanDBGenerator, self).__init__(package_db_class)
         
@@ -38,10 +39,25 @@ class CtanDBGenerator(DBGenerator):
 
 
     def get_download_uries(self, common_config, config):
+        """
+        Get download URI.
+        """
         tlpdb_uri = config["repo_uri"] + "/tlpkg/texlive.tlpdb.xz"
         return [tlpdb_uri]
         
     def parse_data(self, data_f):
+        """
+        Parse downloaded data.
+
+        Parsed data is a list of dictionaries.
+        Each dictionary corresponds to one package.
+
+        Args:
+            data_f: Open file wit data.
+
+        Returns:
+            Parsed data.
+        """
         data = data_f.read()
         
         data = data.split("\n")
@@ -98,7 +114,10 @@ class CtanDBGenerator(DBGenerator):
         return result
 
     def process_data(self, pkg_db, data, common_config, config):
-        
+        """
+        Process parsed data and fill database.
+        """
+
         category = "dev-tex"
         
         pkg_db.add_category(category)
