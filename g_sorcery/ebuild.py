@@ -225,7 +225,8 @@ class DefaultEbuildGenerator(EbuildGenerator):
             if isinstance(var, basestring):
                 self.template.append(var.upper() + '="%(' + var + ')s"')
             else:
-                self.template.append(var[VAR_NAME].upper() + '="' + var[VAR_VALUE] + '"')
+                self.template.append(var[VAR_NAME].upper() \
+                                     + '="' + var[VAR_VALUE] + '"')
 
 
     def get_template(self, package, ebuild_data):
