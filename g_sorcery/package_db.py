@@ -698,7 +698,8 @@ class DBGenerator(object):
         Returns:
             Parsed data.
         """
-        raise NotImplementedError
+        #todo: implement reasonable default
+        pass
 
     def process_data(self, pkg_db, data, common_config, config):
         """
