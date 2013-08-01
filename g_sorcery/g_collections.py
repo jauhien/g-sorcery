@@ -48,6 +48,9 @@ class elist(list):
 
 
 class serializable_elist(object):
+    """
+    A JSON serializable version of elist.
+    """
 
     __slots__ = ('data')
     
@@ -80,7 +83,9 @@ class serializable_elist(object):
 #todo: replace Package with something better
 
 class Package(object):
-
+    """
+    Class to store full package name: category/package-version
+    """
     __slots__ = ('category', 'name', 'version')
 
     def __init__(self, category, package, version):
@@ -99,6 +104,9 @@ class Package(object):
 #todo equality operator for Dependency, as it can be used in backend dependency solving algorithm
 
 class Dependency(object):
+    """
+    Class to store a dependency. Uses portage Atom.
+    """
 
     __slots__ = ('atom', 'category', 'package', 'version', 'operator')
 
