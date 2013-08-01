@@ -14,8 +14,6 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import collections
-
 import portage
 
 class elist(list):
