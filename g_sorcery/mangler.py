@@ -40,11 +40,14 @@ class PackageManager(object):
 
 
 class Portage(PackageManager):
+    """
+    Portage package manager abstraction.
+    """
     def __init__(self):
         self.executable = "/usr/bin/emerge"
 
     def install(self, pkgname, *args):
         return self.run_command("-va", pkgname, *args)
 
-
+#list of supported package managers.
 package_managers = {'portage' : Portage}
