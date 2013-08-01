@@ -15,6 +15,9 @@ import portage
 
 
 class Logger(object):
+    """
+    A simple logger object. Uses portage out facilities.
+    """
     def __init__(self):
         self.out = portage.output.EOutput()
 
