@@ -16,7 +16,14 @@ import importlib
 
 
 class JSONSerializer(json.JSONEncoder):
+    """
+    Custom JSON encoder.
 
+    Each serializable class should have a method serialize
+    that returns JSON serializable value. If class addfitionally
+    has a classmethod deserialize that it can be deserialized
+    and additional metainformation is added to the resulting JSON.
+    """
     def default(self, obj):
         if hasattr(obj, "serialize"):
             if hasattr(obj, "deserialize"):
@@ -32,6 +39,13 @@ class JSONSerializer(json.JSONEncoder):
 
 
 def deserializeHook(json_object):
+    """
+    Custom JSON decoder.
+
+    Each class that can be deserialized should have classmethod deserialize
+    that takes value (previously returned by serialize method) and transforms
+    it into class instance.
+    """
     if "python_class" in json_object:
         module = importlib.import_module(json_object["python_module"])
         cls = getattr(module, json_object["python_class"])
