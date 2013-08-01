@@ -70,6 +70,9 @@ def main():
 
 
 def get_backend(package):
+    """
+    Load backend by package name.
+    """
     logger = Logger()
     try:
         module = importlib.import_module(package + '.backend')
