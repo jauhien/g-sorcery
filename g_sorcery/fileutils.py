@@ -50,7 +50,8 @@ class FileJSON(object):
             for key in self.mandatories:
                 content[key] = ""
             with open(self.path, 'w') as f:
-                json.dump(content, f, indent=2, sort_keys=True, cls=JSONSerializer)
+                json.dump(content, f, indent=2,
+                    sort_keys=True, cls=JSONSerializer)
         else:
             with open(self.path, 'r') as f:
                 content = json.load(f, object_hook=deserializeHook)
@@ -120,7 +121,8 @@ def wget(uri, directory, output=""):
         Nonzero in case of a failure.
     """
     if output:
-        ret = os.system('wget ' + uri + ' -O ' + os.path.join(directory, output))
+        ret = os.system('wget ' + uri +
+                    ' -O ' + os.path.join(directory, output))
     else:
         ret = os.system('wget -P ' + directory + ' ' + uri)
     return ret
@@ -142,6 +144,10 @@ class ManifestEntry:
     """
     A manifest entry for a file.
     """
+
+    __slots__ = ('directory', 'name', 'ftype', 'digest',
+                 'size', 'sha256', 'sha512', 'whirlpool')
+    
     def __init__(self, directory, name, ftype):
         self.directory = directory
         self.name = name
@@ -179,9 +185,11 @@ def fast_manifest(directory):
     metadata = os.path.join(directory, "metadata.xml")
 
     for aux in glob.glob(os.path.join(directory, "files/*")):
-        manifest.append(ManifestEntry(os.path.dirname(aux), os.path.basename(aux), "AUX"))
+        manifest.append(ManifestEntry(os.path.dirname(aux),
+                            os.path.basename(aux), "AUX"))
     for ebuild in glob.glob(os.path.join(directory, "*.ebuild")):
-        manifest.append(ManifestEntry(directory, os.path.basename(ebuild), "EBUILD"))
+        manifest.append(ManifestEntry(directory,
+                            os.path.basename(ebuild), "EBUILD"))
     if (os.path.isfile(metadata)):
         manifest.append(ManifestEntry(directory, "metadata.xml", "MISC"))
 
@@ -249,7 +257,8 @@ def load_remote_file(uri, parser, open_file = True, open_mode='r', output=""):
             name, extention = os.path.splitext(f_name)
             if extention in [".xz", ".lzma"]:
                 if (os.system("xz -d " + f_name)):
-                    raise DownloadingError("xz failed: " + f_name + " from " + uri)
+                    raise DownloadingError("xz failed: "
+                                + f_name + " from " + uri)
                 f_name = name
             loaded_data.update(_call_parser(f_name, parser,
                                 open_file=open_file, open_mode=open_mode))
