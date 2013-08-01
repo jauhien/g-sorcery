@@ -251,6 +251,7 @@ class PackageDB(object):
 
         number_of_packages = len(list(self.database))
         written_number = 0
+        length = 20
         
         for pkgname, versions in self.database.items():
             category, name = pkgname.split('/')
@@ -273,14 +274,14 @@ class PackageDB(object):
             pkgs.append(name)
             f.write(pkgs)
 
-            chars = ['-','\\','|','/']
+            chars = ['-', '\\', '|', '/']
             show = chars[written_number % 4]
             percent = (written_number * 100)//number_of_packages
-            length = 20
-            progress = (percent * 20)//100
-            blank = 20 - progress
+            progress = (percent * length)//100
+            blank = length - progress
 
-            sys.stdout.write("\r %s [%s%s] %s%%" % (show, "#" * progress, " " * blank, percent))
+            sys.stdout.write("\r %s [%s%s] %s%%" % \
+                             (show, "#" * progress, " " * blank, percent))
             sys.stdout.flush()
             written_number += 1
 
@@ -292,7 +293,7 @@ class PackageDB(object):
         self.additional_write()
 
         if self.database:
-            sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * 20, 100))
+            sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * length, 100))
             sys.stdout.flush()
             print("")
 
@@ -454,7 +455,8 @@ class PackageDB(object):
         """
         if not category or (not category in self.categories):
             raise InvalidKeyError('No such category: ' + category)
-        res = [x.split('/')[1] for x in self.database if x.split('/')[0] == category]
+        res = [x.split('/')[1] for x in self.database
+               if x.split('/')[0] == category]
         return res
 
     def list_catpkg_names(self):
@@ -509,7 +511,8 @@ class PackageDB(object):
             Dictionary with package ebuild data.
         """
         #a possible exception should be catched in the caller
-        return self.database[package.category + '/' + package.name][package.version]
+        return self.database[package.category \
+                             + '/' + package.name][package.version]
 
     def get_max_version(self, category, name):
         """
@@ -545,7 +548,8 @@ class DBGenerator(object):
     def __init__(self, package_db_class=PackageDB):
         self.package_db_class = package_db_class
 
-    def __call__(self, directory, repository, common_config=None, config=None, generate=True):
+    def __call__(self, directory, repository,
+                 common_config=None, config=None, generate=True):
         """
         Get a package database.
 
@@ -572,7 +576,8 @@ class DBGenerator(object):
         db_path = os.path.join(directory, repository, "db")
         pkg_db = self.package_db_class(db_path)
 
-        config_f = FileJSON(os.path.join(directory, repository), "config.json", [])
+        config_f = FileJSON(os.path.join(directory, repository),
+                            "config.json", [])
         if config:
             config_f.write(config)
         else:
@@ -587,7 +592,8 @@ class DBGenerator(object):
         if generate:
             pkg_db.clean()
             self.generate_tree(pkg_db, common_config, config)
-            pkg_db.write() #todo: make db write on every add_package and only necessary info
+            #todo: make db write on every add_package and only necessary info
+            pkg_db.write()
             pkg_db.manifest()
         return pkg_db
 
