@@ -38,8 +38,6 @@ class PackageDB(object):
     ~~~~~~~~~~~~~~~~~
     db dir
         manifest.json: database manifest
-        uri.json: URIes
-        info.json: information about database
         categories.json: information about categories
         category1
             packages.json: list of packages
@@ -113,8 +111,6 @@ class PackageDB(object):
         """
         Args:
             directory: database directory.
-            repo_uri: Repository URI.
-            db_uri: URI for synchronization with remote database.
         """
         self.CATEGORIES_NAME = 'categories.json'
         self.PACKAGES_NAME = 'packages.json'
@@ -462,6 +458,12 @@ class PackageDB(object):
         return res
 
     def list_catpkg_names(self):
+        """
+        List category/package entries.
+
+        Returns:
+            List with category/package entries.
+        """
         return list(self.database)
 
     def list_package_versions(self, category, name):
@@ -498,13 +500,13 @@ class PackageDB(object):
 
     def get_package_description(self, package):
         """
-        Get package description.
+        Get package ebuild data.
 
         Args:
             package: package_db.Package instance.
 
         Returns:
-            Dictionary with package description.
+            Dictionary with package ebuild data.
         """
         #a possible exception should be catched in the caller
         return self.database[package.category + '/' + package.name][package.version]
@@ -544,6 +546,29 @@ class DBGenerator(object):
         self.package_db_class = package_db_class
 
     def __call__(self, directory, repository, common_config=None, config=None, generate=True):
+        """
+        Get a package database.
+
+        A directory layout looks like:
+        backend directory
+            config.json
+            repo1 dir
+                config.json
+                db - directory with database
+            repo2 dir
+                config.json
+                db - directory with database
+
+        Args:
+            directory: Directory for package databases (backend directory).
+            repository: Repository name.
+            common_config: Backend config.
+            config: Repository config.
+            generate: Whether package tree should be generated.
+
+        Returns:
+            Package database.
+        """
         db_path = os.path.join(directory, repository, "db")
         pkg_db = self.package_db_class(db_path)
 
@@ -567,10 +592,28 @@ class DBGenerator(object):
         return pkg_db
 
     def generate_tree(self, pkg_db, common_config, config):
+        """
+        Generate package entries.
+
+        Args:
+            pkg_db: Package database.
+            common_config: Backend config.
+            config: Repository config.
+        """
         data = self.download_data(common_config, config)
         self.process_data(pkg_db, data, common_config, config)
 
     def download_data(self, common_config, config):
+        """
+        Obtain data for database generation.
+
+        Args:
+            common_config: Backend config.
+            config: Repository config.
+
+        Returns:
+            Downloaded data.
+        """
         uries = self.get_download_uries(common_config, config)
         uries = self.decode_download_uries(uries)
         data = {}
@@ -579,12 +622,47 @@ class DBGenerator(object):
         return data
 
     def process_uri(self, uri, data):
+        """
+        Download and parse data from a given URI.
+
+        Args:
+            uri: URI.
+            data: Data dictionary.
+        """
         data.update(load_remote_file(**uri))
 
     def get_download_uries(self, common_config, config):
+        """
+        Get uries to download from.
+
+        Args:
+            common_config: Backend config.
+            config: Repository config.
+
+        Returns:
+            List with URI entries.
+            Each entry has one of the following formats:
+            1. String with URI.
+            2. A dictionary with entries:
+                - uri: URI.
+                - parser: Parser to be applied to downloaded data.
+                - open_file: Whether parser accepts file objects.
+                - open_mode: Open mode for a downloaded file.
+                The only mandatory entry is uri.
+        """
         return [config["repo_uri"]]
 
     def decode_download_uries(self, uries):
+        """
+        Convert URI list with incomplete and string entries
+        into list with complete dictionary entries.
+
+        Args:
+            uries: List of URIes.
+
+        Returns:
+            List of URIes with dictionary entries.
+        """
         decoded = []
         for uri in uries:
             decuri = {}
@@ -604,13 +682,45 @@ class DBGenerator(object):
             decoded.append(decuri)
         return decoded
 
-    def parse_data(self):
-        pass #todo: raise no implemeted or add some reasonable default
+    def parse_data(self, data_file):
+        """
+        Parse downloaded data.
+
+        Args:
+            data_file: File name of open file object.
+
+        Returns:
+            Parsed data.
+        """
+        raise NotImplementedError
 
     def process_data(self, pkg_db, data, common_config, config):
+        """
+        Process downloaded data and fill database.
+
+        Args:
+            pkg_db: Package database.
+            data: Dictionary with data, keys are file names.
+            common_config; Backend config.
+            config: Repository config.
+        """
         pass
 
     def convert(self, configs, dict_name, value):
+        """
+        Convert a value using configs.
+        This function is aimed to be used for conversion
+        of values such as license or package names.
+
+        Args:
+            configs: List of configs.
+            dict_name: Name of a dictionary in config
+        that should be used for conversion.
+            value: Value to convert.
+
+        Returns:
+            Converted value.
+        """
         result = value
         for config in configs:
             if config:
@@ -621,6 +731,18 @@ class DBGenerator(object):
         return result
 
     def convert_dependency(self, configs, dependency, external=True):
+        """
+        Convert dependency.
+
+        Args:
+            configs: List of configs.
+            dependency: Dependency to be converted.
+            external: Whether external deps should be keeped.
+
+        Returns:
+            Right dependency name or None if dependency is external and
+        external == False.
+        """
         external_dep = ""
         for config in configs:
             if config:
@@ -637,12 +759,30 @@ class DBGenerator(object):
             return self.convert_internal_dependency(configs, dependency)
 
     def convert_internal_dependency(self, configs, dependency):
+        """
+        Hook to convert internal dependencies.
+        """
         return dependency
 
     def convert_external_dependency(self, configs, dependency):
+        """
+        Hook to convert external dependencies.
+        """
         return dependency
         
     def in_config(self, configs, list_name, value):
+        """
+        Check whether value is in config.
+
+        Args:
+            configs: List of configs.
+            list_name: Name of a list in config
+        that should be used for checking.
+            value: Value to look for.
+
+        Returns:
+            Boolean.
+        """
         result = False
         for config in configs:
             if config:
