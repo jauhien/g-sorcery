@@ -139,6 +139,9 @@ def get_pkgpath(root = None):
     return os.path.dirname(os.path.abspath(root))
 
 class ManifestEntry:
+    """
+    A manifest entry for a file.
+    """
     def __init__(self, directory, name, ftype):
         self.directory = directory
         self.name = name
@@ -146,6 +149,9 @@ class ManifestEntry:
         self.digest()
 
     def digest(self):
+        """
+        Digest a file associated with a manifest entry.
+        """
         h_sha256 = hashlib.new('SHA256')
         h_sha512 = hashlib.new('SHA512')
         h_whirlpool = hashlib.new('whirlpool')
@@ -161,6 +167,14 @@ class ManifestEntry:
 
 
 def fast_manifest(directory):
+    """
+    Digest package directory.
+    This function is intended to be used in place of repoman manifest,
+    as it is to slow.
+
+    Args:
+        directory: Directory.
+    """
     manifest = []
     metadata = os.path.join(directory, "metadata.xml")
 
@@ -181,6 +195,19 @@ def fast_manifest(directory):
 
 
 def _call_parser(f_name, parser, open_file = True, open_mode = 'r'):
+    """
+    Call parser on a given file.
+
+    Args:
+        f_name: File name.
+        parser: Parser function.
+        open_file: Whether parser accepts a file descriptor.
+        open_mode: Open mode for a file.
+
+    Returns:
+        A dictionary with one entry. Key if a file name, content is
+    content returned by parser.
+    """
     data = None
     if open_file:
         with open(f_name, open_mode) as f:
@@ -191,6 +218,20 @@ def _call_parser(f_name, parser, open_file = True, open_mode = 'r'):
 
 
 def load_remote_file(uri, parser, open_file = True, open_mode='r', output=""):
+    """
+    Load files from an URI.
+
+    Args:
+        uri: URI.
+        parser: Parser that will be applied to downloaded files.
+        open_file: Whether parser accepts a file descriptor.
+        open_mode: Open mode for a file.
+        output: What output name should downloaded file have
+    (it will be a key identifying data loaded from this file)
+
+    Returns:
+        Dictionary with a loaded data. Key is filename, content is data returned by parser.
+    """
     download_dir = TemporaryDirectory()
     loaded_data = {}
     if wget(uri, download_dir.name, output):
