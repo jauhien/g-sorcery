@@ -458,7 +458,7 @@ class Backend(object):
         else:
             masters = elist(config["repositories"][args.repository]["masters"])
         with open(os.path.join(overlay, 'metadata', 'layout.conf'), 'w') as f:
-            f.write("repo-name = %s\n" % overlay)
+            f.write("repo-name = %s\n" % os.path.basename(overlay))
             f.write("masters = %s\n" % masters)
         
         if args.digest:
