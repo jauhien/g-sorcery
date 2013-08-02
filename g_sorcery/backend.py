@@ -21,7 +21,7 @@ if py2k:
 else:
     import configparser
 
-from .g_collections import Package
+from .g_collections import Package, elist
 from .fileutils import fast_manifest, FileJSON
 from .exceptions import DependencyError, DigestError
 from .logger import Logger
@@ -451,6 +451,15 @@ class Backend(object):
         os.makedirs(os.path.join(overlay, 'profiles'))
         os.system("echo " + os.path.basename(overlay) + '>' + \
                   os.path.join(overlay, 'profiles', 'repo_name'))
+
+        os.makedirs(os.path.join(overlay, 'metadata'))
+        if not "masters" in config["repositories"][args.repository]:
+            masters = elist(["gentoo"])
+        else:
+            masters = elist(config["repositories"][args.repository]["masters"])
+        with open(os.path.join(overlay, 'metadata', 'layout.conf'), 'w') as f:
+            f.write("repo-name = %s\n" % overlay)
+            f.write("masters = %s\n" % masters)
         
         if args.digest:
             ebuild_g = self.ebuild_g_with_digest_class(pkg_db)

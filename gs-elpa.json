@@ -5,10 +5,12 @@
       "repo_uri": "http://elpa.gnu.org/packages/"
     }, 
     "marmalade": {
-      "repo_uri": "http://marmalade-repo.org/packages/"
+      "repo_uri": "http://marmalade-repo.org/packages/",
+      "masters": ["gentoo", "gnu-elpa"]
     }, 
     "melpa": {
-      "repo_uri": "http://melpa.milkbox.net/packages/"
+      "repo_uri": "http://melpa.milkbox.net/packages/",
+      "masters": ["gentoo", "gnu-elpa"]
     }
   },
   "common_config": {
