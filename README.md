@@ -53,9 +53,11 @@ To do it download above mentioned patch, place it in
 **/etc/portage/patches/app-portage/layman-9999/** directory and
 create a file **/etc/portage/bashrc** that looks like
 
+```bash
    post_src_prepare() {
        epatch_user
    }
+```
 
 Then you can emerge **app-portage/layman-9999**.
 
