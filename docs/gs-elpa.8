@@ -1,0 +1,186 @@
+.\" Man page generated from reStructuredText.
+.
+.TH GS-ELPA 8 "2013-08-04" "0.1" "g-sorcery"
+.SH NAME
+gs-elpa \- manage overlays for ELPA repositories
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH SYNOPSIS
+.sp
+\fBgs\-elpa\fP \fB\-o\fP \fIOVERLAY\fP [\fB\-r\fP \fIREPO\fP] \fBsync\fP
+.sp
+\fBgs\-elpa\fP \fB\-o\fP \fIOVERLAY\fP [\fB\-r\fP \fIREPO\fP] \fBlist\fP
+.sp
+\fBgs\-elpa\fP \fB\-o\fP \fIOVERLAY\fP [\fB\-r\fP \fIREPO\fP] \fBgenerate\fP \fIPACKAGE\fP
+.sp
+\fBgs\-elpa\fP \fB\-o\fP \fIOVERLAY\fP [\fB\-r\fP \fIREPO\fP] \fBinstall\fP \fIPACKAGE\fP
+.sp
+\fBgs\-elpa\fP \fB\-o\fP \fIOVERLAY\fP [\fB\-r\fP \fIREPO\fP] \fBgenerate\-tree\fP [\fB\-d\fP]
+.SH DESCRIPTION
+.sp
+\fBgs\-elpa\fP is an ebuild generator for ELPA repositories \-\- repositories with
+elisp packages for emacs.
+.sp
+There are two ways of using \fBgs\-elpa\fP:
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+use it with \fBlayman\fP
+.sp
+In this case all you need to do is install \fBlayman\-9999\fP, \fBg\-sorcery\fP
+and \fBgs\-elpa\fP. Then you should just run \fIlayman \-L\fP as
+root and find an overlay you want. Type of overlay will be
+displayed as \fIg\-sorcery\fP. Then you add this overlay as
+usual. It\(aqs all you need to do and it\(aqs the recommended way of
+using \fBgs\-elpa\fP.
+.IP \(bu 2
+use it as stand\-alone tool
+.sp
+In this case you should create an overlay (see \fBportage\fP documentation), sync it and populate
+it with one or more ebuilds. Then ebuilds could be installed by emerge or by \fBgs\-elpa\fP tool.
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SH OPTIONS
+.INDENT 0.0
+.TP
+.B \fB\-\-overlay\fP \fIOVERLAY\fP, \fB\-o\fP \fIOVERLAY\fP
+Overlay directory. This option is mandatory if there is no
+\fBdefault_overlay\fP entry in a backend config.
+.TP
+.B \fB\-\-repository\fP \fIREPO\fP, \fB\-r\fP \fIREPO\fP
+Repository name. Can be one of \fBgnu\-elpa\fP, \fBmarmalade\fP, \fBmelpa\fP.
+.UNINDENT
+.SH COMMANDS
+.INDENT 0.0
+.TP
+.B \fBsync\fP
+Synchronize a repository database.
+.TP
+.B \fBlist\fP
+List packages available in a repository.
+.TP
+.B \fBgenerate\fP
+Generate a given ebuild and all its dependencies.
+.TP
+.B \fBinstall\fP
+Generate and install an ebuild using your package mangler.
+.TP
+.B \fBgenerate\-tree\fP
+Generate entire overlay structure. Without option \fB\-d\fP after
+this command sources are not fetched during generation and there
+are no entries for them in Manifest files.
+.UNINDENT
+.SH FILES
+.INDENT 0.0
+.TP
+.B \fB/etc/g\-sorcery/gs\-elpa.json\fP
+Backend config.
+.TP
+.B \fB/etc/layman/overlays/gs\-elpa\-overlays.xml\fP
+List of available repositories.
+.UNINDENT
+.SH EXAMPLES
+.INDENT 0.0
+.TP
+.B Using gs\-elpa with layman
+Execute
+.sp
+\fBlayman \-L\fP
+.sp
+Find there an overlay you need (there are
+3 gs\-elpa overlays currently: gnu\-elpa, marmalade and melpa).
+Add, e.g.
+.sp
+\fBlayman \-a gnu\-elpa \-a marmalade\fP
+.sp
+Emerge any package from it, e.g.
+.sp
+\fBemerge \-va clojure\-mode\fP
+.TP
+.B Generating user ebuilds in user overlay
+Create new user overlay. Run
+.sp
+\fBgs\-elpa \-o\fP \fIOVERLAY_DIRECTORY\fP \fB\-r gnu\-elpa\fP \fBsync\fP
+.sp
+List packages:
+.sp
+\fBgs\-elpa \-o\fP \fIOVERLAY_DIRECTORY\fP \fB\-r gnu\-elpa\fP \fBlist\fP
+.sp
+Install any package you want:
+.sp
+\fBgs\-elpa \-o\fP \fIOVERLAY_DIRECTORY\fP \fB\-r gnu\-elpa\fP \fBinstall\fP \fIPACKAGE\fP
+.sp
+Repositories you can use are gnu\-elpa, marmalade and melpa. You can use them
+all in one overlay. Note, that if you call \fBgenerate\-tree\fP command your overlay
+will be wiped and overlay tree for a given repository will be generated. Be careful!
+.UNINDENT
+.SH NOTES
+.sp
+1. At the moment upstream layman does not support g\-sorcery overlay type.
+You should patch it with \fIhttps://raw.github.com/jauhien/g\-sorcery/master/layman\-git\-g\-sorcery.patch\fP.
+.sp
+To do it download above mentioned patch, place it in
+\fB/etc/portage/patches/app\-portage/layman\-9999/\fP directory and
+create a file \fB/etc/portage/bashrc\fP that looks like
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+post_src_prepare() {
+    epatch_user
+}
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Then you can emerge \fBapp\-portage/layman\-9999\fP.
+.INDENT 0.0
+.IP 2. 3
+At the moment the only package mangler \fBgs\-elpa\fP supports is \fBportage\fP.
+.UNINDENT
+.SH BUGS
+.sp
+Some packages in \fBmarmalade\fP and \fBmelpa\fP depend on packages from gnu\-elpa. \fBinstall\fP and \fBgenerate\fP
+commands will fail on them as dependencies between overlays are not supported currently. So the
+recommended way of using gs\-elpa is using it with layman. Even doing so you should always add
+gnu\-elpa repository: \fBlayman \-a gnu\-elpa\fP.
+.SH SEE ALSO
+.sp
+\fBgs\-ctan\fP(8), \fBportage\fP(5), \fBemerge\fP(1), \fBlayman\fP(8)
+.SH AUTHOR
+Written by Jauhien Piatlicki <piatlicki@gmail.com>. GSoC idea
+and mentorship by Rafael Martins. Lots of help and improvements
+by Brian Dolbec.
+.SH COPYRIGHT
+Copyright (c) 2013 Jauhien Piatlicki, License: GPL-2
+.\" Generated by docutils manpage writer.
+.

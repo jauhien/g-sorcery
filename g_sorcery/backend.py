@@ -144,7 +144,6 @@ class Backend(object):
         backend_path = os.path.join(overlay,
                             self.sorcery_dir, config["package"])
         repository = args.repository
-        repository = args.repository
         repository_config = {}
 
         if "common_config" in config:

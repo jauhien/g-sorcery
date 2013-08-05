@@ -1,4 +1,5 @@
 Objective
+=========
 
 There is a lot of 3rd party software providers that resemble overlays
 or repositories of Linux distributions in some way. For example: pypi,
@@ -42,26 +43,78 @@ Backend should have everything specific for a given 3rd party software
 provider: concrete algorithms for ebuild-generation, eclasses,
 databases with information about available software and so on.
 
-Note that for tests of an ELPA backend you'll need dev-python/sexpdata
-available in `jauhien' overlay (just do `layman -a jauhien')
+Installation and using
+======================
 
-An ebuild for g-sorcery was added to `jauhien' overlay. At the moment
-package is very alpha and unstable.
+At the moment upstream layman does not support g-sorcery overlay type.
+You should patch it with `https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch`.
 
-sync, list, install and generate-tree commands work. For layman integration
-you'll need patch layman from git with layman-git-g-sorcery.patch.
+To do it download above mentioned patch, place it in
+**/etc/portage/patches/app-portage/layman-9999/** directory and
+create a file **/etc/portage/bashrc** that looks like
 
-Testing process:
-a) Ebuild generation in a given overlay:
-    - create an overlay
-    - run `gs-elpa -o path_to_overlay  -r gnu-elpa sync'
-    - run `gs-elpa -o path_to_overlay list'
-    - run `gs-elpa -o path_to_overlay install packagename portage_flags'
+   post_src_prepare() {
+       epatch_user
+   }
 
-b) Integration with layman:
-    - install layman from git patched with `layman-git-g-sorcery.patch'
-    - run `sudo layman -a gnu-elpa'
+Then you can emerge **app-portage/layman-9999**.
 
-CTAN backend works now. So the same command may be used for testing it.
-You only should replace gs-elpa with gs-ctan. And use ctan repository,
-e.g. sync will look like `gs-ctan -o path_to_overlay  -r ctan sync'
+Add `jauhien` overlay: **layman -a jauhien**.
+
+Emerge g-sorcery: **emerge -va g-sorcery**.
+
+Currently two backends are available: **gs-elpa** and **gs-ctan**.
+
+Here is an example of using gs-elpa backend.
+
+There are two ways of using **gs-elpa**:
+
+* use it with **layman**
+
+In this case all you need to do is install **layman-9999**, **g-sorcery**
+and **gs-elpa**. Then you should just run `layman -L` as
+root and find an overlay you want. Type of overlay will be
+displayed as *g-sorcery*. Then you add this overlay as
+usual. It's all you need to do and it's the recommended way of
+using **gs-elpa**.
+
+* use it as stand-alone tool
+
+In this case you should create an overlay (see **portage** documentation), sync it and populate
+it with one or more ebuilds. Then ebuilds could be installed by emerge or by **gs-elpa** tool.
+
+**Using gs-elpa with layman**
+
+Execute
+
+**layman -L**
+
+Find there an overlay you need (there are
+3 gs-elpa overlays currently: gnu-elpa, marmalade and melpa).
+Add, e.g.
+
+**layman -a gnu-elpa -a marmalade**
+
+Emerge any package from it, e.g.
+
+**emerge -va clojure-mode**
+
+**Generating user ebuilds in user overlay**
+
+Create new user overlay. Run
+
+**gs-elpa -o** *OVERLAY_DIRECTORY* **-r gnu-elpa** **sync**
+
+List packages:
+
+**gs-elpa -o** *OVERLAY_DIRECTORY* **-r gnu-elpa** **list**
+
+Install any package you want:
+
+**gs-elpa -o** *OVERLAY_DIRECTORY* **-r gnu-elpa** **install** *PACKAGE*
+
+Repositories you can use are gnu-elpa, marmalade and melpa. You can use them
+all in one overlay. Note, that if you call **generate-tree** command your overlay
+will be wiped and overlay tree for a given repository will be generated. Be careful!
+
+See man pages of **gs-elpa** and **gs-ctan** for further information.
