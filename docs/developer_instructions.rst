@@ -638,3 +638,5 @@ Before doing it you should have defined classes you pass to it as parameters. Th
 generator, two ebuild generators, eclass and metadata generators.
 
 Also you should write an executable that calls g-sorcery and some configs.
+
+To have better understanding you can look at gs-elpa and gs-ctan backends available in g-sorcery repository.
