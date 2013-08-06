@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.10: http://docutils.sourceforge.net/" />
+<title>Developer Instructions</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7514 2012-09-14 14:27:12Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="developer-instructions">
+<h1 class="title">Developer Instructions</h1>
+
+<div class="section" id="g-sorcery-overview">
+<h1>g-sorcery overview</h1>
+<p><strong>g-sorcery</strong> is a framework aimed to easy development of ebuild
+generators.</p>
+<p>Some terms used in this guide:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>3rd party software provider</strong> or <strong>repository</strong></dt>
+<dd><p class="first last">A system of software distribution like CTAN or CPAN that
+provides packages for some domain (e.g. TeX packages or elisp
+packages for emacs).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>backend</strong></dt>
+<dd><p class="first last">A tool developed using <strong>g-sorcery</strong> framework that provides
+support for repositories of a given type.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>overlay</strong></dt>
+<dd><p class="first last">Usual Gentoo overlay.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>g-sorcery</strong> consists of different parts:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>package_db.PackageDB</strong></dt>
+<dd><p class="first last">A package database. It holds information about all available
+packages in a given repository.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>package_db.DBGenerator</strong></dt>
+<dd><p class="first last">A fabric that creates PackageDB object and fills it with information.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>backend.Backend</strong></dt>
+<dd><p class="first last">Backend that processes user commands.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>ebuild</strong></dt>
+<dd><p class="first last">Module with different ebuild generators.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>eclass</strong></dt>
+<dd><p class="first last">Module with eclass generators.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>metadata.MetadataGenerator</strong></dt>
+<dd><p class="first last">Metadata generator.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Also there are other modules and classes that will be described later.</p>
+<p>Usually repositories of a given type provide some kind of database. It can
+be just a plain ASCII file, xmlrpc interface or just a joint set of web-pages.
+This database describes what packages are available and how to install them.</p>
+<p>Also usually there is an upstream tool for repositories of a given type that
+allows installation of available packages. The main problem when using
+such tools is that package mangler you use is not aware of them and they are
+not aware of your package manager.</p>
+<p>The idea of <strong>g-sorcery</strong> is to convert a database provided by a repository
+into well defined format and then generate an overlay with ebuilds.
+Then available packages can be installed as usual <strong>Gentoo</strong> packages.</p>
+<p>So there are two phases of backend operation:</p>
+<ul class="simple">
+<li>synchronize with repository database</li>
+<li>populate overlay using obtained information</li>
+</ul>
+<p>There are two ways of using backend:</p>
+<ul class="simple">
+<li>run it as a CLI tool manually</li>
+<li>use its integration with layman</li>
+</ul>
+</div>
+<div class="section" id="backend-structure">
+<h1>Backend structure</h1>
+<p>The only mandatory module in a backend is called <strong>backend</strong>. It should contain
+at least one variable called <strong>instance</strong> that has a <strong>__call__</strong> method that
+takes 4 arguments. These arguments are:</p>
+<ul class="simple">
+<li>self</li>
+<li>command line arguments</li>
+<li>backend config</li>
+<li>g-sorcery config</li>
+</ul>
+<p>Usually <strong>instance</strong> variable should be an instance of a class g_sorcery.backend.Backend
+or derived class.</p>
+<p>g_sorcery.backend.Backend constructor takes 8 arguments. They are:</p>
+<ul class="simple">
+<li>self</li>
+<li>Package database generator class</li>
+<li>Two ebuild generator classes</li>
+<li>Eclass generator class</li>
+<li>Metadata generator class</li>
+<li>Package database class</li>
+<li>Boolean variable that defines method of database generation</li>
+</ul>
+<p>There are two ebuild generator classes as there are two scenarios of using backend on user
+side: generate the entire overlay tree (possibly by layman) or generate a given ebuild
+and its dependencies. In a first case it would be very bad idea to have sources in ebuild's
+SRC_URI as during manifest generation for an overlay all the sources would be downloaded
+to the user's comuter that inevitably would made user really happy. So one ebuild generator
+generates ebuild with empty SRC_URI. Note that a mechanism for downloading of sources during
+ebuild merging should be provided. For an example see <strong>git-2</strong> eclass from the main tree or
+any eclass from backends provided with g-sorcery.</p>
+<p>Usually downloading and parsing of a database from a repository is an easy operation. But sometimes
+there could exist some problems. Hence exists the last parameter in Backend constructor that
+allows syncing with already generated database available somewhere in Internet.</p>
+<p>To do something usefull backend should customize any classes from g-sorcery it needs
+and define backend.instance variable using those classes. Other two things backend should do are:</p>
+<ul class="simple">
+<li>install a binary that calls g-sorcery with appropriate backend name (see man g-sorcery)</li>
+<li>install a config that allows g-sorcery find appropriate backend module</li>
+</ul>
+<p>A binary should just pass arguments to g-sorcery. For a backend named gs-elpa it could look like</p>
+<pre class="code literal-block">
+#!/bin/bash
+
+g-sorcery g-elpa $&#64;
+</pre>
+<div class="section" id="backend-config">
+<h2>Backend config</h2>
+<p>Backend config is just a JSON file with a dictionary. There are two mandatory entries:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>package</dt>
+<dd><p class="first last">Its value should be a string with a package containing backend.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>repositories</dt>
+<dd><p class="first last">A dictionary describing available repositories. Should have at least one entry.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Backend config should have a name BACKEND.js and should be installed under <strong>/etc/g-sorcery</strong>
+directory. BACKEND here is a backend name which was used in a g-sorcery call.</p>
+<p>An entry in repositories dictionary as key should have a repository name and should be a dictionary
+with repository properties. The only mandatory property is <strong>repo_uri</strong> in case database is
+generated using info downloaded from the repository or <strong>db_uri</strong> in case database is
+just synced with another already generated database. Also there can be a <strong>masters</strong> entry that
+contains a list of overlays this repository depends on. If present it should contain at least
+<strong>gentoo</strong> entry.</p>
+<p>A simple backend config:</p>
+<pre class="code literal-block">
+ {
+   &quot;package&quot;: &quot;gs_elpa&quot;,
+   &quot;repositories&quot;: {
+     &quot;gnu-elpa&quot;: {
+       &quot;repo_uri&quot;: &quot;http://elpa.gnu.org/packages/&quot;
+     },
+     &quot;marmalade&quot;: {
+       &quot;repo_uri&quot;: &quot;http://marmalade-repo.org/packages/&quot;,
+       &quot;masters&quot;: [&quot;gentoo&quot;, &quot;gnu-elpa&quot;]
+     },
+     &quot;melpa&quot;: {
+       &quot;repo_uri&quot;: &quot;http://melpa.milkbox.net/packages/&quot;,
+       &quot;masters&quot;: [&quot;gentoo&quot;, &quot;gnu-elpa&quot;]
+     }
+   }
+}
+</pre>
+</div>
+</div>
+<div class="section" id="package-database">
+<h1>Package database</h1>
+<div class="section" id="directory-layout">
+<h2>Directory layout</h2>
+<p>Package database is a directory tree with JSON files. The layout of this tree looks like:</p>
+<pre class="code literal-block">
+db dir
+    manifest.json: database manifest
+    categories.json: information about categories
+    category1
+        packages.json: list of packages
+        package1
+            versions.json: list of versions
+            version1.json: description of a package
+            version2.json: description of a package
+            ...
+        package2
+        ...
+    category2
+    ...
+</pre>
+<p>Files named version.json contain ebuild data which is just a dictionary with information
+relevant for ebuild, eclass and metadata generation for a given package.</p>
+</div>
+<div class="section" id="packagedb-class">
+<h2>PackageDB class</h2>
+<p>PackageDB class is aimed for interaction with package database. It has methods that allow
+to add categories and packages and to do queries on them. Usually you do not want to customize this
+class. But in case you want there is number of methods that can be redifend.</p>
+<p>First of all if you have a database that should be synced with another already generate database
+you can redifine URI to be used for syncing using <strong>get_real_db_uri</strong> method.</p>
+<p>There is a number of hooks that are called after package, category or the whole database is
+written/read:</p>
+<ul class="simple">
+<li>additional_write_version</li>
+<li>additional_write_package</li>
+<li>additional_write_category</li>
+<li>additional_write</li>
+<li>additional_read_version</li>
+<li>additional_read_package</li>
+<li>additional_read_category</li>
+<li>additional_read</li>
+</ul>
+<p>Note that before add any package you should add a category for it using <strong>add_category</strong>.
+Then packages can be added using <strong>add_package</strong>. PackageDB currently does not write changes
+automatically, so you should call <strong>write</strong> after changes are done. This is not relevant
+for database changing in <strong>process_data</strong> method of database generator as there all changes
+are written by other methods it calls internally after <strong>process_data</strong>.</p>
+</div>
+<div class="section" id="json-serializable-objects">
+<h2>JSON serializable objects</h2>
+<p>If you need to store an object in a database it should be JSON serializable in terms of
+g_sorcery.serialization module. It means it should define two methods:</p>
+<ul class="simple">
+<li>usual method <strong>serialize</strong> that returns a JSON serializable object in terms of standard Python
+json module</li>
+<li>class method <strong>deserialize</strong> that takes a value returned by <strong>serialize</strong> and constructs new instance
+of your class using it</li>
+</ul>
+</div>
+<div class="section" id="dependency-handling">
+<h2>Dependency handling</h2>
+<p>There is a special class g_sorcery.g_collections.Dependency aimed to handle dependencies.
+Its constructor takes two mandatory parameters:</p>
+<ul class="simple">
+<li>category</li>
+<li>package</li>
+</ul>
+<p>and two additional parameters:</p>
+<ul class="simple">
+<li>version</li>
+<li>operator</li>
+</ul>
+<p>These two are the same as version and operator used in the usual package atom.</p>
+<p>For storing dependency lists in a database you should use a collection
+g_sorcery.g_collections.serializable_elist. Its constructor takes an iterable and a
+separator that will be used to separate items when this collection is printed. In case of
+storing dependencies for using them in ebuild's DEPEND variable a separator should be &quot;nt&quot;.</p>
+<p>Ebuild data for every package version must have a &quot;dependencies&quot; entry. This entry is used
+by backend during deciding which ebuilds should be generated. So make sure it does not have
+any external dependencies.</p>
+</div>
+</div>
+<div class="section" id="package-database-generator">
+<h1>Package database generator</h1>
+<div class="section" id="customizing-dbgenerator">
+<h2>Customizing DBGenerator</h2>
+<p>To do something usefull you should customize package_db.DBGenerator class.
+With this aim you should subclass it and define some methods. Here they are:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>get_download_uries</dt>
+<dd><p class="first">Get a list with download URI entries.
+Each entry has one of the following formats:</p>
+<ol class="arabic">
+<li><p class="first">String with URI.</p>
+</li>
+<li><dl class="first docutils">
+<dt>A dictionary with entries:</dt>
+<dd><ul class="first simple">
+<li>uri: URI.</li>
+<li>parser: Parser to be applied to downloaded data.</li>
+<li>open_file: Whether parser accepts file objects.</li>
+<li>open_mode: Open mode for a downloaded file.</li>
+</ul>
+<p class="last">The only mandatory entry is uri.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<p class="last">The default implementation returns [backend_config[&quot;repositories&quot;][REPOSITORY][&quot;repo_uri&quot;]].</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>parse_data</dt>
+<dd><p class="first last">This method parses a file downloaded from a repository
+and returns its content in any form you think useful.
+There is no useful default implementation of this method.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>process_data</dt>
+<dd><p class="first last">This method should fill a package database with entries using
+already downloaded and parsed data.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Generally speaking these are all the method you should implement.</p>
+</div>
+<div class="section" id="value-convertion">
+<h2>Value convertion</h2>
+<p>During database generation you may need to convert some values provided by repository
+(e.g license names that can not coincide with those used in Gentoo). With this aim
+you can use <strong>convert</strong> function. To understand how it works see its sources in
+g_sorcery.package_db.DBGenerator and as an example CTAN backend.</p>
+<p>Here is a very short example. If you want to convert licenses in the same way for all
+repositories of this type you just add <strong>common_config</strong> entry to backend config which
+looks like:</p>
+<pre class="code literal-block">
+&quot;common_config&quot;: {
+  &quot;licenses&quot;: {
+   &quot;apache2&quot;: &quot;Apache-2.0&quot;,
+   &quot;artistic&quot;: &quot;Artistic&quot;,
+   &quot;Artistic2&quot;: &quot;Artistic-2&quot;,
+   &quot;gpl&quot;: &quot;GPL-1&quot;,
+   &quot;gpl2&quot;: &quot;GPL-2&quot;,
+   &quot;gpl3&quot;: &quot;GPL-3&quot;,
+   &quot;knuth&quot;: &quot;TeX&quot;,
+   &quot;lgpl&quot;: &quot;LGPL-2&quot;,
+   &quot;lgpl2.1&quot;: &quot;LGPL-2.1&quot;,
+   &quot;lppl&quot;: &quot;LPPL-1.2&quot;,
+   &quot;lppl1&quot;: &quot;LPPL-1.2&quot;,
+   &quot;lppl1.2&quot;: &quot;LPPL-1.2&quot;,
+   &quot;lppl1.3&quot;: &quot;LPPL-1.3c&quot;
+  }
+}
+</pre>
+<p>And then call in your <strong>process_data</strong> method</p>
+<pre class="code literal-block">
+license = self.convert([common_config, config], &quot;licenses&quot;, repo_license)
+</pre>
+<p>Where <strong>common_config</strong>, <strong>config</strong> are config provided as arguments to your <strong>process_data</strong> method
+and <strong>repo_license</strong> is a license name used by the repository.</p>
+<p>There is a special conversion function used for dependencies: <strong>convert_dependency</strong>. To use it you should
+usually redefine <strong>convert_internal_dependency</strong> and <strong>convert_external_dependency</strong>. To decide whether
+a dependency is external database generator uses <strong>external</strong> entry in config.</p>
+<p>You may want to test whether there is a given value in given entry in config. To do it use
+<strong>in_config</strong> function.</p>
+</div>
+</div>
+<div class="section" id="eclass-generator">
+<h1>Eclass generator</h1>
+<p>Usualy you do not want to modify eclass generator. Currently it is very simple: it just returns eclasses
+from a given directory. So all you should do is populating a directory with eclasses and then
+inheriting g_sorcery.eclass.EclassGenerator and defining a directory in constructor. It should look
+like</p>
+<pre class="code literal-block">
+class ElpaEclassGenerator(EclassGenerator):
+    &quot;&quot;&quot;
+    Implementation of eclass generator. Only specifies a data directory.
+    &quot;&quot;&quot;
+    def __init__(self):
+        super(ElpaEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
+</pre>
+<p>There is no common eclass currently. I plan to change it in the future, so your eclass code can
+inherit any common functionality.</p>
+</div>
+<div class="section" id="ebuild-generator">
+<h1>Ebuild generator</h1>
+<p>There is a number of ebuild generators in g_sorcery.ebuild module. The DefaultEbuildGenerator
+is a recommended one. To use it you should inherit it and define an ebuild layout in constructor.</p>
+<p>Layout has entries for vars and inherited eclasses. Each entry is a list.
+Entries are processed in the following order:</p>
+<ul class="simple">
+<li>vars_before_inherit</li>
+<li>inherit</li>
+<li>vars_after_inherit</li>
+<li>vars_after_description</li>
+<li>vars_after_keywords</li>
+</ul>
+<p><strong>inherit</strong> entry is just a list of eclass names.</p>
+<p><strong>vars*</strong> entries are lists of variables in two possible formats:</p>
+<ol class="arabic simple">
+<li>A string with variable name</li>
+<li>A tuple (varname, value)</li>
+</ol>
+<p>Variable names are automatically transformed to the upper-case during ebuild generation.</p>
+<p>An example of ebuild generator:</p>
+<pre class="code literal-block">
+Layout = collections.namedtuple(&quot;Layout&quot;,
+    [&quot;vars_before_inherit&quot;, &quot;inherit&quot;,
+     &quot;vars_after_description&quot;, &quot;vars_after_keywords&quot;])
+
+class ElpaEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
+    &quot;&quot;&quot;
+    Implementation of ebuild generator without sources digesting.
+    &quot;&quot;&quot;
+    def __init__(self, package_db):
+
+        vars_before_inherit = \
+          [&quot;repo_uri&quot;, &quot;source_type&quot;, &quot;realname&quot;]
+
+        inherit = [&quot;g-elpa&quot;]
+
+        vars_after_description = \
+          [&quot;homepage&quot;]
+
+        vars_after_keywords = \
+          [&quot;depend&quot;, &quot;rdepend&quot;]
+
+        layout = Layout(vars_before_inherit, inherit,
+                    vars_after_description, vars_after_keywords)
+
+        super(ElpaEbuildWithoutDigestGenerator, self).__init__(package_db, layout)
+</pre>
+</div>
+<div class="section" id="metadata-generator">
+<h1>Metadata generator</h1>
+<p>To use metadata generator you should just define some variables in ebuild data.</p>
+<div class="section" id="xml-schema-format">
+<h2>XML schema format</h2>
+<p>Metadata generator uses a XML schema in format defined in g_sorcery.metadata module.
+Schema is a list of entries. Each entry describes one XML tag.
+Entry is a dictionary. Dictionary keys are:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>name</strong></dt>
+<dd><p class="first last">Name of a tag</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>multiple</strong></dt>
+<dd><p class="first last">Defines if a given tag can be used more then one time. It is a tuple. First element
+of a tuple is boolean. If it is set a tag can be repeated. Second element is a string.
+If it is not empty, it defines a name for an attribute
+that will distinguish different entries of a tag.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>required</strong></dt>
+<dd><p class="first last">Boolean that defines if a given tag is required.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>subtags</strong></dt>
+<dd><p class="first last">List of subtags.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="data-dictinonary-format">
+<h2>Data dictinonary format</h2>
+<p>The part of ebuild data used for metadata generation should have data dictionary format
+also defined in g_sorcery.metadata.</p>
+<p>Keys correspond to tags from a schema with the same name.
+If a tag is not multiple without subkeys value is just a
+string with text for the tag.
+If tag is multiple value is a list with entries
+corresponding to a single tag.
+If tag has subtags value is a dictionary with entries
+corresponding to subkeys and <strong>text</strong> entry corresponding
+to text for the tag.
+If tag should have attributes value is a tuple or list with
+0 element containing an attribute and 1 element containing
+a value for the tag as described previously.</p>
+</div>
+<div class="section" id="metadata-xml-schema">
+<h2>Metadata XML schema</h2>
+<p>Metadata XML schema looks like</p>
+<pre class="code literal-block">
+default_schema = [{'name' : 'herd',
+                   'multiple' : (True, &quot;&quot;),
+                   'required' : False,
+                   'subtags' : []},
+
+                   {'name' : 'maintainer',
+                   'multiple' : (True, &quot;&quot;),
+                   'required' : False,
+                   'subtags' : [{'name' : 'email',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : True,
+                                 'subtags' : []},
+                                 {'name' : 'name',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'description',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 ]
+                    },
+
+                    {'name' : 'longdescription',
+                     'multiple' : (False, &quot;&quot;),
+                     'required' : False,
+                     'subtags' : []},
+
+                     {'name' : 'use',
+                     'multiple' : (False, &quot;&quot;),
+                     'required' : False,
+                     'subtags' : [{'name' : 'flag',
+                                 'multiple' : (True, &quot;name&quot;),
+                                 'required' : True,
+                                 'subtags' : []}]
+                     },
+
+                     {'name' : 'upstream',
+                     'multiple' : (False, &quot;&quot;),
+                     'required' : False,
+                     'subtags' : [{'name' : 'maintainer',
+                                 'multiple' : (True, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : [{'name' : 'name',
+                                               'multiple' : (False, &quot;&quot;),
+                                               'required' : True,
+                                               'subtags' : []},
+                                               {'name' : 'email',
+                                               'multiple' : (False, &quot;&quot;),
+                                               'required' : False,
+                                               'subtags' : []}]},
+                                {'name' : 'changelog',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'doc',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'bugs-to',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : []},
+                                 {'name' : 'remote-id',
+                                 'multiple' : (False, &quot;&quot;),
+                                 'required' : False,
+                                 'subtags' : []},
+                                ]
+                        },
+                   ]
+</pre>
+<p>So to have metadata.xml filled with e.g. maintainer info you should add to ebuild data
+something like</p>
+<pre class="code literal-block">
+{'maintainer' : [{'email' : 'piatlicki&#64;gmail.com',
+                  'name' : 'Jauhien Piatlicki'}]}
+</pre>
+</div>
+</div>
+<div class="section" id="layman-integration">
+<h1>Layman integration</h1>
+<p>There is a <strong>layman</strong> integration for <strong>g-sorcery</strong> (thanks to Brian Dolbec and Auke Booij here).
+To use it you just need to install and xml file describing your repositories in
+<strong>/etc/layman/overlays</strong> directory. For our example of backend config we could write an xml file
+that looks like</p>
+<pre class="code literal-block">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE repositories SYSTEM &quot;/dtd/repositories.dtd&quot;&gt;
+&lt;repositories xmlns=&quot;&quot; version=&quot;1.0&quot;&gt;
+&lt;repo quality=&quot;experimental&quot; status=&quot;unofficial&quot;&gt;
+    &lt;name&gt;gnu-elpa&lt;/name&gt;
+    &lt;description&gt;packages for emacs&lt;/description&gt;
+    &lt;homepage&gt;http://elpa.gnu.org/&lt;/homepage&gt;
+    &lt;owner&gt;
+      &lt;email&gt;piatlicki&#64;gmail.com&lt;/email&gt;
+      &lt;name&gt;Jauhien Piatlicki&lt;/name&gt;
+    &lt;/owner&gt;
+    &lt;source type=&quot;g-sorcery&quot;&gt;gs-elpa gnu-elpa&lt;/source&gt;
+&lt;/repo&gt;
+&lt;repo quality=&quot;experimental&quot; status=&quot;unofficial&quot;&gt;
+    &lt;name&gt;marmalade&lt;/name&gt;
+    &lt;description&gt;packages for emacs&lt;/description&gt;
+    &lt;homepage&gt;http://marmalade-repo.org/&lt;/homepage&gt;
+    &lt;owner&gt;
+      &lt;email&gt;piatlicki&#64;gmail.com&lt;/email&gt;
+      &lt;name&gt;Jauhien Piatlicki&lt;/name&gt;
+    &lt;/owner&gt;
+    &lt;source type=&quot;g-sorcery&quot;&gt;gs-elpa marmalade&lt;/source&gt;
+&lt;/repo&gt;
+&lt;repo quality=&quot;experimental&quot; status=&quot;unofficial&quot;&gt;
+    &lt;name&gt;melpa&lt;/name&gt;
+    &lt;description&gt;packages for emacs&lt;/description&gt;
+    &lt;homepage&gt;http://melpa.milkbox.net&lt;/homepage&gt;
+    &lt;owner&gt;
+      &lt;email&gt;piatlicki&#64;gmail.com&lt;/email&gt;
+      &lt;name&gt;Jauhien Piatlicki&lt;/name&gt;
+    &lt;/owner&gt;
+    &lt;source type=&quot;g-sorcery&quot;&gt;gs-elpa melpa&lt;/source&gt;
+&lt;/repo&gt;
+&lt;/repositories&gt;
+</pre>
+<p>In entries <strong>&lt;source type=&quot;g-sorcery&quot;&gt;gs-elpa melpa&lt;/source&gt;</strong> the source type
+should always be <strong>g-sorcery</strong>, <strong>gs-elpa</strong> is backend name and <strong>melpa</strong> is repository name.</p>
+<p>For full description of format of this file see <strong>layman</strong> documentation.</p>
+<p>Note: at the moment layman-9999 does not support <strong>g-sorcery</strong> overlay type and you should
+patch it with <a class="reference external" href="https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch">https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch</a></p>
+</div>
+<div class="section" id="summary">
+<h1>Summary</h1>
+<p>So to create your own backend you should write a module named <strong>backend</strong> and define there
+a variable named <strong>instance</strong> that is an instance of g_sorcery.backend.Backend class. Or something
+that quacks like this class.</p>
+<p>Before doing it you should have defined classes you pass to it as parameters. They should be database
+generator, two ebuild generators, eclass and metadata generators.</p>
+<p>Also you should write an executable that calls g-sorcery and some configs.</p>
+</div>
+</div>
+</body>
+</html>

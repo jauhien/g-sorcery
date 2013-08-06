@@ -47,7 +47,7 @@ Installation and using
 ======================
 
 At the moment upstream layman does not support g-sorcery overlay type.
-You should patch it with `https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch`.
+You should [patch it](https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch).
 
 To do it download above mentioned patch, place it in
 **/etc/portage/patches/app-portage/layman-9999/** directory and
@@ -120,3 +120,5 @@ all in one overlay. Note, that if you call **generate-tree** command your overla
 will be wiped and overlay tree for a given repository will be generated. Be careful!
 
 See man pages of **gs-elpa** and **gs-ctan** for further information.
+
+If you want to develop a new backend see [developer's instructions](./docs/developer_instructions.html).
