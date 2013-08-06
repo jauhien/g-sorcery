@@ -121,4 +121,4 @@ will be wiped and overlay tree for a given repository will be generated. Be care
 
 See man pages of **gs-elpa** and **gs-ctan** for further information.
 
-If you want to develop a new backend see [developer's instructions](./docs/developer_instructions.rst).
+If you want to develop a new backend see [developer's instructions](https://github.com/jauhien/g-sorcery/blob/master/docs/developer_instructions.rst).
