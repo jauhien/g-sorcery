@@ -13,6 +13,7 @@
 
 import bs4
 
+from g_sorcery.exceptions import DownloadingError
 from g_sorcery.g_collections import Package
 from g_sorcery.package_db import DBGenerator
 
@@ -44,7 +45,13 @@ class PypiDBGenerator(DBGenerator):
                               "output": package + "-" + version})
         pkg_uries = self.decode_download_uries(pkg_uries)
         for uri in pkg_uries:
-            self.process_uri(uri, data)
+            while True:
+                try:
+                    self.process_uri(uri, data)
+                except DownloadingError as error:
+                    print(str(error))
+                    continue
+                break
 
         return data
 
