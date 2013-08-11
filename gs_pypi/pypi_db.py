@@ -11,72 +11,100 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-from g_sorcery.compatibility import py2k
+import bs4
 
-if py2k:
-    import xmlrpclib
-else:
-    import xmlrpc.client as xmlrpclib
-
-import datetime
-import re
-import sys
-
-from g_sorcery.g_collections import Package, serializable_elist
-from g_sorcery.logger import Logger 
+from g_sorcery.g_collections import Package
 from g_sorcery.package_db import DBGenerator
 
 class PypiDBGenerator(DBGenerator):
 
     def get_download_uries(self, common_config, config):
-        return [config["repo_uri"] + "/pypi"]
+        self.repo_uri = config["repo_uri"]
+        return [{"uri": self.repo_uri + "?%3Aaction=index", "output": "packages"}]
 
-    def process_uri(self, uri, data):
-        url = uri["uri"]
-        client = xmlrpclib.ServerProxy(url)
-        logger = Logger()
-        logger.info("downloading packages data")
-        pkg_list = client.list_packages()
+    def parse_data(self, data_f):
+        soup = bs4.BeautifulSoup(data_f.read())
+        packages = soup.table
+        data = {}
+        data["index"] = {}
 
-        number_of_packages = len(pkg_list)
-        downloaded_number = 0
+        pkg_uries = []
+        
+        for entry in packages.find_all("tr")[1:-1]:
+            package, description = entry.find_all("td")
+            
+            if description.contents:
+                description = description.contents[0]
+            else:
+                description = ""
+            package, version = package.a["href"].split("/")[2:]            
+            data["index"][(package, version)] = description
+            pkg_uries.append({"uri": self.repo_uri + "pypi/" + package + "/" + version,
+                              "parser": self.parse_package_page,
+                              "output": package + "-" + version})
+        pkg_uries = self.decode_download_uries(pkg_uries)
+        for uri in pkg_uries:
+            self.process_uri(uri, data)
 
-        for pkg in pkg_list:
-            data[pkg] = {}
+        return data
 
-            chars = ['-','\\','|','/']
-            show = chars[downloaded_number % 4]
-            percent = (downloaded_number * 100)//number_of_packages
-            length = 70
-            progress = (percent * length)//100
-            blank = length - progress
+    def parse_package_page(self, data_f):
+        soup = bs4.BeautifulSoup(data_f.read())
+        data = {}
+        data["files"] = []
+        data["info"] = {}
+        for table in soup("table")[-1:]:
+            for entry in table("tr")[1:-1]:
+                fields = entry("td")
+                
+                FILE = 0
+                URL = 0
+                MD5 = 1
+                
+                TYPE = 1
+                PYVERSION = 2
+                UPLOADED = 3
+                SIZE = 4
+                
+                file_inf = fields[FILE]("a")[0]["href"].split("#")
+                file_url = file_inf[URL]
+                file_md5 = file_inf[MD5][4:]
 
-            sys.stdout.write("\r %s [%s%s] %s%%" % (show, "#" * progress, " " * blank, percent))
-            sys.stdout.flush()
-            downloaded_number += 1
+                file_type = fields[TYPE].string
+                file_pyversion = fields[PYVERSION].string
+                file_uploaded = fields[UPLOADED].string
+                file_size = fields[SIZE].string
 
-            versions = []
-            while not versions:
-                try:
-                    versions = client.package_releases(pkg)
-                except Exception as error:
-                    logger.warn("Something went wrong: " + str(error))
-                    logger.info("Trying again...")
-                    versions = []
+                data["files"].append({"url": file_url,
+                                      "md5": file_md5,
+                                      "type": file_type,
+                                      "pyversion": file_pyversion,
+                                      "uploaded": file_uploaded,
+                                      "size": file_size})
+                
+        for ul in soup("ul", class_ = "nodot")[:1]:
+            for entry in ul.contents:
+                if not hasattr(entry, "name") or entry.name != "li":
+                    continue
+                entry_name = entry("strong")[0].string
+                if not entry_name:
+                    continue
 
-            for version in versions:
-                data[pkg][version] = {}
-                while not data[pkg][version]:
-                    try:
-                        data[pkg][version] = client.release_data(pkg, version)
-                    except Exception as error:
-                        logger.warn("Something went wrong: " + str(error))
-                        logger.info("Trying again...")
-                        data[pkg][version] = {}
+                if entry_name == "Categories":
+                    data["info"][entry_name] = []
+                    for cat_entry in entry("a"):
+                        data["info"][entry_name].append(cat_entry.string.split(" :: "))
+                    continue
 
-        sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * length, 100))
-        sys.stdout.flush()
-        print("")
+                if entry("span"):
+                    data["info"][entry_name] = entry("span")[0].string
+                    continue
+
+                if entry("a"):
+                    data["info"][entry_name] = entry("a")[0]["href"]
+                    continue
+
+        return data
 
     def process_data(self, pkg_db, data, common_config, config):
         category = "dev-python"
