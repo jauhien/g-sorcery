@@ -26,7 +26,7 @@ from .exceptions import DBStructureError, IntegrityError, \
      InvalidKeyError, SyncError
 from .fileutils import FileJSON, hash_file, load_remote_file, copy_all, wget
 from .g_collections import Package
-from .logger import Logger
+from .logger import Logger, ProgressBar
 
 
 class PackageDB(object):
@@ -249,9 +249,9 @@ class PackageDB(object):
             logger = Logger()
             logger.info("writing database")
 
-        number_of_packages = len(list(self.database))
-        written_number = 0
-        length = 20
+        progress_bar = ProgressBar(20, len(list(self.database)))
+        if self.database:
+                progress_bar.begin()
         
         for pkgname, versions in self.database.items():
             category, name = pkgname.split('/')
@@ -273,19 +273,7 @@ class PackageDB(object):
                 pkgs = []
             pkgs.append(name)
             f.write(pkgs)
-
-            chars = ['-', '\\', '|', '/']
-            show = chars[written_number % 4]
-            percent = (written_number * 100)//number_of_packages
-            progress = (percent * length)//100
-            blank = length - progress
-
-            sys.stdout.write("\r %s [%s%s] %s%%" % \
-                             (show, "#" * progress, " " * blank, percent))
-            sys.stdout.flush()
-            written_number += 1
-
-            
+            progress_bar.increment()
 
         for category in self.categories:
             self.additional_write_category(category)
@@ -293,8 +281,7 @@ class PackageDB(object):
         self.additional_write()
 
         if self.database:
-            sys.stdout.write("\r %s [%s] %s%%" % ("-", "#" * length, 100))
-            sys.stdout.flush()
+            progress_bar.end()
             print("")
 
     def additional_write_version(self, category, package, version):
