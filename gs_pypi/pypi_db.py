@@ -47,7 +47,7 @@ class PypiDBGenerator(DBGenerator):
                               "parser": self.parse_package_page,
                               "output": package + "-" + version})
         pkg_uries = self.decode_download_uries(pkg_uries)
-        for uri in pkg_uries[:10]:
+        for uri in pkg_uries:
             while True:
                 try:
                     self.process_uri(uri, data)
