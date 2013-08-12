@@ -11,10 +11,13 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
+import datetime
+import re
+
 import bs4
 
 from g_sorcery.exceptions import DownloadingError
-from g_sorcery.g_collections import Package
+from g_sorcery.g_collections import Package, serializable_elist
 from g_sorcery.package_db import DBGenerator
 
 class PypiDBGenerator(DBGenerator):
@@ -98,9 +101,10 @@ class PypiDBGenerator(DBGenerator):
                     continue
 
                 if entry_name == "Categories":
-                    data["info"][entry_name] = []
+                    data["info"][entry_name] = {}
                     for cat_entry in entry("a"):
-                        data["info"][entry_name].append(cat_entry.string.split(" :: "))
+                        cat_data = cat_entry.string.split(" :: ")
+                        data["info"][entry_name][cat_data[0]] = cat_data[1:]
                     continue
 
                 if entry("span"):
@@ -128,29 +132,72 @@ class PypiDBGenerator(DBGenerator):
 
         now = datetime.datetime.now()
         pseudoversion = "%04d%02d%02d" % (now.year, now.month, now.day)
-        
-        for package, versions in data.items():
-            package = "".join([x for x in package if ord(x) in allowed_ords_pkg])
-            for version, ebuild_data in versions.items():
-                description = ebuild_data["summary"]
-                description = "".join([x for x in description if ord(x) in allowed_ords_desc])
-                longdescription = ebuild_data["description"]
-                longdescription = "".join([x for x in longdescription if ord(x) in allowed_ords_desc])
 
-                pkgver = version            
-                match_object = re.match("(^[0-9]+[a-z]?$)|(^[0-9][0-9\.]+[0-9][a-z]?$)", pkgver)
-                if not match_object:
-                    pkgver = pseudoversion
+        for (package, version), description in data["packages"]["index"].items():
 
-                dependencies = serializable_elist(separator="\n\t")
-                eclasses = ['gs-pypi']
-                maintainer = [{'email' : 'piatlicki@gmail.com',
-                               'name' : 'Jauhien Piatlicki'}]
+            pkg = package + "-" + version
+            if not pkg in data["packages"]:
+                continue
 
-                ebuild_data["description"] = description
-                ebuild_data["longdescription"] = longdescription
-                ebuild_data["dependencies"] = dependencies
-                ebuild_data["eclasses"] = eclasses
-                ebuild_data["maintainer"] = maintainer
+            pkg_data = data["packages"][pkg]
+            
+            if not pkg_data["files"] and not pkg_data["info"]:
+                continue
 
-                pkg_db.add_package(Package(category, package, pkgver), ebuild_data)
+            files_src_uri = ""
+            if pkg_data["files"]:
+                for file_entry in pkg_data["files"]:
+                    if file_entry["type"] == "\n    Source\n  ":
+                        files_src_uri = file_entry["url"]
+                        break
+
+            download_url = ""
+            info = pkg_data["info"]
+            if info:
+                if "Download URL:" in info:
+                    download_url = pkg_data["info"]["Download URL:"]
+
+            if download_url:
+                source_uri = download_url #todo: find how to define src_uri
+            else:
+                source_uri = files_src_uri
+
+            if not source_uri:
+                continue
+
+            homepage = ""
+            license = ""
+            if info:
+                if "Home Page:" in info:
+                    homepage = info["Home Page:"]
+                categories = {}
+                if "Categories" in info:
+                    categories = info["Categories"]
+                if "License" in categories:
+                    license = categories["License"][-1]
+            
+            filtered_package = "".join([x for x in package if ord(x) in allowed_ords_pkg])
+            description = "".join([x for x in description if ord(x) in allowed_ords_desc])
+            filtered_version = version
+            match_object = re.match("(^[0-9]+[a-z]?$)|(^[0-9][0-9\.]+[0-9][a-z]?$)",
+                                    filtered_version)
+            if not match_object:
+                filtered_version = pseudoversion
+
+            dependencies = serializable_elist(separator="\n\t")
+            eclasses = ['gs-pypi']
+            maintainer = [{'email' : 'piatlicki@gmail.com',
+                           'name' : 'Jauhien Piatlicki'}]
+
+            ebuild_data = {}
+            ebuild_data["description"] = description
+            ebuild_data["longdescription"] = description
+            ebuild_data["dependencies"] = dependencies
+            ebuild_data["eclasses"] = eclasses
+            ebuild_data["maintainer"] = maintainer
+
+            ebuild_data["homepage"] = homepage
+            ebuild_data["license"] = license
+            ebuild_data["source_uri"] = source_uri
+
+            pkg_db.add_package(Package(category, filtered_package, filtered_version), ebuild_data)
