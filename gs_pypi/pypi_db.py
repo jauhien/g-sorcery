@@ -24,7 +24,7 @@ class PypiDBGenerator(DBGenerator):
 
     def get_download_uries(self, common_config, config):
         self.repo_uri = config["repo_uri"]
-        return [{"uri": self.repo_uri + "?%3Aaction=index", "output": "packages"}]
+        return [{"uri": self.repo_uri + "pypi?%3Aaction=index", "output": "packages"}]
 
     def parse_data(self, data_f):
         soup = bs4.BeautifulSoup(data_f.read())
@@ -47,7 +47,7 @@ class PypiDBGenerator(DBGenerator):
                               "parser": self.parse_package_page,
                               "output": package + "-" + version})
         pkg_uries = self.decode_download_uries(pkg_uries)
-        for uri in pkg_uries:
+        for uri in pkg_uries[:10]:
             while True:
                 try:
                     self.process_uri(uri, data)
@@ -91,8 +91,14 @@ class PypiDBGenerator(DBGenerator):
                                       "pyversion": file_pyversion,
                                       "uploaded": file_uploaded,
                                       "size": file_size})
-                
-        for ul in soup("ul", class_ = "nodot")[:1]:
+
+        uls = soup("ul", class_ = "nodot")
+        if uls:
+            if "Downloads (All Versions):" in uls[0]("strong")[0].string:
+                ul = uls[1]
+            else:
+                ul = uls[0]
+
             for entry in ul.contents:
                 if not hasattr(entry, "name") or entry.name != "li":
                     continue
