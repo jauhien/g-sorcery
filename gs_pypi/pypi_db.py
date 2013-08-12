@@ -63,7 +63,10 @@ class PypiDBGenerator(DBGenerator):
         data = {}
         data["files"] = []
         data["info"] = {}
-        for table in soup("table")[-1:]:
+        for table in soup("table", class_ = "list")[-1:]:
+            if not "File" in table("th")[0].string:
+                continue
+
             for entry in table("tr")[1:-1]:
                 fields = entry("td")
                 
@@ -151,10 +154,12 @@ class PypiDBGenerator(DBGenerator):
                 continue
 
             files_src_uri = ""
+            md5 = ""
             if pkg_data["files"]:
                 for file_entry in pkg_data["files"]:
                     if file_entry["type"] == "\n    Source\n  ":
                         files_src_uri = file_entry["url"]
+                        md5 = file_entry["md5"]
                         break
 
             download_url = ""
@@ -205,5 +210,8 @@ class PypiDBGenerator(DBGenerator):
             ebuild_data["homepage"] = homepage
             ebuild_data["license"] = license
             ebuild_data["source_uri"] = source_uri
+            ebuild_data["md5"] = md5
+
+            ebuild_data["info"] = info
 
             pkg_db.add_package(Package(category, filtered_package, filtered_version), ebuild_data)
