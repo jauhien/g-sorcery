@@ -46,6 +46,11 @@ class PypiDBGenerator(DBGenerator):
             pkg_uries.append({"uri": self.repo_uri + "pypi/" + package + "/" + version,
                               "parser": self.parse_package_page,
                               "output": package + "-" + version})
+            entry.decompose()
+
+        packages.decompose()
+        soup.decompose()
+
         pkg_uries = self.decode_download_uries(pkg_uries)
         for uri in pkg_uries:
             while True:
@@ -94,6 +99,8 @@ class PypiDBGenerator(DBGenerator):
                                       "pyversion": file_pyversion,
                                       "uploaded": file_uploaded,
                                       "size": file_size})
+                entry.decompose()
+            table.decompose()
 
         uls = soup("ul", class_ = "nodot")
         if uls:
@@ -123,7 +130,10 @@ class PypiDBGenerator(DBGenerator):
                 if entry("a"):
                     data["info"][entry_name] = entry("a")[0]["href"]
                     continue
+                entry.decompose()
+            ul.decompose()
 
+        soup.decompose()
         return data
 
     def process_data(self, pkg_db, data, common_config, config):
