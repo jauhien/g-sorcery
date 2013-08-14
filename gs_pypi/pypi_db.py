@@ -54,13 +54,16 @@ class PypiDBGenerator(DBGenerator):
 
         pkg_uries = self.decode_download_uries(pkg_uries)
         for uri in pkg_uries:
+            attempts = 0
             while True:
                 try:
+                    attempts += 1
                     self.process_uri(uri, data)
                 except DownloadingError as error:
                     print(str(error))
-                    time.sleep(2)
-                    continue
+                    time.sleep(5)
+                    if attempts < 100:
+                        continue
                 break
 
         return data
