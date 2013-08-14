@@ -13,6 +13,7 @@
 
 import datetime
 import re
+import time
 
 import bs4
 
@@ -53,6 +54,7 @@ class PypiDBGenerator(DBGenerator):
                     self.process_uri(uri, data)
                 except DownloadingError as error:
                     print(str(error))
+                    time.sleep(2)
                     continue
                 break
 
