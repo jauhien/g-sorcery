@@ -143,6 +143,8 @@ class PypiDBGenerator(DBGenerator):
             print("There was an error during parsing: " + str(error))
             print("Ignoring this package.")
             data = {}
+            data["files"] = []
+            data["info"] = {}
 
         soup.decompose()
         return data
