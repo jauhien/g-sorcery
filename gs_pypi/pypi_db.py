@@ -63,66 +63,72 @@ class PypiDBGenerator(DBGenerator):
         data = {}
         data["files"] = []
         data["info"] = {}
-        for table in soup("table", class_ = "list")[-1:]:
-            if not "File" in table("th")[0].string:
-                continue
-
-            for entry in table("tr")[1:-1]:
-                fields = entry("td")
-                
-                FILE = 0
-                URL = 0
-                MD5 = 1
-                
-                TYPE = 1
-                PYVERSION = 2
-                UPLOADED = 3
-                SIZE = 4
-                
-                file_inf = fields[FILE]("a")[0]["href"].split("#")
-                file_url = file_inf[URL]
-                file_md5 = file_inf[MD5][4:]
-
-                file_type = fields[TYPE].string
-                file_pyversion = fields[PYVERSION].string
-                file_uploaded = fields[UPLOADED].string
-                file_size = fields[SIZE].string
-
-                data["files"].append({"url": file_url,
-                                      "md5": file_md5,
-                                      "type": file_type,
-                                      "pyversion": file_pyversion,
-                                      "uploaded": file_uploaded,
-                                      "size": file_size})
-
-        uls = soup("ul", class_ = "nodot")
-        if uls:
-            if "Downloads (All Versions):" in uls[0]("strong")[0].string:
-                ul = uls[1]
-            else:
-                ul = uls[0]
-
-            for entry in ul.contents:
-                if not hasattr(entry, "name") or entry.name != "li":
-                    continue
-                entry_name = entry("strong")[0].string
-                if not entry_name:
+        try:
+            for table in soup("table", class_ = "list")[-1:]:
+                if not "File" in table("th")[0].string:
                     continue
 
-                if entry_name == "Categories":
-                    data["info"][entry_name] = {}
-                    for cat_entry in entry("a"):
-                        cat_data = cat_entry.string.split(" :: ")
-                        data["info"][entry_name][cat_data[0]] = cat_data[1:]
-                    continue
+                for entry in table("tr")[1:-1]:
+                    fields = entry("td")
 
-                if entry("span"):
-                    data["info"][entry_name] = entry("span")[0].string
-                    continue
+                    FILE = 0
+                    URL = 0
+                    MD5 = 1
 
-                if entry("a"):
-                    data["info"][entry_name] = entry("a")[0]["href"]
-                    continue
+                    TYPE = 1
+                    PYVERSION = 2
+                    UPLOADED = 3
+                    SIZE = 4
+
+                    file_inf = fields[FILE]("a")[0]["href"].split("#")
+                    file_url = file_inf[URL]
+                    file_md5 = file_inf[MD5][4:]
+
+                    file_type = fields[TYPE].string
+                    file_pyversion = fields[PYVERSION].string
+                    file_uploaded = fields[UPLOADED].string
+                    file_size = fields[SIZE].string
+
+                    data["files"].append({"url": file_url,
+                                          "md5": file_md5,
+                                          "type": file_type,
+                                          "pyversion": file_pyversion,
+                                          "uploaded": file_uploaded,
+                                          "size": file_size})
+
+            uls = soup("ul", class_ = "nodot")
+            if uls:
+                if "Downloads (All Versions):" in uls[0]("strong")[0].string:
+                    ul = uls[1]
+                else:
+                    ul = uls[0]
+
+                for entry in ul.contents:
+                    if not hasattr(entry, "name") or entry.name != "li":
+                        continue
+                    entry_name = entry("strong")[0].string
+                    if not entry_name:
+                        continue
+
+                    if entry_name == "Categories":
+                        data["info"][entry_name] = {}
+                        for cat_entry in entry("a"):
+                            cat_data = cat_entry.string.split(" :: ")
+                            data["info"][entry_name][cat_data[0]] = cat_data[1:]
+                        continue
+
+                    if entry("span"):
+                        data["info"][entry_name] = entry("span")[0].string
+                        continue
+
+                    if entry("a"):
+                        data["info"][entry_name] = entry("a")[0]["href"]
+                        continue
+
+        except Exception as error:
+            print("There was an error during parsing: " + str(error))
+            print("Ignoring this package.")
+            data = {}
 
         return data
 
