@@ -53,7 +53,7 @@ class PypiDBGenerator(DBGenerator):
         soup.decompose()
 
         pkg_uries = self.decode_download_uries(pkg_uries)
-        for uri in pkg_uries:
+        for uri in pkg_uries[:10]:
             attempts = 0
             while True:
                 try:

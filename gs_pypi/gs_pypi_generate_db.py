@@ -14,7 +14,8 @@
 import os
 import sys
 
-from g_sorcery.fileutils import FileJSON
+from g_sorcery.compatibility import TemporaryDirectory
+from g_sorcery.fileutils import copy_all, FileJSON
 from g_sorcery.logger import Logger
 
 from .pypi_db import PypiDBGenerator
@@ -45,7 +46,10 @@ def main():
 
     generator = PypiDBGenerator()
     db_name = sys.argv[1]
-    pkg_db = generator(db_name, "pypi", config=config["repositories"]["pypi"])
+    temp_dir = TemporaryDirectory()
+    pkg_db = generator(temp_dir.name, "pypi", config=config["repositories"]["pypi"])
+    os.mkdir(db_name)
+    copy_all(os.path.join(temp_dir.name, "pypi/db"), db_name)
     os.system('tar cvzf ' +  db_name + '.tar.gz ' + db_name)
 
 if __name__ == "__main__":
