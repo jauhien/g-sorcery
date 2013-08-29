@@ -28,7 +28,9 @@ def main():
     p_ebuild_data_rename = p_ebuild_data_subparsers.add_parser('add_var')
     p_ebuild_data_rename.set_defaults(func=add_var)
     p_ebuild_data_rename.add_argument('name')
+    p_ebuild_data_rename.add_argument('-f', '--function')
     p_ebuild_data_rename.add_argument('-l', '--lambda_function')
+    p_ebuild_data_rename.add_argument('-v', '--value')
 
     p_ebuild_data_rename = p_ebuild_data_subparsers.add_parser('rename_var')
     p_ebuild_data_rename.set_defaults(func=rename_var)
@@ -57,12 +59,23 @@ def transform_db(function):
 
 @transform_db
 def add_var(pkg_db, args):
-    if args.lambda_function:
+    if args.function:
+        for package, ebuild_data in pkg_db:
+            exec(args.function)
+            ebuild_data[args.name] = value
+            pkg_db.add_package(package, ebuild_data)
+
+    elif args.lambda_function:
         lmbd = "lambda ebuild_data: " + args.lambda_function
         f = eval(lmbd)
         for package, ebuild_data in pkg_db:
             value = f(ebuild_data)
             ebuild_data[args.name] = value
+            pkg_db.add_package(package, ebuild_data)
+
+    elif args.value:
+        for package, ebuild_data in pkg_db:
+            ebuild_data[args.name] = args.value
             pkg_db.add_package(package, ebuild_data)
 
 
