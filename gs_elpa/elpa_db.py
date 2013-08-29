@@ -107,7 +107,7 @@ class ElpaDBGenerator(DBGenerator):
                           'repo_uri' : repo_uri,
                           'realname' : realname,
             #eclass entry
-                          'eclasses' : ['g-elpa'],
+                          'eclasses' : ['g-sorcery', 'gs-elpa'],
             #metadata entries
                           'maintainer' : [{'email' : 'piatlicki@gmail.com',
                                            'name' : 'Jauhien Piatlicki'}],

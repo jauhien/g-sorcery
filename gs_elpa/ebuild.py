@@ -29,7 +29,7 @@ class ElpaEbuildWithDigestGenerator(DefaultEbuildGenerator):
         vars_before_inherit = \
           ["repo_uri", "source_type", "realname", ("digest_sources", "yes")]
 
-        inherit = ["g-elpa"]
+        inherit = ["g-sorcery", "gs-elpa"]
         
         vars_after_description = \
           ["homepage", ("src_uri", "${REPO_URI}${REALNAME}-${PV}.${SUFFIX}")]
@@ -51,7 +51,7 @@ class ElpaEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         vars_before_inherit = \
           ["repo_uri", "source_type", "realname"]
 
-        inherit = ["g-elpa"]
+        inherit = ["g-sorcery", "gs-elpa"]
         
         vars_after_description = \
           ["homepage"]
