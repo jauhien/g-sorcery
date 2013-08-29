@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE repositories SYSTEM "/dtd/repositories.dtd">
+<repositories xmlns="" version="1.0">
+<repo quality="experimental" status="unofficial">
+    <name>pypi</name>
+    <description>python packages</description>
+    <homepage>https://pypi.python.org/pypi</homepage>
+    <owner>
+      <email>piatlicki@gmail.com</email>
+      <name>Jauhien Piatlicki</name>
+    </owner>
+    <source type="g-sorcery">gs-pypi pypi</source>
+</repo>
+</repositories>

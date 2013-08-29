@@ -17,6 +17,7 @@ setup(name          = 'g-sorcery',
                        ('/etc/g-sorcery/', ['gs-pypi.json']),
                        ('/etc/g-sorcery/', ['g-sorcery.cfg']),
                        ('/etc/layman/overlays/', ['gs-elpa-overlays.xml']),
-                       ('/etc/layman/overlays/', ['gs-ctan-overlays.xml'])],
+                       ('/etc/layman/overlays/', ['gs-ctan-overlays.xml']),
+                       ('/etc/layman/overlays/', ['gs-pypi-overlays.xml'])],
       license       = 'GPL',
       )
