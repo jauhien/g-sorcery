@@ -235,6 +235,9 @@ class PackageDB(object):
         if os.path.exists(self.directory):
             shutil.rmtree(self.directory)
         self.reset_db()
+        self.write_and_manifest()
+
+    def write_and_manifest(self):
         self.write()
         self.manifest()
 

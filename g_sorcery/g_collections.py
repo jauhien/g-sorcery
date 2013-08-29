@@ -91,6 +91,9 @@ class Package(object):
         self.name = package
         self.version = version
 
+    def __str__(self):
+        return self.category + '/' + self.name + '-' + self.version
+
     def serialize(self):
         return [self.category, self.name, self.version]
 
