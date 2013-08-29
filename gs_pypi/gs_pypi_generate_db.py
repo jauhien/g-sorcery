@@ -48,7 +48,10 @@ def main():
     db_name = sys.argv[1]
     temp_dir = TemporaryDirectory()
     pkg_db = generator(temp_dir.name, "pypi", config=config["repositories"]["pypi"])
-    os.mkdir(db_name)
+    if os.path.exists(db_name):
+        os.system('rm -rf ' + db_name + '/*')
+    else:
+        os.mkdir(db_name)
     copy_all(os.path.join(temp_dir.name, "pypi/db"), db_name)
     os.system('tar cvzf ' +  db_name + '.tar.gz ' + db_name)
 

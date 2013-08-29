@@ -29,4 +29,4 @@ class PypiEclassGenerator(EclassGenerator):
 
 instance = Backend(PypiDBGenerator,
                    PypiEbuildWithDigestGenerator, PypiEbuildWithoutDigestGenerator,
-                   PypiEclassGenerator, MetadataGenerator)
+                   PypiEclassGenerator, MetadataGenerator, sync_db=True)

@@ -219,7 +219,7 @@ class PypiDBGenerator(DBGenerator):
                 filtered_version = pseudoversion
 
             dependencies = serializable_elist(separator="\n\t")
-            eclasses = ['gs-pypi']
+            eclasses = ['g-sorcery', 'gs-pypi']
             maintainer = [{'email' : 'piatlicki@gmail.com',
                            'name' : 'Jauhien Piatlicki'}]
 
