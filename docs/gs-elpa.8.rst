@@ -128,22 +128,7 @@ Generating user ebuilds in user overlay
 NOTES
 =====
 
-1. At the moment upstream layman does not support g-sorcery overlay type.
-You should patch it with `https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch`.
-
-To do it download above mentioned patch, place it in
-**/etc/portage/patches/app-portage/layman-9999/** directory and
-create a file **/etc/portage/bashrc** that looks like
-
-.. code-block::
-
-   post_src_prepare() {
-       epatch_user
-   }
-
-Then you can emerge **app-portage/layman-9999**.
-
-2. At the moment the only package mangler **gs-elpa** supports is **portage**.
+1. At the moment the only package mangler **gs-elpa** supports is **portage**.
 
 BUGS
 ====

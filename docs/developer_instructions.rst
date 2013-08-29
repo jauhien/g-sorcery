@@ -624,9 +624,6 @@ should always be **g-sorcery**, **gs-elpa** is backend name and **melpa** is rep
 
 For full description of format of this file see **layman** documentation.
 
-Note: at the moment layman-9999 does not support **g-sorcery** overlay type and you should
-patch it with https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch
-
 Summary
 =======
 

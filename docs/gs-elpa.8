@@ -142,29 +142,8 @@ all in one overlay. Note, that if you call \fBgenerate\-tree\fP command your ove
 will be wiped and overlay tree for a given repository will be generated. Be careful!
 .UNINDENT
 .SH NOTES
-.sp
-1. At the moment upstream layman does not support g\-sorcery overlay type.
-You should patch it with \fIhttps://raw.github.com/jauhien/g\-sorcery/master/layman\-git\-g\-sorcery.patch\fP.
-.sp
-To do it download above mentioned patch, place it in
-\fB/etc/portage/patches/app\-portage/layman\-9999/\fP directory and
-create a file \fB/etc/portage/bashrc\fP that looks like
 .INDENT 0.0
-.INDENT 3.5
-.sp
-.nf
-.ft C
-post_src_prepare() {
-    epatch_user
-}
-.ft P
-.fi
-.UNINDENT
-.UNINDENT
-.sp
-Then you can emerge \fBapp\-portage/layman\-9999\fP.
-.INDENT 0.0
-.IP 2. 3
+.IP 1. 3
 At the moment the only package mangler \fBgs\-elpa\fP supports is \fBportage\fP.
 .UNINDENT
 .SH BUGS

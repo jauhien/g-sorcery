@@ -46,20 +46,7 @@ databases with information about available software and so on.
 Installation and using
 ======================
 
-At the moment upstream layman does not support g-sorcery overlay type.
-You should [patch it](https://raw.github.com/jauhien/g-sorcery/master/layman-git-g-sorcery.patch).
-
-To do it download above mentioned patch, place it in
-**/etc/portage/patches/app-portage/layman-9999/** directory and
-create a file **/etc/portage/bashrc** that looks like
-
-```bash
-   post_src_prepare() {
-       epatch_user
-   }
-```
-
-Then you can emerge **app-portage/layman-9999**.
+You should emerge **app-portage/layman-9999**.
 
 Add `jauhien` overlay: **layman -a jauhien**.
 
