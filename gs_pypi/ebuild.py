@@ -30,7 +30,7 @@ class PypiEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         inherit = ["gs-pypi"]
         
         vars_after_description = \
-          []
+          ["homepage"]
 
         vars_after_keywords = \
           []
@@ -43,14 +43,13 @@ class PypiEbuildWithDigestGenerator(DefaultEbuildGenerator):
     def __init__(self, package_db):
 
         vars_before_inherit = \
-          [("digest_sources", "yes"),
-           ("repo_uri", '"http://pypi.python.org/packages/source/${PN:0:1}/${PN}/"'),
-           ("sourcefile", '"${P}.tar.gz"')]
+          [("digest_sources", "yes")]
 
         inherit = ["gs-pypi"]
         
         vars_after_description = \
-          []
+          ["homepage",
+           ("src_uri", '"http://pypi.python.org/packages/source/${PN:0:1}/${PN}/${P}.tar.gz"')]
 
         vars_after_keywords = \
           []
