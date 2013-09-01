@@ -101,13 +101,7 @@ def copy_all(src, dst):
        src: Source.
        dst: Destination.
     """
-    for f_name in os.listdir(src):
-        src_name = os.path.join(src, f_name)
-        dst_name = os.path.join(dst, f_name)
-        if os.path.isdir(src_name):
-            shutil.copytree(src_name, dst_name)
-        else:
-            shutil.copy2(src_name, dst_name)
+    os.system("cp -rv " + src + "/* " + dst)
 
 def wget(uri, directory, output=""):
     """

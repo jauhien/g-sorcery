@@ -16,7 +16,6 @@ import hashlib
 import os
 import shutil
 import sys
-import tarfile
 
 import portage
 
@@ -112,6 +111,7 @@ class PackageDB(object):
         Args:
             directory: database directory.
         """
+        self.logger = Logger()
         self.CATEGORIES_NAME = 'categories.json'
         self.PACKAGES_NAME = 'packages.json'
         self.VERSIONS_NAME = 'versions.json'
@@ -142,32 +142,24 @@ class PackageDB(object):
         
         temp_dir = TemporaryDirectory()
         for f_name in glob.iglob(os.path.join(download_dir.name, '*.tar.gz')):
-            with tarfile.open(f_name) as f:
-                f.extractall(temp_dir.name)
+            self.logger.info("unpacking " + f_name)
+            os.system("tar -xvzf " + f_name + " -C " + temp_dir.name)
 
-        tempdb_dir = TemporaryDirectory()
-        tempdb = PackageDB(tempdb_dir.name)
-
-        for d_name in os.listdir(temp_dir.name):
-            current_dir = os.path.join(temp_dir.name, d_name)
-            if not os.path.isdir(current_dir):
-                continue
-            copy_all(current_dir, tempdb_dir.name)
+        tempdb_dir = os.listdir(temp_dir.name)[0]
+        tempdb = PackageDB(tempdb_dir)
 
         if not tempdb.check_manifest():
             raise IntegrityError('Manifest check failed.')
 
+        self.logger.info("copy files to an actual database")
         self.clean()
-        copy_all(tempdb_dir.name, self.directory)
+        copy_all(tempdb_dir, self.directory)
         
         if not self.check_manifest():
             raise IntegrityError('Manifest check failed, db inconsistent.')
                 
         del download_dir
         del temp_dir
-        del tempdb_dir
-        
-        self.read()
 
     def get_real_db_uri(self, db_uri):
         """
@@ -209,6 +201,7 @@ class PackageDB(object):
             Tuple with first element containing result of manifest check
             as boolean and second element containing list of files with errors.
         """
+        self.logger.info("checking manifest")
         m_f = FileJSON(self.directory, 'manifest.json', [])
         manifest = m_f.read()
         
@@ -220,12 +213,17 @@ class PackageDB(object):
             if not name in manifest:
                 raise DBStructureError('Bad manifest: no ' + name + ' entry')
 
+        progress_bar = ProgressBar(20, len(manifest))
+        progress_bar.begin()
         for name, value in manifest.items():
+            progress_bar.increment()
             if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
                 value:
                 result = False
                 errors.append(name)
 
+        progress_bar.end()
+        print("")
         return (result, errors)
 
     def clean(self):
@@ -249,8 +247,7 @@ class PackageDB(object):
         categories_f.write(self.categories)
 
         if self.database:
-            logger = Logger()
-            logger.info("writing database")
+            self.logger.info("writing database")
 
         progress_bar = ProgressBar(20, len(list(self.database)))
         if self.database:
