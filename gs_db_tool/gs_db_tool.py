@@ -40,6 +40,10 @@ def main():
     p_ebuild_data_show_all = p_ebuild_data_subparsers.add_parser('show_all')
     p_ebuild_data_show_all.set_defaults(func=show_all)
 
+    p_ebuild_data_for_all = p_ebuild_data_subparsers.add_parser('for_all')
+    p_ebuild_data_for_all.add_argument('function')
+    p_ebuild_data_for_all.set_defaults(func=for_all)
+
     p_sync = subparsers.add_parser('sync')
     p_sync.set_defaults(func=sync)
     p_sync.add_argument('uri')
@@ -55,6 +59,19 @@ def transform_db(function):
         function(pkg_db, args)
         pkg_db.write_and_manifest()
     return transformator
+
+
+def read_db(function):
+    def reader(pkg_db, args):
+        pkg_db.read()
+        function(pkg_db, args)
+    return reader
+
+
+@read_db
+def for_all(pkg_db, args):
+    for package, ebuild_data in pkg_db:
+        exec(args.function)
 
 
 @transform_db
@@ -79,8 +96,8 @@ def add_var(pkg_db, args):
             pkg_db.add_package(package, ebuild_data)
 
 
+@read_db
 def show_all(pkg_db, args):
-    pkg_db.read()
     for package, ebuild_data in pkg_db:
         print(package)
         print('-' * len(str(package)))
