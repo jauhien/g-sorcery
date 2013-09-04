@@ -58,9 +58,9 @@ class ProgressBar(object):
         percent = (self.processed * 100)//self.total
         progress = (percent * self.length)//100
         blank = self.length - progress
-        sys.stdout.write("\r %s [%s%s] %s%%" % \
+        sys.stderr.write("\r %s [%s%s] %s%%" % \
                              (show, "#" * progress, " " * blank, percent))
-        sys.stdout.flush()
+        sys.stderr.flush()
 
     def increment(self, count = 1):
         self.processed += count
