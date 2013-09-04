@@ -201,15 +201,42 @@ class PypiDBGenerator(DBGenerator):
 
             homepage = ""
             license = ""
+            py_versions = []
             if info:
                 if "Home Page:" in info:
                     homepage = info["Home Page:"]
                 categories = {}
                 if "Categories" in info:
                     categories = info["Categories"]
-                if "License" in categories:
-                    license = categories["License"][-1]
-            
+
+                    if 'Programming Language' in  categories:
+                        for entry in ebuild_data['info']['Categories']['Programming Language']:
+                            if entry == '2':
+                                py_versions.extend(['2_6', '2_7'])
+                            elif entry == '3':
+                                py_versions.extend(['3_2', '3_3'])
+                            elif entry == '2.6':
+                                py_versions.extend(['2_6'])
+                            elif entry == '2.7':
+                                py_versions.extend(['2_7'])
+                            elif entry == '3.2':
+                                py_versions.extend(['3_2'])
+                            elif entry == '3.3':
+                                py_versions.extend(['3_3'])
+
+                    if "License" in categories:
+                        license = categories["License"][-1]
+
+            if not py_versions:
+                py_versions = ['2_6', '2_7', '3_2', '3_3']
+            if len(py_versions) == 1:
+                python_compat = 'python' + py_versions[0]
+            else:
+                python_compat = '( python{' + py_versions[0]
+                for ver in py_versions[1:]:
+                    python_compat += ',' + ver
+                    python_compat += '} )'
+
             filtered_package = "".join([x for x in package if ord(x) in allowed_ords_pkg])
             description = "".join([x for x in description if ord(x) in allowed_ords_desc])
             filtered_version = version
@@ -234,6 +261,7 @@ class PypiDBGenerator(DBGenerator):
             ebuild_data["license"] = license
             ebuild_data["source_uri"] = source_uri
             ebuild_data["md5"] = md5
+            ebuild_data["python_compat"] = python_compat
 
             ebuild_data["info"] = info
 
