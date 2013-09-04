@@ -270,32 +270,27 @@ class PackageDB(object):
         progress_bar = ProgressBar(20, len(list(self.database)))
         if self.database:
                 progress_bar.begin()
+
+        categories_content = {}
+        for category in self.categories:
+            categories_content[category] = {}
         
         for pkgname, versions in self.database.items():
             category, name = pkgname.split('/')
             if not category or (not category in self.categories):
                 raise DBStructureError('Non existent: ' + category)
+            categories_content[category][name] = {}
             for version, content in versions.items():
-                f = FileJSON(os.path.join(self.directory, category, name),
-                    version + '.json', [])
-                f.write(content)
+                categories_content[category][name][version] = content
                 self.additional_write_version(category, name, version)
-            f = FileJSON(os.path.join(self.directory, category, name),
-                self.VERSIONS_NAME, [])
-            f.write(list(versions))
             self.additional_write_package(category, name)
-            f = FileJSON(os.path.join(self.directory, category),
-                self.PACKAGES_NAME, [])
-            pkgs = f.read()
-            if not pkgs:
-                pkgs = []
-            pkgs.append(name)
-            f.write(pkgs)
             progress_bar.increment()
 
         for category in self.categories:
+            f = FileJSON(os.path.join(self.directory, category), self.PACKAGES_NAME, [])
+            f.write(categories_content[category])
             self.additional_write_category(category)
-            
+
         self.additional_write()
 
         if self.database:
@@ -345,24 +340,15 @@ class PackageDB(object):
             if not packages:
                 raise DBStructureError('Empty category: ' + category)
             
-            for name in packages:
-                package_path = os.path.join(category_path, name)
-                if not os.path.isdir(category_path):
-                    error_msg = 'Empty package: ' + category + '/' + name
-                    raise DBStructureError(error_msg)
+            for name, versions in packages.items():
                 
-                f = FileJSON(package_path, self.VERSIONS_NAME, [])
-                versions = f.read()
                 if not versions:
                     error_msg = 'Empty package: ' + category + '/' + name
                     raise DBStructureError(error_msg)
-
+                
                 pkgname = category + '/' + name
-                self.database[pkgname] = {}
+                self.database[pkgname] = versions
                 for version in versions:
-                    f = FileJSON(package_path, version + '.json', [])
-                    ebuild_data = f.read()
-                    self.database[pkgname][version] = ebuild_data
                     self.additional_read_version(category, name, version)
                 self.additional_read_package(category, name)
             self.additional_read_category(category)
