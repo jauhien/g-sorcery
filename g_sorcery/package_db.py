@@ -13,6 +13,7 @@
 
 import glob
 import hashlib
+import multiprocessing
 import os
 import shutil
 import sys
@@ -193,6 +194,13 @@ class PackageDB(object):
         m_f = FileJSON(self.directory, 'manifest.json', [])
         m_f.write(manifest)
 
+    def _check_manifest_process(self, i, entries, errors):
+        for name, value in entries:
+            if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
+                value:
+                errors.append(name)
+
+
     def check_manifest(self):
         """
         Check database manifest.
@@ -204,26 +212,36 @@ class PackageDB(object):
         self.logger.info("checking manifest")
         m_f = FileJSON(self.directory, 'manifest.json', [])
         manifest = m_f.read()
-        
+
+        manager = multiprocessing.Manager()
+
         result = True
-        errors = []
+        errors = manager.list()
 
         names = [self.CATEGORIES_NAME]
         for name in names:
             if not name in manifest:
                 raise DBStructureError('Bad manifest: no ' + name + ' entry')
 
-        progress_bar = ProgressBar(20, len(manifest))
-        progress_bar.begin()
-        for name, value in manifest.items():
-            progress_bar.increment()
-            if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
-                value:
-                result = False
-                errors.append(name)
+        proc_num = multiprocessing.cpu_count() + 1
 
-        progress_bar.end()
-        print("")
+        portion = len(manifest) // proc_num
+        procs = []
+        entries = manifest.items()
+        
+        for i in range(proc_num - 1):
+            procs.append(multiprocessing.Process(target=self._check_manifest_process, args=(i, entries[i * portion:(i+1) * portion - 1], errors)))
+        procs.append(multiprocessing.Process(target=self._check_manifest_process, args=(proc_num - 1, entries[(proc_num - 1) * portion:], errors)))
+
+        for proc in procs:
+            proc.start()
+
+        for proc in procs:
+            proc.join()
+
+        if errors:
+            result = False
+
         return (result, errors)
 
     def clean(self):
