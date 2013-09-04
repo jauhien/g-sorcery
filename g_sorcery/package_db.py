@@ -145,7 +145,7 @@ class PackageDB(object):
             self.logger.info("unpacking " + f_name)
             os.system("tar -xvzf " + f_name + " -C " + temp_dir.name)
 
-        tempdb_dir = os.listdir(temp_dir.name)[0]
+        tempdb_dir = os.path.join(temp_dir.name, os.listdir(temp_dir.name)[0])
         tempdb = PackageDB(tempdb_dir)
 
         if not tempdb.check_manifest():
@@ -207,7 +207,7 @@ class PackageDB(object):
         
         result = True
         errors = []
-        
+
         names = [self.CATEGORIES_NAME]
         for name in names:
             if not name in manifest:
