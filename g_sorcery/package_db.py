@@ -227,7 +227,7 @@ class PackageDB(object):
 
         portion = len(manifest) // proc_num
         procs = []
-        entries = manifest.items()
+        entries = list(manifest.items())
         
         for i in range(proc_num - 1):
             procs.append(multiprocessing.Process(target=self._check_manifest_process, args=(i, entries[i * portion:(i+1) * portion - 1], errors)))
