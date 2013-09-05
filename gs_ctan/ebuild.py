@@ -32,7 +32,7 @@ class CtanEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         inherit = ["gs-ctan"]
         
         vars_after_description = \
-          ["homepage", ("src_uri", ""), "license"]
+          ["homepage", {"name" : "src_uri", "value" : ""}, "license"]
 
         vars_after_keywords = \
           ["depend", "rdepend"]
@@ -48,12 +48,12 @@ class CtanEbuildWithDigestGenerator(DefaultEbuildGenerator):
     def __init__(self, package_db):
 
         vars_before_inherit = \
-          ["base_src_uri", "catalogue", "source_type", "realname", ("digest_sources", "yes")]
+          ["base_src_uri", "catalogue", "source_type", "realname", {"name" : "digest_sources", "value" : "yes"}]
 
         inherit = ["gs-ctan"]
         
         vars_after_description = \
-          ["homepage", ("src_uri", "${BASE_SRC_URI}${CATALOGUE}${REALNAME}.${SOURCE_TYPE} -> ${P}.${SOURCE_TYPE}"), "license"]
+          ["homepage", {"name" : "src_uri", "value" : "${BASE_SRC_URI}${CATALOGUE}${REALNAME}.${SOURCE_TYPE} -> ${P}.${SOURCE_TYPE}"}, "license"]
 
         vars_after_keywords = \
           ["depend", "rdepend"]

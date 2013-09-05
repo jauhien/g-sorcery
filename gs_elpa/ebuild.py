@@ -27,12 +27,12 @@ class ElpaEbuildWithDigestGenerator(DefaultEbuildGenerator):
     def __init__(self, package_db):
 
         vars_before_inherit = \
-          ["repo_uri", "source_type", "realname", ("digest_sources", "yes")]
+          ["repo_uri", "source_type", "realname", {"name" : "digest_sources", "value" : "yes"}]
 
         inherit = ["g-sorcery", "gs-elpa"]
         
         vars_after_description = \
-          ["homepage", ("src_uri", "${REPO_URI}${REALNAME}-${PV}.${SUFFIX}")]
+          ["homepage", {"name" : "src_uri", "value" : "${REPO_URI}${REALNAME}-${PV}.${SUFFIX}"}]
 
         vars_after_keywords = \
           ["depend", "rdepend"]

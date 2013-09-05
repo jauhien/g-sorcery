@@ -168,7 +168,10 @@ class DefaultEbuildGenerator(EbuildGenerator):
     inherit entry is just a list of eclass names.
     vars* entries are lists of variables in tw0 possible formats:
     1. A string with variable name
-    2. A tuple (varname, value)
+    2. A dictinary with entries:
+        name: variable name
+        value: variable value
+        raw: if present, not quotation of value will be done
     Variable names are automatically transformed to the upper-case.
     """
     def __init__(self, package_db, layout):
@@ -218,15 +221,19 @@ class DefaultEbuildGenerator(EbuildGenerator):
         Args:
             variables: List of variables.
         """
-        VAR_NAME = 0
-        VAR_VALUE = 1
-
         for var in variables:
             if isinstance(var, basestring):
                 self.template.append(var.upper() + '="%(' + var + ')s"')
             else:
-                self.template.append(var[VAR_NAME].upper() \
-                                     + '="' + var[VAR_VALUE] + '"')
+                if "raw" in var:
+                    quote = ''
+                else:
+                    quote = '"'
+                if "value" in var:
+                    self.template.append(var["name"].upper() \
+                                         + '=' + quote + var["value"] + quote)
+                else:
+                    self.template.append(var["name"].upper() + '=' + quote + '%(' + var["name"] + ')s' + quote)
 
 
     def get_template(self, package, ebuild_data):
