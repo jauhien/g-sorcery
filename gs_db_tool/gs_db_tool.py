@@ -83,10 +83,10 @@ def add_var(pkg_db, args):
             pkg_db.add_package(package, ebuild_data)
 
     elif args.lambda_function:
-        lmbd = "lambda ebuild_data: " + args.lambda_function
+        lmbd = "lambda package, ebuild_data: " + args.lambda_function
         f = eval(lmbd)
         for package, ebuild_data in pkg_db:
-            value = f(ebuild_data)
+            value = f(package, ebuild_data)
             ebuild_data[args.name] = value
             pkg_db.add_package(package, ebuild_data)
 
