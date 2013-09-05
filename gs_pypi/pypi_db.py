@@ -226,6 +226,7 @@ class PypiDBGenerator(DBGenerator):
 
                     if "License" in categories:
                         license = categories["License"][-1]
+            license = self.convert([common_config, config], "licenses", license)
 
             if not py_versions:
                 py_versions = ['2_6', '2_7', '3_2', '3_3']

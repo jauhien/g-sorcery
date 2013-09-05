@@ -31,7 +31,7 @@ class PypiEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         inherit = ["gs-pypi"]
         
         vars_after_description = \
-          ["homepage"]
+          ["homepage", "license"]
 
         vars_after_keywords = \
           []
@@ -49,7 +49,7 @@ class PypiEbuildWithDigestGenerator(DefaultEbuildGenerator):
         inherit = ["gs-pypi"]
         
         vars_after_description = \
-          ["homepage",
+          ["homepage", , "license",
            {"name" : "src_uri", "value" : 'http://pypi.python.org/packages/source/${REALNAME:0:1}/${REALNAME}/${REALNAME}-${REALVERSION}.tar.gz'}]
 
         vars_after_keywords = \
