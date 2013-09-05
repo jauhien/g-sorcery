@@ -478,12 +478,12 @@ class Backend(object):
             source = ebuild_g.generate(package, ebuild_data)
             with open(os.path.join(path,
                         name + '-' + version + '.ebuild'),
-                      'w') as f:
-                f.write('\n'.join(source))
+                      'wb') as f:
+                f.write('\n'.join(source).encode('utf-8'))
 
             source = metadata_g.generate(package)
-            with open(os.path.join(path, 'metadata.xml'), 'w') as f:
-                f.write('\n'.join(source))
+            with open(os.path.join(path, 'metadata.xml'), 'wb') as f:
+                f.write('\n'.join(source).encode('utf-8'))
 
         eclass_g = self.eclass_g_class()
         path = os.path.join(overlay, 'eclass')
