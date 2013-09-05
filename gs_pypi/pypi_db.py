@@ -251,6 +251,9 @@ class PypiDBGenerator(DBGenerator):
                            'name' : 'Jauhien Piatlicki'}]
 
             ebuild_data = {}
+            ebuild_data["realname"] = package
+            ebuild_data["realversion"] = version
+
             ebuild_data["description"] = description
             ebuild_data["longdescription"] = description
             ebuild_data["dependencies"] = dependencies
