@@ -2,7 +2,7 @@
   "package": "gs_pypi", 
   "repositories": {
     "pypi": {
-      "repo_uri": "https://testpypi.python.org/",
+      "repo_uri": "https://pypi.python.org/",
       "db_uri": "https://github.com/jauhien/gs-pypi-db/archive/master.tar.gz"
     }
   }
