@@ -15,6 +15,7 @@ import os
 import sys
 
 from g_sorcery.compatibility import TemporaryDirectory
+from g_sorcery.exceptions import FileJSONError
 from g_sorcery.fileutils import copy_all, FileJSON
 from g_sorcery.logger import Logger
 
