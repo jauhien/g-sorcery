@@ -210,7 +210,7 @@ class PypiDBGenerator(DBGenerator):
                     categories = info["Categories"]
 
                     if 'Programming Language' in  categories:
-                        for entry in ebuild_data['info']['Categories']['Programming Language']:
+                        for entry in categories['Programming Language']:
                             if entry == '2':
                                 py_versions.extend(['2_6', '2_7'])
                             elif entry == '3':
