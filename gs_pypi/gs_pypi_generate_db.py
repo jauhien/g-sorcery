@@ -48,7 +48,7 @@ def main():
     generator = PypiDBGenerator()
     db_name = sys.argv[1]
     temp_dir = TemporaryDirectory()
-    pkg_db = generator(temp_dir.name, "pypi", config=config["repositories"]["pypi"])
+    pkg_db = generator(temp_dir.name, "pypi", config=config["repositories"]["pypi"], common_config=config["common_config"])
     if os.path.exists(db_name):
         os.system('rm -rf ' + db_name + '/*')
     else:

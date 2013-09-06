@@ -200,7 +200,7 @@ class PypiDBGenerator(DBGenerator):
                 continue
 
             homepage = ""
-            license = ""
+            pkg_license = ""
             py_versions = []
             if info:
                 if "Home Page:" in info:
@@ -225,8 +225,8 @@ class PypiDBGenerator(DBGenerator):
                                 py_versions.extend(['3_3'])
 
                     if "License" in categories:
-                        license = categories["License"][-1]
-            license = self.convert([common_config, config], "licenses", license)
+                        pkg_license = categories["License"][-1]
+            pkg_license = self.convert([common_config, config], "licenses", pkg_license)
 
             if not py_versions:
                 py_versions = ['2_6', '2_7', '3_2', '3_3']
@@ -236,7 +236,7 @@ class PypiDBGenerator(DBGenerator):
                 python_compat = '( python{' + py_versions[0]
                 for ver in py_versions[1:]:
                     python_compat += ',' + ver
-                    python_compat += '} )'
+                python_compat += '} )'
 
             filtered_package = "".join([x for x in package if ord(x) in allowed_ords_pkg])
             description = "".join([x for x in description if ord(x) in allowed_ords_desc])
@@ -262,7 +262,7 @@ class PypiDBGenerator(DBGenerator):
             ebuild_data["maintainer"] = maintainer
 
             ebuild_data["homepage"] = homepage
-            ebuild_data["license"] = license
+            ebuild_data["license"] = pkg_license
             ebuild_data["source_uri"] = source_uri
             ebuild_data["md5"] = md5
             ebuild_data["python_compat"] = python_compat
