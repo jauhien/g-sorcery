@@ -154,12 +154,12 @@ class PypiDBGenerator(DBGenerator):
         pkg_db.add_category(category)
 
         #todo: write filter functions
-        allowed_ords_pkg = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
-            set(range(ord('0'), ord('9'))) | set(list(map(ord,
+        allowed_ords_pkg = set(range(ord('a'), ord('z') + 1)) | set(range(ord('A'), ord('Z') + 1)) | \
+            set(range(ord('0'), ord('9') + 1)) | set(list(map(ord,
                 ['+', '_', '-'])))
 
-        allowed_ords_desc = set(range(ord('a'), ord('z'))) | set(range(ord('A'), ord('Z'))) | \
-              set(range(ord('0'), ord('9'))) | set(list(map(ord,
+        allowed_ords_desc = set(range(ord('a'), ord('z') + 1)) | set(range(ord('A'), ord('Z') + 1)) | \
+              set(range(ord('0'), ord('9') + 1)) | set(list(map(ord,
                     ['+', '_', '-', ' ', '.', '(', ')', '[', ']', '{', '}', ','])))
 
         now = datetime.datetime.now()
