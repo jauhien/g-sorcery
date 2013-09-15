@@ -497,6 +497,8 @@ class Backend(object):
                     return -1
                 masters_overlays.append(overlays_info[repo]["repo-name"])
 
+        masters_overlays.append("gentoo")
+
         overlays_info[args.repository] = {"repo-name": os.path.basename(overlay), "path": overlay}
         with open(os.path.join(overlay, 'metadata', 'layout.conf'), 'w') as f:
             f.write("repo-name = %s\n" % os.path.basename(overlay))
