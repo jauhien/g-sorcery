@@ -139,7 +139,7 @@ class ManifestEntry:
     A manifest entry for a file.
     """
 
-    __slots__ = ('directory', 'name', 'ftype', 'digest',
+    __slots__ = ('directory', 'name', 'ftype',
                  'size', 'sha256', 'sha512', 'whirlpool')
     
     def __init__(self, directory, name, ftype):
