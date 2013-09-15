@@ -23,7 +23,7 @@ else:
 
 from .g_collections import Package, elist
 from .fileutils import fast_manifest, FileJSON
-from .exceptions import DependencyError, DigestError
+from .exceptions import DependencyError, DigestError, InvalidKeyError
 from .logger import Logger
 from .mangler import package_managers
 from .package_db import PackageDB
@@ -225,46 +225,8 @@ class Backend(object):
 
         pkgname = args.pkgname
 
-        parts = pkgname.split('/')
-
-        category = None
-        
-        if len(parts) == 1:
-            name = parts[0]
-        elif len(parts) == 2:
-            category = parts[0]
-            name = parts[1]
-        else:
-            self.logger.error('bad package name: ' + pkgname + '\n')
-            return -1
-
-        if not category:
-            all_categories = pkg_db.list_categories()
-            categories = []
-            for cat in all_categories:
-                if pkg_db.in_category(cat, name):
-                    categories.append(cat)
-
-            if not len(categories):
-                self.logger.error('no package with name ' \
-                                  + pkgname + ' found\n')
-                return -1
-                    
-            if len(categories) > 1:
-                self.logger.error('ambiguous packagename: ' + pkgname + '\n')
-                self.logger.error('please select one of' \
-                                  + 'the following packages:\n')
-                for cat in categories:
-                    self.logger.error('    ' + cat + '/' + pkgname + '\n')
-                return -1
-                
-            category = categories[0]
-        versions = pkg_db.list_package_versions(category, name)
-        dependencies = set()
         try:
-            for version in versions:
-                dependencies |= self.solve_dependencies(pkg_db,
-                                    Package(category, name, version))[0]
+            dependencies = self.get_dependencies(pkg_db, pkgname)
         except Exception as e:
             self.logger.error('dependency solving failed: ' + str(e) + '\n')
             return -1
@@ -349,6 +311,48 @@ class Backend(object):
                 f.write('\n'.join(source))
 
 
+    def get_dependencies(self, package_db, pkgname):
+        parts = pkgname.split('/')
+        category = None
+        if len(parts) == 1:
+            name = parts[0]
+        elif len(parts) == 2:
+            category = parts[0]
+            name = parts[1]
+        else:
+            error = 'bad package name: ' + pkgname
+            self.logger.error(error + '\n')
+            raise DependencyError(error)
+
+        if not category:
+            all_categories = package_db.list_categories()
+            categories = []
+            for cat in all_categories:
+                if package_db.in_category(cat, name):
+                    categories.append(cat)
+
+            if not len(categories):
+                error = 'no package with name ' \
+                                  + pkgname + ' found'
+                self.logger.error(error + '\n')
+                raise DependencyError(error)
+
+            if len(categories) > 1:
+                self.logger.error('ambiguous packagename: ' + pkgname + '\n')
+                self.logger.error('please select one of' \
+                                  + 'the following packages:\n')
+                for cat in categories:
+                    self.logger.error('    ' + cat + '/' + pkgname + '\n')
+                raise DependencyError("ambiguous packagename")
+
+            category = categories[0]
+        versions = package_db.list_package_versions(category, name)
+        dependencies = set()
+        for version in versions:
+            dependencies |= self.solve_dependencies(package_db,
+                                    Package(category, name, version))[0]
+        return dependencies
+
     def solve_dependencies(self, package_db, package,
                            solved_deps=None, unsolved_deps=None):
         """
@@ -385,16 +389,24 @@ class Backend(object):
         if not found:
             error = "package " + package.category + '/' + \
                 package.name + '-' + package.version + " not found"
-            raise DependencyError(error)
-        
+            self.logger.error(error)
+            # at the moment ignore unsolved dependencies, as those deps can be in other repo
+            # or can be external: portage will catch it
+            unsolved_deps.remove(package)
+            return (solved_deps, unsolved_deps)
+
         dependencies = desc["dependencies"]
         for pkg in dependencies:
-            versions = package_db.list_package_versions(pkg.category,
+            try:
+                versions = package_db.list_package_versions(pkg.category,
                                                         pkg.package)
-            for version in versions:            
-                solved_deps, unsolved_deps = self.solve_dependencies(package_db,
+                for version in versions:            
+                    solved_deps, unsolved_deps = self.solve_dependencies(package_db,
                                     Package(pkg.category, pkg.package, version),
                                     solved_deps, unsolved_deps)
+            except InvalidKeyError:
+                # ignore non existing packages
+                continue
         
         solved_deps.add(package)
         unsolved_deps.remove(package)
@@ -441,6 +453,11 @@ class Backend(object):
         Returns:
             Exit status.
         """
+        try:
+            packages = global_config.get(config["backend"], args.repository + "_packages").split(" ")
+        except Exception:
+            packages = []
+
         self.logger.info("tree generation")
         overlay = self._get_overlay(args, config, global_config)
         pkg_db = self._get_package_db(args, config, global_config)
@@ -465,8 +482,22 @@ class Backend(object):
         else:
             ebuild_g = self.ebuild_g_without_digest_class(pkg_db)
         metadata_g = self.metadata_g_class(pkg_db)
-        
-        for package, ebuild_data in pkg_db:
+
+        packages_iter = pkg_db
+        catpkg_names = pkg_db.list_catpkg_names()
+        if packages:
+            dependencies = set()
+            catpkg_names = set()
+            packages_dict = {}
+            for pkg in packages:
+                dependencies |= self.get_dependencies(pkg_db, pkg)
+
+            for pkg in dependencies:
+                catpkg_names |= set([pkg.category + '/' + pkg.name])
+                packages_dict[pkg] = pkg_db.get_package_description(pkg)
+            packages_iter = packages_dict.items()
+
+        for package, ebuild_data in packages_iter:
             category = package.category
             name = package.name
             version = package.version
@@ -498,7 +529,7 @@ class Backend(object):
         if args.digest:
             self.digest(overlay)
         else:
-            pkgnames = pkg_db.list_catpkg_names()
+            pkgnames = catpkg_names
             self.fast_digest(overlay, pkgnames)
 
     def install(self, args, config, global_config):
@@ -516,7 +547,7 @@ class Backend(object):
         self.generate(args, config, global_config)
         try:
             package_manager = global_config.get("main", "package_manager")
-        except configparser.NoOptionError:    
+        except configparser.NoOptionError:
             package_manager_class = package_managers["portage"]
             package_manager = None
         if  package_manager:
