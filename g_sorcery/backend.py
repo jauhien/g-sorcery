@@ -14,6 +14,8 @@
 import argparse
 import os
 
+import portage
+
 from .compatibility import py2k
 
 if py2k:
@@ -106,6 +108,7 @@ class Backend(object):
             else:
                 overlay = config['default_overlay']
         overlay = args.overlay
+        overlay = os.path.abspath(overlay)
         return overlay
 
     def _get_package_db(self, args, config, global_config):
@@ -473,9 +476,31 @@ class Backend(object):
             masters = elist(["gentoo"])
         else:
             masters = elist(config["repositories"][args.repository]["masters"])
+
+        overlays = FileJSON("/var/lib/g-sorcery", "overlays.json", [])
+        overlays_old_info = overlays.read()
+        overlays_info = {}
+        masters_overlays = elist()
+        portage_overlays = [repo.location for repo in portage.settings.repositories]
+
+        for repo, info in overlays_old_info.items():
+            if info["path"] in portage_overlays:
+                overlays_info[repo] = info
+
+        overlays.write(overlays_info)
+
+        for repo in masters:
+            if repo != "gentoo":
+                if not repo in overlays_info:
+                    self.logger.error("Master repository " + repo + " not available on your system")
+                    self.logger.error("Please, add it with layman -a " + repo)
+                    return -1
+                masters_overlays.append(overlays_info[repo]["repo-name"])
+
+        overlays_info[args.repository] = {"repo-name": os.path.basename(overlay), "path": overlay}
         with open(os.path.join(overlay, 'metadata', 'layout.conf'), 'w') as f:
             f.write("repo-name = %s\n" % os.path.basename(overlay))
-            f.write("masters = %s\n" % masters)
+            f.write("masters = %s\n" % masters_overlays)
         
         if args.digest:
             ebuild_g = self.ebuild_g_with_digest_class(pkg_db)
@@ -531,6 +556,7 @@ class Backend(object):
         else:
             pkgnames = catpkg_names
             self.fast_digest(overlay, pkgnames)
+        overlays.write(overlays_info)
 
     def install(self, args, config, global_config):
         """
