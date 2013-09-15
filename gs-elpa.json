@@ -1,4 +1,5 @@
 {
+  "backend": "gs-elpa",
   "package": "gs_elpa", 
   "repositories": {
     "gnu-elpa": {

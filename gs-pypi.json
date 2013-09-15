@@ -1,4 +1,5 @@
 {
+  "backend": "gs-pypi",
   "package": "gs_pypi", 
   "repositories": {
     "pypi": {

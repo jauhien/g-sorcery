@@ -1,4 +1,5 @@
 {
+  "backend": "gs-ctan",
   "package": "gs_ctan", 
   "repositories": {
     "ctan": {
