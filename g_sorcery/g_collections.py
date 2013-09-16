@@ -94,6 +94,14 @@ class Package(object):
     def __str__(self):
         return self.category + '/' + self.name + '-' + self.version
 
+    def __eq__(self, other):
+        return self.category == other.category and \
+            self.name == other.name and \
+            self.version == other.version
+
+    def __hash__(self):
+        return hash(self.category + self.name + self.version)
+
     def serialize(self):
         return [self.category, self.name, self.version]
 
