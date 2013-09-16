@@ -2,7 +2,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-for VER in 2.7 3.2 3.3 #2.6 to be added later
+for VER in 2.7 3.2 3.3
 do
     echo
     echo "testing python${VER}"
