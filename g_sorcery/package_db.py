@@ -13,7 +13,6 @@
 
 import glob
 import hashlib
-import multiprocessing
 import os
 import shutil
 import sys
@@ -149,14 +148,14 @@ class PackageDB(object):
         tempdb_dir = os.path.join(temp_dir.name, os.listdir(temp_dir.name)[0])
         tempdb = PackageDB(tempdb_dir)
 
-        if not tempdb.check_manifest():
+        if not tempdb.check_manifest()[0]:
             raise IntegrityError('Manifest check failed.')
 
         self.logger.info("copy files to an actual database")
         self.clean()
         copy_all(tempdb_dir, self.directory)
         
-        if not self.check_manifest():
+        if not self.check_manifest()[0]:
             raise IntegrityError('Manifest check failed, db inconsistent.')
                 
         del download_dir
@@ -194,13 +193,6 @@ class PackageDB(object):
         m_f = FileJSON(self.directory, 'manifest.json', [])
         m_f.write(manifest)
 
-    def _check_manifest_process(self, i, entries, errors):
-        for name, value in entries:
-            if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
-                value:
-                errors.append(name)
-
-
     def check_manifest(self):
         """
         Check database manifest.
@@ -213,31 +205,18 @@ class PackageDB(object):
         m_f = FileJSON(self.directory, 'manifest.json', [])
         manifest = m_f.read()
 
-        manager = multiprocessing.Manager()
-
         result = True
-        errors = manager.list()
+        errors = []
 
         names = [self.CATEGORIES_NAME]
         for name in names:
             if not name in manifest:
                 raise DBStructureError('Bad manifest: no ' + name + ' entry')
 
-        proc_num = multiprocessing.cpu_count() + 1
-
-        portion = len(manifest) // proc_num
-        procs = []
-        entries = list(manifest.items())
-        
-        for i in range(proc_num - 1):
-            procs.append(multiprocessing.Process(target=self._check_manifest_process, args=(i, entries[i * portion:(i+1) * portion - 1], errors)))
-        procs.append(multiprocessing.Process(target=self._check_manifest_process, args=(proc_num - 1, entries[(proc_num - 1) * portion:], errors)))
-
-        for proc in procs:
-            proc.start()
-
-        for proc in procs:
-            proc.join()
+        for name, value in manifest.items():
+            if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
+                value:
+                errors.append(name)
 
         if errors:
             result = False
