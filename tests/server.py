@@ -25,7 +25,7 @@ else:
 
 def HTTPRequestHandlerGenerator(direct):
 
-    class HTTPRequestHandler(SimpleHTTPRequestHandler):
+    class HTTPRequestHandler(SimpleHTTPRequestHandler, object):
         directory = direct
 
         def __init__(self, request, client_address, server):
