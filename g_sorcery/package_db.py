@@ -562,9 +562,7 @@ class DBGenerator(object):
         if generate:
             pkg_db.clean()
             self.generate_tree(pkg_db, common_config, config)
-            #todo: make db write on every add_package and only necessary info
-            pkg_db.write()
-            pkg_db.manifest()
+            pkg_db.write_and_manifest()
         return pkg_db
 
     def generate_tree(self, pkg_db, common_config, config):
