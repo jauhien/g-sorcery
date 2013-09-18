@@ -52,6 +52,12 @@ class TestingDBGenerator(DBGenerator):
             pkg_db.add_category(package.category)
             pkg_db.add_package(package, ebuild_data)
 
+    def convert_internal_dependency(self, configs, dependency):
+        return ("internal", dependency)
+
+    def convert_external_dependency(self, configs, dependency):
+        return ("external", dependency)
+
 
 class TestDBGenerator(BaseTest):
 
@@ -102,6 +108,19 @@ class TestDBGenerator(BaseTest):
             self.assertEqual(data, ebuild_data)
             pkg_set.remove(package)
         self.assertTrue(not pkg_set)
+
+        orig = "test"
+        converted = "works"
+        internal = "int"
+        configs = [{}, {"converters": {orig:converted}, "external": {orig:converted}, "values": [orig, converted]}]
+
+        self.assertEqual(db_generator.convert(configs, "converters", orig), converted)
+        self.assertNotEqual(db_generator.convert(configs, "converters", "invalid"), converted)
+        self.assertEqual(db_generator.convert_dependency(configs, orig), ("external", converted))
+        self.assertEqual(db_generator.convert_dependency(configs, orig, external = False), None)
+        self.assertEqual(db_generator.convert_dependency(configs, internal), ("internal", internal))
+        self.assertTrue(db_generator.in_config(configs, "values", orig))
+        self.assertFalse(db_generator.in_config(configs, "values", "invalid"))
 
 
 def suite():
