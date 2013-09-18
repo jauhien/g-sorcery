@@ -727,7 +727,7 @@ class DBGenerator(object):
                         external_dep = ext_deps[dependency]
         if external_dep:
             if external:
-                return self.convert_external_dependency(configs, dependency)
+                return self.convert_external_dependency(configs, external_dep)
             else:
                 return None
         else:
