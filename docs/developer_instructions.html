@@ -446,10 +446,13 @@ SRC_URI as during manifest generation for an overlay all the sources would be do
 to the user's comuter that inevitably would made user really happy. So one ebuild generator
 generates ebuild with empty SRC_URI. Note that a mechanism for downloading of sources during
 ebuild merging should be provided. For an example see <strong>git-2</strong> eclass from the main tree or
-any eclass from backends provided with g-sorcery.</p>
+any eclass from backends provided with g-sorcery if you want to implement such a mechanism or
+use eclass <strong>g-sorcery</strong> provided by standard eclass generator (can be found in data directory
+of <strong>g_sorcery</strong> package).</p>
 <p>Usually downloading and parsing of a database from a repository is an easy operation. But sometimes
 there could exist some problems. Hence exists the last parameter in Backend constructor that
-allows syncing with already generated database available somewhere in Internet.</p>
+allows syncing with already generated database available somewhere in Internet (see <strong>gs-pypi</strong>
+for an example of using it).</p>
 <p>To do something usefull backend should customize any classes from g-sorcery it needs
 and define backend.instance variable using those classes. Other two things backend should do are:</p>
 <ul class="simple">
@@ -518,19 +521,10 @@ db dir
     manifest.json: database manifest
     categories.json: information about categories
     category1
-        packages.json: list of packages
-        package1
-            versions.json: list of versions
-            version1.json: description of a package
-            version2.json: description of a package
-            ...
-        package2
-        ...
+        packages.json: packages information
     category2
     ...
 </pre>
-<p>Files named version.json contain ebuild data which is just a dictionary with information
-relevant for ebuild, eclass and metadata generation for a given package.</p>
 </div>
 <div class="section" id="packagedb-class">
 <h2>PackageDB class</h2>
@@ -553,7 +547,7 @@ written/read:</p>
 </ul>
 <p>Note that before add any package you should add a category for it using <strong>add_category</strong>.
 Then packages can be added using <strong>add_package</strong>. PackageDB currently does not write changes
-automatically, so you should call <strong>write</strong> after changes are done. This is not relevant
+automatically, so you should call <strong>write_and_manifest</strong> after changes are done. This is not relevant
 for database changing in <strong>process_data</strong> method of database generator as there all changes
 are written by other methods it calls internally after <strong>process_data</strong>.</p>
 </div>
@@ -695,8 +689,9 @@ class ElpaEclassGenerator(EclassGenerator):
     def __init__(self):
         super(ElpaEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
 </pre>
-<p>There is no common eclass currently. I plan to change it in the future, so your eclass code can
-inherit any common functionality.</p>
+<p>Eclass generator always provides <strong>g-sorcery</strong> eclass. It overrides <em>src_unpack</em> function
+so if <em>DIGEST_SOURCES</em> variable is not set sources are fetched during unpack from <em>${REPO_URI}${SOURCEFILE}</em>.
+If <em>DIGEST_SOURCES</em> variable is set usual unpack function is called.</p>
 </div>
 <div class="section" id="ebuild-generator">
 <h1>Ebuild generator</h1>
@@ -713,9 +708,19 @@ Entries are processed in the following order:</p>
 </ul>
 <p><strong>inherit</strong> entry is just a list of eclass names.</p>
 <p><strong>vars*</strong> entries are lists of variables in two possible formats:</p>
-<ol class="arabic simple">
-<li>A string with variable name</li>
-<li>A tuple (varname, value)</li>
+<ol class="arabic">
+<li><p class="first">A string with variable name</p>
+</li>
+<li><dl class="first docutils">
+<dt>A dictinary with entries:</dt>
+<dd><ul class="first last simple">
+<li>name: variable name</li>
+<li>value: variable value</li>
+<li>raw: if present, no quotation of value will be done</li>
+</ul>
+</dd>
+</dl>
+</li>
 </ol>
 <p>Variable names are automatically transformed to the upper-case during ebuild generation.</p>
 <p>An example of ebuild generator:</p>
@@ -887,7 +892,7 @@ something like</p>
 <div class="section" id="layman-integration">
 <h1>Layman integration</h1>
 <p>There is a <strong>layman</strong> integration for <strong>g-sorcery</strong> (thanks to Brian Dolbec and Auke Booij here).
-To use it you just need to install and xml file describing your repositories in
+To use it you just need to install an xml file describing your repositories in
 <strong>/etc/layman/overlays</strong> directory. For our example of backend config we could write an xml file
 that looks like</p>
 <pre class="code literal-block">
@@ -938,7 +943,8 @@ that quacks like this class.</p>
 <p>Before doing it you should have defined classes you pass to it as parameters. They should be database
 generator, two ebuild generators, eclass and metadata generators.</p>
 <p>Also you should write an executable that calls g-sorcery and some configs.</p>
-<p>To have better understanding you can look at gs-elpa and gs-ctan backends available in g-sorcery repository.</p>
+<p>To have better understanding you can look at gs-elpa, gs-ctan and gs-pypi backends available
+in g-sorcery repository. Also available tests could be usefull.</p>
 </div>
 </div>
 </body>

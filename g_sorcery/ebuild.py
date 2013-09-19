@@ -171,7 +171,7 @@ class DefaultEbuildGenerator(EbuildGenerator):
     2. A dictinary with entries:
         name: variable name
         value: variable value
-        raw: if present, not quotation of value will be done
+        raw: if present, no quotation of value will be done
     Variable names are automatically transformed to the upper-case.
     """
     def __init__(self, package_db, layout):

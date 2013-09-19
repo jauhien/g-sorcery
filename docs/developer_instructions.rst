@@ -112,11 +112,14 @@ SRC_URI as during manifest generation for an overlay all the sources would be do
 to the user's comuter that inevitably would made user really happy. So one ebuild generator
 generates ebuild with empty SRC_URI. Note that a mechanism for downloading of sources during
 ebuild merging should be provided. For an example see **git-2** eclass from the main tree or
-any eclass from backends provided with g-sorcery.
+any eclass from backends provided with g-sorcery if you want to implement such a mechanism or
+use eclass **g-sorcery** provided by standard eclass generator (can be found in data directory
+of **g_sorcery** package).
 
 Usually downloading and parsing of a database from a repository is an easy operation. But sometimes
 there could exist some problems. Hence exists the last parameter in Backend constructor that
-allows syncing with already generated database available somewhere in Internet.
+allows syncing with already generated database available somewhere in Internet (see **gs-pypi**
+for an example of using it).
 
 To do something usefull backend should customize any classes from g-sorcery it needs
 and define backend.instance variable using those classes. Other two things backend should do are:
@@ -189,19 +192,10 @@ Package database is a directory tree with JSON files. The layout of this tree lo
         manifest.json: database manifest
         categories.json: information about categories
         category1
-            packages.json: list of packages
-            package1
-                versions.json: list of versions
-                version1.json: description of a package
-                version2.json: description of a package
-                ...
-            package2
-            ...
+            packages.json: packages information
         category2
         ...
 
-Files named version.json contain ebuild data which is just a dictionary with information
-relevant for ebuild, eclass and metadata generation for a given package.
 
 PackageDB class
 ~~~~~~~~~~~~~~~
@@ -234,7 +228,7 @@ written/read:
 
 Note that before add any package you should add a category for it using **add_category**.
 Then packages can be added using **add_package**. PackageDB currently does not write changes
-automatically, so you should call **write** after changes are done. This is not relevant
+automatically, so you should call **write_and_manifest** after changes are done. This is not relevant
 for database changing in **process_data** method of database generator as there all changes
 are written by other methods it calls internally after **process_data**.
 
@@ -382,8 +376,9 @@ like
      def __init__(self):
          super(ElpaEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
 
-There is no common eclass currently. I plan to change it in the future, so your eclass code can
-inherit any common functionality.
+Eclass generator always provides **g-sorcery** eclass. It overrides *src_unpack* function
+so if *DIGEST_SOURCES* variable is not set sources are fetched during unpack from *${REPO_URI}${SOURCEFILE}*.
+If *DIGEST_SOURCES* variable is set usual unpack function is called.
 
 Ebuild generator
 ================
@@ -409,7 +404,10 @@ Entries are processed in the following order:
 **vars*** entries are lists of variables in two possible formats:
 
 1. A string with variable name
-2. A tuple (varname, value)
+2. A dictinary with entries:
+        * name: variable name
+        * value: variable value
+        * raw: if present, no quotation of value will be done
 
 Variable names are automatically transformed to the upper-case during ebuild generation.
 
@@ -578,7 +576,7 @@ Layman integration
 ==================
 
 There is a **layman** integration for **g-sorcery** (thanks to Brian Dolbec and Auke Booij here).
-To use it you just need to install and xml file describing your repositories in
+To use it you just need to install an xml file describing your repositories in
 **/etc/layman/overlays** directory. For our example of backend config we could write an xml file
 that looks like
 
@@ -636,4 +634,5 @@ generator, two ebuild generators, eclass and metadata generators.
 
 Also you should write an executable that calls g-sorcery and some configs.
 
-To have better understanding you can look at gs-elpa and gs-ctan backends available in g-sorcery repository.
+To have better understanding you can look at gs-elpa, gs-ctan and gs-pypi backends available
+in g-sorcery repository. Also available tests could be usefull.
