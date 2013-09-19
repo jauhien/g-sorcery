@@ -588,6 +588,17 @@ class Backend(object):
         package_manager.install(args.pkgname, *args.pkgmanager_flags)
         
     def __call__(self, args, config, global_config):
+        """
+        Execute a command
+
+        Args:
+            args: Command line arguments.
+            config: Backend config.
+            global_config: g-sorcery config.
+
+        Returns:
+            Exit status.
+        """
         args = self.parser.parse_args(args)
         info_f = FileJSON(os.path.join(args.overlay, self.sorcery_dir),
                           "info.json", ["repositories"])

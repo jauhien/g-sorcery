@@ -39,14 +39,7 @@ class PackageDB(object):
         manifest.json: database manifest
         categories.json: information about categories
         category1
-            packages.json: list of packages
-            package1
-                versions.json: list of versions
-                version1.json: description of a package
-                version2.json: description of a package
-                ...
-            package2
-            ...
+            packages.json: information about available packages
         category2
         ...
     
@@ -114,7 +107,6 @@ class PackageDB(object):
         self.logger = Logger()
         self.CATEGORIES_NAME = 'categories.json'
         self.PACKAGES_NAME = 'packages.json'
-        self.VERSIONS_NAME = 'versions.json'
         self.directory = os.path.abspath(directory)
         self.reset_db()
 
@@ -233,6 +225,9 @@ class PackageDB(object):
         self.write_and_manifest()
 
     def write_and_manifest(self):
+        """
+        Write and digest database.
+        """
         self.write()
         self.manifest()
 

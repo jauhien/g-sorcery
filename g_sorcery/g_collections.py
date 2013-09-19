@@ -7,7 +7,8 @@
     
     Customized classes of standard python data types
     for use withing g-sorcery for custom formatted string output
-    substitution in our ebuild templates.
+    substitution in our ebuild templates and classes for storing
+    information about packages and dependencies.
     
     :copyright: (c) 2013 by Brian Dolbec
     :copyright: (c) 2013 by Jauhien Piatlicki

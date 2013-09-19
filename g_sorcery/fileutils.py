@@ -24,7 +24,8 @@ from .serialization import JSONSerializer, deserializeHook
 
 class FileJSON(object):
     """
-    Class for JSON files.
+    Class for JSON files. Supports custom JSON serialization
+    provided by g_sorcery.serialization.
     """
     def __init__(self, directory, name, mandatories=[]):
         """
@@ -110,6 +111,7 @@ def wget(uri, directory, output=""):
     Args:
         uri: URI.
         directory: Directory where file should be saved.
+        output: Name of output file.
 
     Returns:
         Nonzero in case of a failure.
@@ -124,6 +126,9 @@ def wget(uri, directory, output=""):
 def get_pkgpath(root = None):
     """
     Get package path.
+
+    Args:
+        root: module file path
 
     Returns:
         Package path.

@@ -41,16 +41,31 @@ class ProgressBar(object):
     __slots__ = ('length', 'total', 'processed', 'chars')
     
     def __init__(self, length, total, processed = 0):
+        """
+        Args:
+            length: Length of the progress bar.
+            total: The overall number of items to process.
+            processe: Number of processed items.
+        """
         self.length = length
         self.total = total
         self.chars = ['-', '\\', '|', '/']
         self.processed = processed
 
     def begin(self):
+        """
+        Start displaying the progress bar with 0% progress.
+        """
         self.processed = 0
         self.display()
 
     def display(self, processed = None):
+        """
+        Show the progress bar with current progress.
+
+        Args:
+            processed: Number of processed items.
+        """
         if processed:
             self.processed = processed
 
@@ -63,9 +78,18 @@ class ProgressBar(object):
         sys.stderr.flush()
 
     def increment(self, count = 1):
+        """
+        Increment number of processed items.
+
+        Args:
+            count: Step of incrementation.
+        """
         self.processed += count
         self.display()
 
     def end(self):
+        """
+        Show 100%.
+        """
         self.processed = self.total
         self.display()
