@@ -68,7 +68,7 @@ usual. It's all you need to do and it's the recommended way of
 using **g-sorcery**.
 
 Using **g-sorcery** with layman you can populate overlay only with packages you want.
-To do so you should add a section named [BACKEND] (BACKEND here is the name of backend used for
+To do so you should add a section named BACKEND (BACKEND here is the name of backend used for
 your repo). In this section you can add entries named REPO_packages (REPO here is the name
 of repository you want to add) which are space separated list of packages you need. ebuilds for
 dependencies will be generated automatically if backend supports this possibility.
