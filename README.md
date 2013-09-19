@@ -52,7 +52,7 @@ Add `jauhien` overlay: **layman -a jauhien**.
 
 Emerge g-sorcery: **emerge -va g-sorcery**.
 
-Currently two backends are available: **gs-elpa** and **gs-ctan**.
+Currently 3 backends are available: **gs-elpa**, **gs-pypi** and **gs-ctan**.
 
 Here is an example of using gs-elpa backend.
 
@@ -60,12 +60,22 @@ There are two ways of using **gs-elpa**:
 
 * use it with **layman**
 
-In this case all you need to do is install **layman-9999**, **g-sorcery**
-and **gs-elpa**. Then you should just run `layman -L` as
+In this case all you need to do is install **layman-9999** and **g-sorcery**.
+Then you should just run `layman -L` as
 root and find an overlay you want. Type of overlay will be
 displayed as *g-sorcery*. Then you add this overlay as
 usual. It's all you need to do and it's the recommended way of
-using **gs-elpa**.
+using **g-sorcery**.
+
+Using **g-sorcery** with layman you can populate overlay only with packages you want.
+To do so you should add a section named [BACKEND] (BACKEND here is the name of backend used for
+your repo). In this section you can add entries named REPO_packages (REPO here is the name
+of repository you want to add) which are space separated list of packages you need. ebuilds for
+dependencies will be generated automatically if backend supports this possibility.
+
+Note, that some overlays may depend on other overlays, in this case you'll need to add those
+dependencies first.
+
 
 * use it as stand-alone tool
 
@@ -88,6 +98,17 @@ Emerge any package from it, e.g.
 
 **emerge -va clojure-mode**
 
+To generate only ebuilds we need such a */etc/g-sorcery/g-sorcery.cfg* file can be used:
+
+```
+[main]
+package_manager=portage
+
+[gs-elpa]
+marmalade_packages = clojure-mode clojurescript-mode
+```
+
+
 **Generating user ebuilds in user overlay**
 
 Create new user overlay. Run
@@ -106,6 +127,6 @@ Repositories you can use are gnu-elpa, marmalade and melpa. You can use them
 all in one overlay. Note, that if you call **generate-tree** command your overlay
 will be wiped and overlay tree for a given repository will be generated. Be careful!
 
-See man pages of **gs-elpa** and **gs-ctan** for further information.
+See man pages of **gs-elpa**, **gs-pypi** and **gs-ctan** for further information.
 
 If you want to develop a new backend see [developer's instructions](https://github.com/jauhien/g-sorcery/blob/master/docs/developer_instructions.rst).
