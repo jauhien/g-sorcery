@@ -127,4 +127,4 @@ NOTES
 SEE ALSO
 ========
 
-**gs-elpa**\(8), **portage**\(5), **emerge**\(1), **layman**\(8)
+**gs-elpa**\(8), **g-sorcery.cfg**\(8), **portage**\(5), **emerge**\(1), **layman**\(8)
