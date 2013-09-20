@@ -468,7 +468,7 @@ Entry is a dictionary. Dictionary keys are:
 * **subtags**
    List of subtags.
 
-Data dictinonary format
+Data dictionary format
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The part of ebuild data used for metadata generation should have data dictionary format
