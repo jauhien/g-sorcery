@@ -39,8 +39,8 @@ There are two ways of using **gs-elpa**:
 
     * use it with **layman**
 
-      In this case all you need to do is install **layman-9999**, **g-sorcery**
-      and **gs-elpa**. Then you should just run `layman -L` as
+      In this case all you need to do is install **layman-9999** and **g-sorcery**.
+      Then you should just run `layman -L` as
       root and find an overlay you want. Type of overlay will be
       displayed as *g-sorcery*. Then you add this overlay as
       usual. It's all you need to do and it's the recommended way of
