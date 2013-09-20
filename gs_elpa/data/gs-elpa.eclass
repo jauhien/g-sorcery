@@ -41,7 +41,7 @@ gs-elpa_src_unpack() {
 	g-sorcery_src_unpack
 	if [[ ${SOURCE_TYPE} = "single" ]]; then
 		mkdir ${P} || die
-		mv ./${SOURCEFILE} ./${P} || die
+		mv ./${SOURCEFILE} ./${P}/${REALNAME}.${SUFFIX} || die
 	fi
 }
 
