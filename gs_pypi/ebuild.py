@@ -21,6 +21,9 @@ Layout = collections.namedtuple("Layout",
   
 
 class PypiEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
+    """
+    Implementation of ebuild generator without sources digesting.
+    """
     def __init__(self, package_db):
 
         vars_before_inherit = \
@@ -41,6 +44,9 @@ class PypiEbuildWithoutDigestGenerator(DefaultEbuildGenerator):
         super(PypiEbuildWithoutDigestGenerator, self).__init__(package_db, layout)
 
 class PypiEbuildWithDigestGenerator(DefaultEbuildGenerator):
+    """
+    Implementation of ebuild generator with sources digesting.
+    """
     def __init__(self, package_db):
 
         vars_before_inherit = \

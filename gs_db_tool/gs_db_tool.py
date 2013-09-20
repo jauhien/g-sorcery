@@ -54,6 +54,9 @@ def main():
 
 
 def transform_db(function):
+    """
+    Decorator for functions that change database.
+    """
     def transformator(pkg_db, args):
         pkg_db.read()
         function(pkg_db, args)
@@ -62,6 +65,9 @@ def transform_db(function):
 
 
 def read_db(function):
+    """
+    Decorator for functions that read from database.
+    """
     def reader(pkg_db, args):
         pkg_db.read()
         function(pkg_db, args)
@@ -70,12 +76,18 @@ def read_db(function):
 
 @read_db
 def for_all(pkg_db, args):
+    """
+    Execute a given python code for all DB entries.
+    """
     for package, ebuild_data in pkg_db:
         exec(args.function)
 
 
 @transform_db
 def add_var(pkg_db, args):
+    """
+    Add new variable to every entry.
+    """
     if args.function:
         for package, ebuild_data in pkg_db:
             exec(args.function)
@@ -98,6 +110,9 @@ def add_var(pkg_db, args):
 
 @read_db
 def show_all(pkg_db, args):
+    """
+    Display all DB entries.
+    """
     for package, ebuild_data in pkg_db:
         print(package)
         print('-' * len(str(package)))
@@ -107,11 +122,17 @@ def show_all(pkg_db, args):
 
 
 def sync(pkg_db, args):
+    """
+    Synchronize database.
+    """
     pkg_db.sync(args.uri)
 
 
 @transform_db
 def rename_var(pkg_db, args):
+    """
+    Rename variable in all entries.
+    """
     for package, ebuild_data in pkg_db:
         if args.old_name in ebuild_data:
             value = ebuild_data.pop(args.old_name)

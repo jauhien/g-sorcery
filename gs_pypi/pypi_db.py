@@ -22,12 +22,20 @@ from g_sorcery.g_collections import Package, serializable_elist
 from g_sorcery.package_db import DBGenerator
 
 class PypiDBGenerator(DBGenerator):
-
+    """
+    Implementation of database generator for PYPI backend.
+    """
     def get_download_uries(self, common_config, config):
+        """
+        Get URI of packages index.
+        """
         self.repo_uri = config["repo_uri"]
         return [{"uri": self.repo_uri + "pypi?%3Aaction=index", "output": "packages"}]
 
     def parse_data(self, data_f):
+        """
+        Download and parse packages index. Then download and parse pages for all packages.
+        """
         soup = bs4.BeautifulSoup(data_f.read())
         packages = soup.table
         data = {}
@@ -69,6 +77,9 @@ class PypiDBGenerator(DBGenerator):
         return data
 
     def parse_package_page(self, data_f):
+        """
+        Parse package page.
+        """
         soup = bs4.BeautifulSoup(data_f.read())
         data = {}
         data["files"] = []
@@ -150,6 +161,9 @@ class PypiDBGenerator(DBGenerator):
         return data
 
     def process_data(self, pkg_db, data, common_config, config):
+        """
+        Process parsed package data.
+        """
         category = "dev-python"
         pkg_db.add_category(category)
 

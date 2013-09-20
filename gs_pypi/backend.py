@@ -23,6 +23,9 @@ from .ebuild import PypiEbuildWithoutDigestGenerator, PypiEbuildWithDigestGenera
 
 
 class PypiEclassGenerator(EclassGenerator):
+    """
+    Implementation of eclass generator. Only specifies a data directory.
+    """
     def __init__(self):
         super(PypiEclassGenerator, self).__init__(os.path.join(get_pkgpath(__file__), 'data'))
         
