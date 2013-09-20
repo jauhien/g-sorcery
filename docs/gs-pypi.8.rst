@@ -1,9 +1,9 @@
 =======
-gs-ctan
+gs-pypi
 =======
 
 -----------------------------------
-manage overlays for CTAN repository
+manage overlays for PYPI repository
 -----------------------------------
 
 :Author: Written by Jauhien Piatlicki <piatlicki@gmail.com>. GSoC idea
@@ -19,36 +19,36 @@ manage overlays for CTAN repository
 SYNOPSIS
 ========
 
-**gs-ctan** **-o** *OVERLAY* [**-r** *REPO*] **sync**
+**gs-pypi** **-o** *OVERLAY* [**-r** *REPO*] **sync**
 
-**gs-ctan** **-o** *OVERLAY* [**-r** *REPO*] **list**
+**gs-pypi** **-o** *OVERLAY* [**-r** *REPO*] **list**
 
-**gs-ctan** **-o** *OVERLAY* [**-r** *REPO*] **generate** *PACKAGE*
+**gs-pypi** **-o** *OVERLAY* [**-r** *REPO*] **generate** *PACKAGE*
 
-**gs-ctan** **-o** *OVERLAY* [**-r** *REPO*] **install** *PACKAGE*
+**gs-pypi** **-o** *OVERLAY* [**-r** *REPO*] **install** *PACKAGE*
 
-**gs-ctan** **-o** *OVERLAY* [**-r** *REPO*] **generate-tree** [**-d**]
+**gs-pypi** **-o** *OVERLAY* [**-r** *REPO*] **generate-tree** [**-d**]
 
 DESCRIPTION
 ===========
 
-**gs-ctan** is an ebuild generator for CTAN TEXLIVE repository.
+**gs-pypi** is an ebuild generator for PYPI PYTHON repository.
 
-There are two ways of using **gs-ctan**:
+There are two ways of using **gs-pypi**:
 
     * use it with **layman**
 
       In this case all you need to do is install **layman-9999**, **g-sorcery**
-      and **gs-ctan**. Then you should just run `layman -L` as
+      and **gs-pypi**. Then you should just run `layman -L` as
       root and find an overlay you want. Type of overlay will be
       displayed as *g-sorcery*. Then you add this overlay as
       usual. It's all you need to do and it's the recommended way of
-      using **gs-ctan**.
+      using **gs-pypi**.
       
     * use it as stand-alone tool
 
       In this case you should create an overlay (see **portage** documentation), sync it and populate
-      it with one or more ebuilds. Then ebuilds could be installed by emerge or by **gs-ctan** tool.
+      it with one or more ebuilds. Then ebuilds could be installed by emerge or by **gs-pypi** tool.
 
 
 OPTIONS
@@ -83,38 +83,38 @@ COMMANDS
 
 FILES
 =====
-**/etc/g-sorcery/gs-ctan.json**
+**/etc/g-sorcery/gs-pypi.json**
     Backend config.
 
-**/etc/layman/overlays/gs-ctan-overlays.xml**
+**/etc/layman/overlays/gs-pypi-overlays.xml**
     List of available repositories.
 
 EXAMPLES
 ========
 
-Using gs-ctan with layman
+Using gs-pypi with layman
     Execute
 
     **layman -L**
 
-    If you see there a **ctan** overlay then anything should work.
+    If you see there a **pypi** overlay then anything should work.
 
-    **layman -a ctan**
+    **layman -a pypi**
 
     Emerge any package from it using **emerge**.
 
 Generating user ebuilds in user overlay
     Create new user overlay. Run
 
-    **gs-ctan -o** *OVERLAY_DIRECTORY* **-r ctan** **sync**
+    **gs-pypi -o** *OVERLAY_DIRECTORY* **-r ctan** **sync**
 
     List packages:
 
-    **gs-ctan -o** *OVERLAY_DIRECTORY* **-r ctan** **list**
+    **gs-pypi -o** *OVERLAY_DIRECTORY* **-r ctan** **list**
 
     Install any package you want:
 
-    **gs-ctan -o** *OVERLAY_DIRECTORY* **-r ctan** **install** *PACKAGE*
+    **gs-pypi -o** *OVERLAY_DIRECTORY* **-r ctan** **install** *PACKAGE*
 
     Note, that if you call **generate-tree** command your overlay
     will be wiped and overlay tree for a given repository will be generated. Be careful!
@@ -122,9 +122,9 @@ Generating user ebuilds in user overlay
 NOTES
 =====
 
-1. At the moment the only package mangler **gs-ctan** supports is **portage**.
+1. At the moment the only package mangler **gs-pypi** supports is **portage**.
 
 SEE ALSO
 ========
 
-**gs-pypi**\(8), **gs-elpa**\(8), **g-sorcery.cfg**\(8), **portage**\(5), **emerge**\(1), **layman**\(8)
+**gs-elpa**\(8), **gs-ctan**\(8), **g-sorcery.cfg**\(8), **portage**\(5), **emerge**\(1), **layman**\(8)

@@ -112,4 +112,4 @@ NOTES
 SEE ALSO
 ========
 
-**g-sorcery.cfg**\(8), **gs-elpa**\(8), **gs-ctan**\(8), **portage**\(5), **emerge**\(1), **layman**\(8)
+**g-sorcery.cfg**\(8), **gs-elpa**\(8), **gs-pypi**\(8), **gs-ctan**\(8), **portage**\(5), **emerge**\(1), **layman**\(8)
