@@ -12,6 +12,7 @@
 """
 
 import argparse
+import sys
 
 from g_sorcery.package_db import PackageDB
 

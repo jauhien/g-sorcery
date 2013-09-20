@@ -12,7 +12,6 @@
 """
 
 import collections
-import os
 
 from g_sorcery.ebuild import DefaultEbuildGenerator
 
