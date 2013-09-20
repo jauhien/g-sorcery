@@ -215,12 +215,14 @@ class MetadataGenerator(object):
     """
     Metada generator. Generates metadata for a given package.
     """
-    def __init__(self, package_db, schema = default_schema):
+    def __init__(self, package_db, schema = None):
         """
         Args:
             package_db: Package database.
             schema: Schema of an XML tree.
         """
+        if not schema:
+            schema = default_schema
         self.package_db = package_db
         self.xmlg = XMLGenerator('pkgmetadata', schema)
         

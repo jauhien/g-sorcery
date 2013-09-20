@@ -27,7 +27,7 @@ class FileJSON(object):
     Class for JSON files. Supports custom JSON serialization
     provided by g_sorcery.serialization.
     """
-    def __init__(self, directory, name, mandatories=[]):
+    def __init__(self, directory, name, mandatories=None):
         """
         Args:
             directory: File directory.
@@ -38,7 +38,10 @@ class FileJSON(object):
         self.directory = os.path.abspath(directory)
         self.name = name
         self.path = os.path.join(directory, name)
-        self.mandatories = mandatories
+        if not mandatories:
+            self.mandatories = []
+        else:
+            self.mandatories = mandatories
 
     def read(self):
         """
@@ -139,7 +142,7 @@ def get_pkgpath(root = None):
         root = os.path.realpath(root)
     return os.path.dirname(os.path.abspath(root))
 
-class ManifestEntry:
+class ManifestEntry(object):
     """
     A manifest entry for a file.
     """

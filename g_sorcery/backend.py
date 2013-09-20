@@ -16,13 +16,7 @@ import os
 
 import portage
 
-from .compatibility import py2k
-
-if py2k:
-    import ConfigParser as configparser
-else:
-    import configparser
-
+from .compatibility import configparser
 from .g_collections import Package, elist
 from .fileutils import fast_manifest, FileJSON
 from .exceptions import DependencyError, DigestError, InvalidKeyError
@@ -315,6 +309,18 @@ class Backend(object):
 
 
     def get_dependencies(self, package_db, pkgname):
+        """
+        Get dependencies for a given package.
+
+        Args:
+            package_db: Database.
+            pkgname: package name (string).
+
+        Returns:
+            A set containing dependencies (instances of Package).
+        Package version is ignored currently and a returned set contains all
+        the versions of packages pkgname depends on.
+        """
         parts = pkgname.split('/')
         category = None
         if len(parts) == 1:

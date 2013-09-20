@@ -18,6 +18,7 @@ py2k = sys.version_info < (3, 0)
 if py2k:
 
     from tempfile import mkdtemp
+    import ConfigParser as configparser
     
     class TemporaryDirectory(object):
         def __init__(self):
@@ -27,6 +28,7 @@ if py2k:
             shutil.rmtree(self.name)
 else:
     from tempfile import TemporaryDirectory
+    import configparser
 
 #basestring removed in py3k
 #fix for it from https://github.com/oxplot/fysom/issues/1

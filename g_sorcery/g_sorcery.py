@@ -16,13 +16,7 @@ import importlib
 import os
 import sys
 
-from .compatibility import py2k
-
-if py2k:
-    import ConfigParser as configparser
-else:
-    import configparser
-
+from .compatibility import configparser
 from .fileutils import FileJSON
 from .exceptions import FileJSONError
 from .logger import Logger

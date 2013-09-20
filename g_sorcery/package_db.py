@@ -243,7 +243,7 @@ class PackageDB(object):
 
         progress_bar = ProgressBar(20, len(list(self.database)))
         if self.database:
-                progress_bar.begin()
+            progress_bar.begin()
 
         categories_content = {}
         for category in self.categories:

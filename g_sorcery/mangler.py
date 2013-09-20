@@ -44,6 +44,7 @@ class Portage(PackageManager):
     Portage package manager abstraction.
     """
     def __init__(self):
+        super(Portage, self).__init__()
         self.executable = "/usr/bin/emerge"
 
     def install(self, pkgname, *args):
