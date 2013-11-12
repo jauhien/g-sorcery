@@ -50,7 +50,8 @@ class PypiEbuildWithDigestGenerator(DefaultEbuildGenerator):
     def __init__(self, package_db):
 
         vars_before_inherit = \
-          [{"name" : "digest_sources", "value" : "yes"}, {"name" : "python_compat", "raw" : True}]
+          ["realname", "realversion",
+           {"name" : "digest_sources", "value" : "yes"}, {"name" : "python_compat", "raw" : True}]
 
         inherit = ["gs-pypi"]
         
