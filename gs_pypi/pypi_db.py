@@ -137,7 +137,10 @@ class PypiDBGenerator(DBGenerator):
                         data["info"][entry_name] = {}
                         for cat_entry in entry("a"):
                             cat_data = cat_entry.string.split(" :: ")
-                            data["info"][entry_name][cat_data[0]] = cat_data[1:]
+                            if not cat_data[0] in data["info"][entry_name]:
+                                data["info"][entry_name][cat_data[0]] = cat_data[1:]
+                            else:
+                                data["info"][entry_name][cat_data[0]].extend(cat_data[1:])
                         continue
 
                     if entry("span"):
