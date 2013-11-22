@@ -17,7 +17,7 @@
   "common_config": {
      "exclude": [
       "actionscript-mode", "alt-font-menu", "analog", "anything",
-      "apache-mode", "apel", "auctex", "auto-complete", "autoconf-mode",
+      "apache-mode", "apel", "auctex", "autoconf-mode",
       "bbdb", "binclock", "blogmax", "bm", "bongo", "boxquote", "browse-kill-ring",
       "bubblet", "calfw", "cedet", "chess", "circe", "cldoc", "cmail", "color-browser",
       "color-moccur", "color-theme", "company-mode", "cperl-mode",
