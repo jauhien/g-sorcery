@@ -15,6 +15,38 @@
     }
   },
   "common_config": {
+     "exclude": [
+      "actionscript-mode", "alt-font-menu", "analog", "anything",
+      "apache-mode", "apel", "auctex", "autoconf-mode",
+      "bbdb", "binclock", "blogmax", "bm", "bongo", "boxquote", "browse-kill-ring",
+      "bubblet", "calfw", "cedet", "chess", "circe", "cldoc", "cmail", "color-browser",
+      "color-moccur", "color-theme", "company-mode", "cperl-mode",
+      "crontab-mode", "crypt++", "csharp-mode", "css-mode", "csv-mode",
+      "ddskk", "delicious", "develock", "df-mode", "dictionary", "dircolors",
+      "dired-sort-menu", "distel", "doctest-mode", "doxymacs", "dropdown-list",
+      "ebuild-mode", "ecb", "edb", "edit-list", "elib", "elscreen",
+      "emacs-common-gentoo", "emacs-daemon", "emacs-jabber",
+      "emacs-wm", "emacs-wget", "emacs-wiki", "emacs-wiki-blog",
+      "emhacks", "emms", "eperiodic", "erc", "erobot", "eselect-mode", "ess",
+      "evil", "fff", "filladapt", "flashcard", "flim", "folding", "gnuserv",
+      "gnuserv-programs", "google-c-style", "graphviz-dot-mode",
+      "grep-edit", "h4x0r", "haskell-mode", "highline", "howm", "htmlize",
+      "http-emacs", "httpd", "icicles", "identica-mode", "igrep", "imaxima", "inform-mode",
+      "initsplit", "jam-mode", "jasmin", "javascript", "jde", "keywiz", "limit",
+      "lookup", "lua-mode", "lyskom-elisp-client", "magit", "mailcrypt", "mairix", "markdown-mode",
+      "matlab", "mcomplete", "mell", "mew", "mic-paren", "mldonkey", "mmm-mode",
+      "moccur-edit", "mode-compile", "mpg123-el", "mu-cite", "muse", "nagios-mode", "navi2ch",
+      "nxml-docbook5-schemas", "nxml-gentoo-schemas", "nxml-libvirt-schemas", "nxml-mode",
+      "nxml-svg-schemas", "ocaml-mode", "org-mode", "outline-magic", "paredit", "php-mode",
+      "planner", "po-mode", "popwin", "pov-mode", "prime-el", "prom-wl", "proofgeneral", "protbuf",
+      "psgml", "pymacs", "python-mode", "quack", "quilt-el", "qwerty", "redo", "regress", "remember",
+      "rfcview", "riece", "rnc-mode", "rpm-spec-mode", "ruby-mode", "rudel", "sawfish", "scala-mode",
+      "scheme-complete", "scss-mode", "semi", "session", "setnu", "slime", "sml-mode", "sokoban", "ssh",
+      "stripes", "sumibi", "tdtd", "teco", "template", "tempo-snippets", "thinks", "thumbs", "tnt",
+      "tuareg-mode", "twittering-mode", "typing", "u-vm-color", "uboat", "undo-tree", "uptimes",
+      "vhdl-mode", "view-process", "vm", "volume", "w3mnav", "wanderlust", "whine", "wikipedia-mode", "xclip",
+      "xrdb-mode", "xslide", "yaml-mode", "yasnippet", "yatex", "yc", "zenburn", "yyzenirc"
+    ],
     "external": {"emacs": "virtual/emacs"}
   }
 }
