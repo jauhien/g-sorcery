@@ -49,6 +49,6 @@
       "vhdl-mode", "view-process", "vm", "volume", "w3mnav", "wanderlust", "whine", "wikipedia-mode", "xclip",
       "xrdb-mode", "xslide", "yaml-mode", "yasnippet", "yatex", "yc", "zenburn", "yyzenirc"
     ],
-    "external": {"emacs": "virtual/emacs"}
+    "external": {"emacs": "virtual/emacs", "cl-lib": "virtual/emacs"}
   }
 }
