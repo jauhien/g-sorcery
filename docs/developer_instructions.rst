@@ -634,7 +634,7 @@ generator, two ebuild generators, eclass and metadata generators.
 
 Also you should write an executable that calls g-sorcery and some configs.
 
-To have better understanding you can look at gs-elpa, gs-ctan and gs-pypi backends available
+To have better understanding you can look at gs-elpa and gs-pypi backends available
 in g-sorcery repository. Also available tests could be usefull.
 
 Note that there is a tool for editing generated database named **gs-db-tool**.

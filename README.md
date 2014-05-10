@@ -52,7 +52,7 @@ Add `jauhien` overlay: **layman -a jauhien**.
 
 Emerge g-sorcery: **emerge -va g-sorcery**.
 
-Currently 3 backends are available: **gs-elpa**, **gs-pypi** and **gs-ctan**.
+Currently 2 backends are available: **gs-elpa** and **gs-pypi**.
 
 Here is an example of using gs-elpa backend.
 
@@ -127,6 +127,6 @@ Repositories you can use are gnu-elpa, marmalade and melpa. You can use them
 all in one overlay. Note, that if you call **generate-tree** command your overlay
 will be wiped and overlay tree for a given repository will be generated. Be careful!
 
-See man pages of **gs-elpa**, **gs-pypi** and **gs-ctan** for further information.
+See man pages of **gs-elpa** and **gs-pypi** for further information.
 
 If you want to develop a new backend see [developer's instructions](https://github.com/jauhien/g-sorcery/blob/master/docs/developer_instructions.rst).
