@@ -46,15 +46,16 @@ databases with information about available software and so on.
 Installation and using
 ======================
 
-You should emerge **app-portage/layman-9999**.
+You will need **app-portage/layman-9999** (when you emerge a backend you are
+interested in it will be pulled in authomatically).
 
 Add `jauhien` overlay: **layman -a jauhien**.
-
-Emerge g-sorcery: **emerge -va g-sorcery**.
 
 Currently 2 backends are available: **gs-elpa** and **gs-pypi**.
 
 Here is an example of using gs-elpa backend.
+
+Emerge backend you want to use: **emerge -va gs-elpa**.
 
 There are two ways of using **gs-elpa**:
 
