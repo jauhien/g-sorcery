@@ -9,8 +9,8 @@ custom settings for g-sorcery
 :Author: Written by Jauhien Piatlicki <piatlicki@gmail.com>. GSoC idea
 	 and mentorship by Rafael Martins. Lots of help and improvements
 	 by Brian Dolbec.
-:Date:   2013-09-20
-:Copyright: Copyright (c) 2013 Jauhien Piatlicki, License: GPL-2
+:Date:   2014-05-10
+:Copyright: Copyright (c) 2013-2014 Jauhien Piatlicki, License: GPL-2
 :Version: 0.1
 :Manual section: 8
 :Manual group: g-sorcery

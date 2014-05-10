@@ -3,8 +3,8 @@
 from distutils.core import setup
 
 setup(name          = 'g-sorcery',
-      version       = '0.1_alpha',
-      description   = 'g-sorcery framework for automated ebuild generators',
+      version       = '0.1',
+      description   = 'framework for automated ebuild generators',
       author        = 'Jauhien Piatlicki',
       author_email  = 'jauhien@gentoo.org',
       packages      = ['g_sorcery', 'gs_db_tool'],
