@@ -1,7 +1,7 @@
 HTML_SOURCES=developer_instructions
 HTML_DOCS=$(HTML_SOURCES:=.html)
 
-MAN_SOURCES=g-sorcery g-sorcery.cfg gs-pypi
+MAN_SOURCES=g-sorcery g-sorcery.cfg
 MANS=$(MAN_SOURCES:=.8)
 
 RST2HTML=rst2html.py
