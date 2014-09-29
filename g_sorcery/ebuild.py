@@ -154,7 +154,7 @@ class DefaultEbuildGenerator(EbuildGenerator):
     Default ebuild generator.
 
     Takes a layout dictinary that describes ebuild structure and generates
-    an ebuild temlate basing on it.
+    an ebuild template basing on it.
 
     Layout has entries for vars and inherited eclasses. Each entry is a list.
     Entries are processed in the following order:
