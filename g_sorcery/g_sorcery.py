@@ -4,9 +4,9 @@
 """
     g_sorcery.py
     ~~~~~~~~~~~~
-    
+
     the main module
-    
+
     :copyright: (c) 2013 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
@@ -46,6 +46,10 @@ def main():
         return -1
     backend = get_backend(config['package'])
 
+    if not backend:
+        logger.error("backend initialization failed, exiting")
+        return -1
+
     config_file = None
     for path in '.', '~', '/etc/g-sorcery':
         config_file = os.path.join(path, "g-sorcery.cfg")
@@ -57,7 +61,7 @@ def main():
     if not config_file:
         logger.error('no global config file\n')
         return -1
-    
+
     global_config = configparser.ConfigParser()
     global_config.read(config_file)
 
@@ -74,7 +78,7 @@ def get_backend(package):
     except ImportError as error:
         logger.error("error importing backend: " + str(error))
         return None
-    
+
     return module
 
 
