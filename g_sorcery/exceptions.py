@@ -4,10 +4,10 @@
 """
     exceptions.py
     ~~~~~~~~~~~~~
-    
+
     Exceptions hierarchy
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -15,6 +15,9 @@ class GSorceryError(Exception):
     pass
 
 class DBError(GSorceryError):
+    pass
+
+class DBLayoutError(GSorceryError):
     pass
 
 class InvalidKeyError(DBError):
@@ -48,4 +51,7 @@ class DigestError(GSorceryError):
     pass
 
 class DownloadingError(GSorceryError):
+    pass
+
+class SerializationError(GSorceryError):
     pass

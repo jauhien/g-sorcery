@@ -4,10 +4,10 @@
 """
     test_PackageDB.py
     ~~~~~~~~~~~~~~~~
-    
+
     PackageDB test suite
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -44,7 +44,7 @@ class TestPackageDB(BaseTest):
         for package in packages:
             orig_db.add_package(package, ebuild_data)
 
-        orig_db.write_and_manifest()
+        orig_db.write()
         os.system("cd " + orig_tempdir.name + " && tar cvzf good.tar.gz db")
         os.system("echo invalid >> " + orig_tempdir.name + "/db/app-test1/packages.json")
         os.system("cd " + orig_tempdir.name + " && tar cvzf dummy.tar.gz db")
@@ -82,7 +82,7 @@ class TestPackageDB(BaseTest):
             self.assertEqual(data, ebuild_data)
             pkg_set.remove(package)
         self.assertTrue(not pkg_set)
-        
+
 
 def suite():
     suite = unittest.TestSuite()

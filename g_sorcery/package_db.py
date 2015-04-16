@@ -4,45 +4,46 @@
 """
     package_db.py
     ~~~~~~~~~~~~~
-    
+
     package database
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
 import glob
-import hashlib
 import os
-import shutil
-import sys
 
 import portage
 
 from .compatibility import basestring, py2k, TemporaryDirectory
 
-from .exceptions import DBStructureError, IntegrityError, \
-     InvalidKeyError, SyncError
-from .fileutils import FileJSON, hash_file, load_remote_file, copy_all, wget
+from .db_layout import DBLayout, JSON_FILE_SUFFIX
+from .exceptions import DBError, DBStructureError, InvalidKeyError, SyncError
+from .fileutils import FileJSON, load_remote_file, copy_all, wget
 from .g_collections import Package
-from .logger import Logger, ProgressBar
+from .logger import Logger
 
 
 class PackageDB(object):
     """
     Package database.
-    Database is a directory and related data structure.
+    It uses DBLayout class to manipulate files that
+    contain DB stored on disk.
 
-    Directory layout.
-    ~~~~~~~~~~~~~~~~~
-    db dir
-        manifest.json: database manifest
-        categories.json: information about categories
-        category1
-            packages.json: information about available packages
-        category2
-        ...
-    
+    There are two versions of DB layout now:
+        0 -- legacy version
+        1 -- new version that supports DB structure versioning
+
+    DB structure itself has two versions:
+        0 -- legacy version, categories contain dictionary package name: versions dict
+        1 -- actual version, corresponds to the DB in memory:
+            DB is a dictionary with categories as keys.
+            Each category contains a dictionary with two entries:
+                common_data -- fields common to all the packages
+                packages -- dictionary with packages (content of category dictionary in v. 0)
+
+    For DB layout v. 0 only DB structure v. 0 is possible.
     """
 
     class Iterator(object):
@@ -50,68 +51,113 @@ class PackageDB(object):
         Iterator class over the package database.
         """
         def __init__(self, package_db):
-            self.pkg_iter = iter(package_db.database.items())
+            self.cats_iter = iter(package_db.database.items())
             try:
-                self.pkgname, self.vers_dict = next(self.pkg_iter)
+                self.cat_name, self.cat_data = next(self.cats_iter)
             except StopIteration:
-                self.pkgname, self.vers_dict = None, None
-            if self.vers_dict:
-                self.vers_iter = iter(self.vers_dict.items())
-            else:
-                self.vers_iter = None
+                self.set_to_end()
+                return
+
+            if not self.cat_data:
+                self.set_to_end()
+                return
+
+            self.pkgs_iter = iter(self.cat_data['packages'].items())
+            try:
+                self.pkg_name, self.pkg_data = next(self.pkgs_iter)
+            except StopIteration:
+                self.set_to_end()
+                return
+
+            if not self.pkg_data:
+                self.set_to_end()
+                return
+
+            self.vers_iter = iter(self.pkg_data.items())
+
+        def set_to_end(self):
+            self.cat_name, self.cat_data = None, None
+            self.pkgs_iter = None
+            self.pkg_name, self.pkg_data = None, None
+            self.vers_iter = None
 
         def __iter__(self):
             return self
 
         if py2k:
             def next(self):
-                if not self.vers_iter:
+                if not self.vers_iter or not self.pkgs_iter:
                     raise StopIteration
+
                 ver, ebuild_data = None, None
                 while not ver:
                     try:
                         ver, ebuild_data = next(self.vers_iter)
                     except StopIteration:
                         ver, ebuild_data = None, None
-
                     if not ver:
-                        self.pkgname, self.vers_dict = next(self.pkg_iter)
-                        self.vers_iter = iter(self.vers_dict.items())
+                        try:
+                            self.pkg_name, self.pkg_data = next(self.pkgs_iter)
+                            self.vers_iter = iter(self.pkg_data.items())
+                        except StopIteration:
+                            self.cat_name, self.cat_data = next(self.cats_iter)
+                            self.pkgs_iter = iter(self.cat_data['packages'].items())
+                            self.pkg_name, self.pkg_data = next(self.pkgs_iter)
+                            self.vers_iter = iter(self.pkg_data.items())
 
-                category, name = self.pkgname.split('/')
-                return (Package(category, name, ver), ebuild_data)
+                ebuild_data.update(self.cat_data['common_data'])
+                return (Package(self.cat_name, self.pkg_name, ver), ebuild_data)
+
         else:
             def __next__(self):
-                if not self.vers_iter:
+                if not self.vers_iter or not self.pkgs_iter:
                     raise StopIteration
+
                 ver, ebuild_data = None, None
                 while not ver:
                     try:
                         ver, ebuild_data = next(self.vers_iter)
                     except StopIteration:
                         ver, ebuild_data = None, None
-
                     if not ver:
-                        self.pkgname, self.vers_dict = next(self.pkg_iter)
-                        self.vers_iter = iter(self.vers_dict.items())
+                        try:
+                            self.pkg_name, self.pkg_data = next(self.pkgs_iter)
+                            self.vers_iter = iter(self.pkg_data.items())
+                        except StopIteration:
+                            self.cat_name, self.cat_data = next(self.cats_iter)
+                            self.pkgs_iter = iter(self.cat_data['packages'].items())
+                            self.pkg_name, self.pkg_data = next(self.pkgs_iter)
+                            self.vers_iter = iter(self.pkg_data.items())
 
-                category, name = self.pkgname.split('/')
-                return (Package(category, name, ver), ebuild_data)
+                ebuild_data.update(self.cat_data['common_data'])
+                return (Package(self.cat_name, self.pkg_name, ver), ebuild_data)
 
 
-    def __init__(self, directory):
-        """
-        Args:
-            directory: database directory.
-        """
+    def __init__(self, directory,
+                 preferred_layout_version=1,
+                 preferred_db_version=1,
+                 preferred_category_format=JSON_FILE_SUFFIX):
+
+        if preferred_layout_version == 0 \
+           and preferred_db_version != 0:
+            raise DBStructureError("Wrong DB version: " + preferred_db_version + \
+                                   ", with DB layout version 0 it can be only 0")
+
+        if not preferred_db_version in [0, 1]:
+            raise DBStructureError("Unsupported DB version: " + preferred_db_version)
+
         self.logger = Logger()
-        self.CATEGORIES_NAME = 'categories.json'
-        self.PACKAGES_NAME = 'packages.json'
         self.directory = os.path.abspath(directory)
+        self.preferred_layout_version = preferred_layout_version
+        self.preferred_db_version = preferred_db_version
+        self.preferred_category_format = preferred_category_format
+        self.db_layout = DBLayout(self.directory)
         self.reset_db()
 
+
     def __iter__(self):
-        return(PackageDB.Iterator(self))
+        return PackageDB.Iterator(self)
+
 
     def reset_db(self):
         """
@@ -119,6 +165,7 @@ class PackageDB(object):
         """
         self.database = {}
         self.categories = {}
+
 
     def sync(self, db_uri):
         """
@@ -131,7 +178,7 @@ class PackageDB(object):
         download_dir = TemporaryDirectory()
         if wget(real_db_uri, download_dir.name):
             raise SyncError('sync failed: ' + real_db_uri)
-        
+
         temp_dir = TemporaryDirectory()
         for f_name in glob.iglob(os.path.join(download_dir.name, '*.tar.gz')):
             self.logger.info("unpacking " + f_name)
@@ -140,18 +187,17 @@ class PackageDB(object):
         tempdb_dir = os.path.join(temp_dir.name, os.listdir(temp_dir.name)[0])
         tempdb = PackageDB(tempdb_dir)
 
-        if not tempdb.check_manifest()[0]:
-            raise IntegrityError('Manifest check failed.')
+        tempdb.db_layout.check_manifest()
 
         self.logger.info("copy files to an actual database")
         self.clean()
         copy_all(tempdb_dir, self.directory)
-        
-        if not self.check_manifest()[0]:
-            raise IntegrityError('Manifest check failed, db inconsistent.')
-                
+
+        self.db_layout.check_manifest()
+
         del download_dir
         del temp_dir
+
 
     def get_real_db_uri(self, db_uri):
         """
@@ -162,196 +208,61 @@ class PackageDB(object):
             URI of remote database file.
         """
         return db_uri
-            
-    def manifest(self):
-        """
-        Generate database manifest.
-        """
-        categories = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        categories = categories.read()
-        manifest = {}
-        names = [self.CATEGORIES_NAME]
-        for name in names:
-            manifest[name] = hash_file(os.path.join(self.directory, name),
-                                      hashlib.md5())
-        for category in categories:
-            category_path = os.path.join(self.directory, category)
-            if not os.path.isdir(category_path):
-                raise DBStructureError('Empty category: ' + category)
-            for root, dirs, files in os.walk(category_path):
-                for f in files:
-                    manifest[os.path.join(root[len(self.directory)+1:], f)] = \
-                    hash_file(os.path.join(root, f), hashlib.md5())
-        m_f = FileJSON(self.directory, 'manifest.json', [])
-        m_f.write(manifest)
 
-    def check_manifest(self):
-        """
-        Check database manifest.
-
-        Returns:
-            Tuple with first element containing result of manifest check
-            as boolean and second element containing list of files with errors.
-        """
-        self.logger.info("checking manifest")
-        m_f = FileJSON(self.directory, 'manifest.json', [])
-        manifest = m_f.read()
-
-        result = True
-        errors = []
-
-        names = [self.CATEGORIES_NAME]
-        for name in names:
-            if not name in manifest:
-                raise DBStructureError('Bad manifest: no ' + name + ' entry')
-
-        for name, value in manifest.items():
-            if hash_file(os.path.join(self.directory, name), hashlib.md5()) != \
-                value:
-                errors.append(name)
-
-        if errors:
-            result = False
-
-        return (result, errors)
 
     def clean(self):
         """
         Clean database.
         """
-        if os.path.exists(self.directory):
-            shutil.rmtree(self.directory)
+        self.db_layout.clean()
         self.reset_db()
-        self.write_and_manifest()
-
-    def write_and_manifest(self):
-        """
-        Write and digest database.
-        """
         self.write()
-        self.manifest()
+
 
     def write(self):
         """
-        Write database.
+        Write and digest database.
         """
-        categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        categories_f.write(self.categories)
+        if self.database:
+            self.logger.info("writing database...")
+
+        metadata = {'db_version': self.preferred_db_version,
+                    'layout_version': self.preferred_layout_version,
+                    'category_format': self.preferred_category_format}
+
+        if self.preferred_db_version == 0:
+            packages = dict(self.database)
+            for category, cat_data in packages.items():
+                for _, versions in cat_data['packages'].items():
+                    for version, ebuild_data in versions.items():
+                        ebuild_data.update(cat_data['common_data'])
+                packages[category] = cat_data['packages']
+        else:
+            packages = dict(self.database)
+
+        self.db_layout.write(metadata, self.categories, packages)
 
         if self.database:
-            self.logger.info("writing database")
+            self.logger.info("database written")
 
-        progress_bar = ProgressBar(20, len(list(self.database)))
-        if self.database:
-            progress_bar.begin()
-
-        categories_content = {}
-        for category in self.categories:
-            categories_content[category] = {}
-        
-        for pkgname, versions in self.database.items():
-            category, name = pkgname.split('/')
-            if not category or (not category in self.categories):
-                raise DBStructureError('Non existent: ' + category)
-            categories_content[category][name] = {}
-            for version, content in versions.items():
-                categories_content[category][name][version] = content
-                self.additional_write_version(category, name, version)
-            self.additional_write_package(category, name)
-            progress_bar.increment()
-
-        for category in self.categories:
-            f = FileJSON(os.path.join(self.directory, category), self.PACKAGES_NAME, [])
-            f.write(categories_content[category])
-            self.additional_write_category(category)
-
-        self.additional_write()
-
-        if self.database:
-            progress_bar.end()
-            print("")
-
-    def additional_write_version(self, category, package, version):
-        """
-        Hook to be overrided.
-        """
-        pass
-
-    def additional_write_package(self, category, package):
-        """
-        Hook to be overrided.
-        """
-        pass
-
-    def additional_write_category(self, category):
-        """
-        Hook to be overrided.
-        """
-        pass
-
-    def additional_write(self):
-        """
-        Hook to be overrided.
-        """
-        pass
 
     def read(self):
         """
         Read database.
         """
-        sane, errors = self.check_manifest()
-        if not sane:
-            raise IntegrityError('Manifest error: ' + str(errors))
-        categories_f = FileJSON(self.directory, self.CATEGORIES_NAME, [])
-        self.categories = categories_f.read()
-        for category in self.categories:
-            category_path = os.path.join(self.directory, category)
-            if not os.path.isdir(category_path):
-                raise DBStructureError('Empty category: ' + category)
-            
-            f = FileJSON(category_path, self.PACKAGES_NAME, [])
-            packages = f.read()
-            if not packages:
-                raise DBStructureError('Empty category: ' + category)
-            
-            for name, versions in packages.items():
-                
-                if not versions:
-                    error_msg = 'Empty package: ' + category + '/' + name
-                    raise DBStructureError(error_msg)
-                
-                pkgname = category + '/' + name
-                self.database[pkgname] = versions
-                for version in versions:
-                    self.additional_read_version(category, name, version)
-                self.additional_read_package(category, name)
-            self.additional_read_category(category)
-        self.additional_read()
+        metadata, self.categories, packages = self.db_layout.read()
 
-    def additional_read_version(self, category, package, version):
-        """
-        Hook to be overrided.
-        """
-        pass
+        db_version = metadata['db_version']
+        self.database = packages
+        if db_version == 0:
+            for category, cat_data in self.database.items():
+                self.database[category] = {'common_data': {}, 'packages': cat_data}
+        elif db_version == 1:
+            pass
+        else:
+            raise DBStructureError("Unsupported DB version: " + db_version)
 
-    def additional_read_package(self, category, package):
-        """
-        Hook to be overrided.
-        """
-        pass
 
-    def additional_read_category(self, category):
-        """
-        Hook to be overrided.
-        """
-        pass
-
-    def additional_read(self):
-        """
-        Hook to be overrided.
-        """
-        pass
-        
     def add_category(self, category, description=None):
         """
         Add a category.
@@ -364,6 +275,7 @@ class PackageDB(object):
             description = {}
         self.categories[category] = description
 
+
     def add_package(self, package, ebuild_data=None):
         """
         Add a package.
@@ -374,15 +286,25 @@ class PackageDB(object):
         """
         if not ebuild_data:
             ebuild_data = {}
+
         category = package.category
         name = package.name
         version = package.version
-        pkgname = category + '/' + name
-        if category and not category in self.categories:
+
+        if not category or not name or not version:
+            raise DBError("wrong package: " + str(package))
+
+        if not category in self.categories:
             raise InvalidKeyError('Non-existent category: ' + category)
-        if pkgname and not pkgname in self.database:
-            self.database[pkgname] = {}
-        self.database[pkgname][version] = ebuild_data
+
+        if not category in self.database:
+            self.database[category] = {'common_data': {}, 'packages': {}}
+
+        if not name in self.database[category]['packages']:
+            self.database[category]['packages'][name] = {}
+
+        self.database[category]['packages'][name][version] = ebuild_data
+
 
     def list_categories(self):
         """
@@ -392,6 +314,7 @@ class PackageDB(object):
             List with category names.
         """
         return list(self.categories)
+
 
     def in_category(self, category, name):
         """
@@ -406,7 +329,12 @@ class PackageDB(object):
         """
         if not category or (not category in self.categories):
             raise InvalidKeyError('No such category: ' + category)
-        return (category + '/' + name) in self.database
+
+        if not category in self.database:
+            return False
+
+        return name in self.database[category]['packages']
+
 
     def list_package_names(self, category):
         """
@@ -420,9 +348,12 @@ class PackageDB(object):
         """
         if not category or (not category in self.categories):
             raise InvalidKeyError('No such category: ' + category)
-        res = [x.split('/')[1] for x in self.database
-               if x.split('/')[0] == category]
-        return res
+
+        if not category in self.database:
+            return []
+
+        return list(self.database[category]['packages'])
+
 
     def list_catpkg_names(self):
         """
@@ -431,7 +362,12 @@ class PackageDB(object):
         Returns:
             List with category/package entries.
         """
-        return list(self.database)
+        result = []
+        for category, cat_data in self.database.items():
+            for name in cat_data['packages']:
+                result.append(category + '/' + name)
+        return result
+
 
     def list_package_versions(self, category, name):
         """
@@ -446,10 +382,13 @@ class PackageDB(object):
         """
         if not category or (not category in self.categories):
             raise InvalidKeyError('No such category: ' + category)
-        pkgname = category + '/' + name
-        if not pkgname in self.database:
-            raise InvalidKeyError('No such package: ' + pkgname)
-        return list(self.database[pkgname])
+
+        if not category in self.database \
+           or not name in self.database[category]['packages']:
+            raise InvalidKeyError('No such package: ' + category + '/' + name)
+
+        return list(self.database[category]['packages'][name])
+
 
     def list_all_packages(self):
         """
@@ -459,11 +398,12 @@ class PackageDB(object):
             List of package_db.Package instances.
         """
         result = []
-        for pkgname, versions in self.database.items():
-            for version in versions:
-                category, name = pkgname.split('/')
-                result.append(Package(category, name, version))
+        for category, cat_data in self.database.items():
+            for name, versions in cat_data['packages'].items():
+                for version in versions:
+                    result.append(Package(category, name, version))
         return result
+
 
     def get_package_description(self, package):
         """
@@ -476,8 +416,11 @@ class PackageDB(object):
             Dictionary with package ebuild data.
         """
         #a possible exception should be catched in the caller
-        return self.database[package.category \
-                             + '/' + package.name][package.version]
+        desc = dict(self.database[package.category]['packages']\
+                    [package.name][package.version])
+        desc.update(self.database[package.category]['common_data'])
+        return desc
+
 
     def get_max_version(self, category, name):
         """
@@ -490,10 +433,15 @@ class PackageDB(object):
         Returns:
             The recent version of a package.
         """
+        if not category or (not category in self.categories):
+            raise InvalidKeyError('No such category: ' + category)
+
+        if not category in self.database \
+           or not name in self.database[category]['packages']:
+            raise InvalidKeyError('No such package: ' + category + '/' + name)
+
         pkgname = category + '/' + name
-        if not pkgname in self.database:
-            raise InvalidKeyError('No such package: ' + pkgname)
-        versions = list(self.database[pkgname])
+        versions = list(self.database[category]['packages'][name])
         max_ver = versions[0]
         for version in versions[1:]:
             if portage.pkgcmp(portage.pkgsplit(pkgname + '-' + version),
@@ -510,8 +458,15 @@ class DBGenerator(object):
 
     __slots__ = ('package_db_class')
 
-    def __init__(self, package_db_class=PackageDB):
+    def __init__(self, package_db_class=PackageDB,
+                 preferred_layout_version=1,
+                 preferred_db_version=1,
+                 preferred_category_format=JSON_FILE_SUFFIX):
         self.package_db_class = package_db_class
+        self.preferred_layout_version = preferred_layout_version
+        self.preferred_db_version = preferred_db_version
+        self.preferred_category_format = preferred_category_format
+
 
     def __call__(self, directory, repository,
                  common_config=None, config=None, generate=True):
@@ -539,7 +494,10 @@ class DBGenerator(object):
             Package database.
         """
         db_path = os.path.join(directory, repository, "db")
-        pkg_db = self.package_db_class(db_path)
+        pkg_db = self.package_db_class(db_path,
+                                       preferred_layout_version=self.preferred_layout_version,
+                                       preferred_db_version=self.preferred_db_version,
+                                       preferred_category_format=self.preferred_category_format)
 
         config_f = FileJSON(os.path.join(directory, repository),
                             "config.json", [])
@@ -557,8 +515,9 @@ class DBGenerator(object):
         if generate:
             pkg_db.clean()
             self.generate_tree(pkg_db, common_config, config)
-            pkg_db.write_and_manifest()
+            pkg_db.write()
         return pkg_db
+
 
     def generate_tree(self, pkg_db, common_config, config):
         """
@@ -739,7 +698,7 @@ class DBGenerator(object):
         Hook to convert external dependencies.
         """
         return dependency
-        
+
     def in_config(self, configs, list_name, value):
         """
         Check whether value is in config.

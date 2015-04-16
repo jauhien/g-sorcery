@@ -4,10 +4,10 @@
 """
     fileutils.py
     ~~~~~~~~~~~~
-    
+
     file utilities
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -15,17 +15,15 @@ import glob
 import json
 import hashlib
 import os
-import shutil
 import tarfile
 
 from .compatibility import TemporaryDirectory
 from .exceptions import FileJSONError, DownloadingError
 from .serialization import JSONSerializer, deserializeHook
 
-class FileJSON(object):
+class FileJSONData(object):
     """
-    Class for JSON files. Supports custom JSON serialization
-    provided by g_sorcery.serialization.
+    Class for files with JSON compatible data.
     """
     def __init__(self, directory, name, mandatories=None):
         """
@@ -33,7 +31,6 @@ class FileJSON(object):
             directory: File directory.
             name: File name.
             mandatories: List of requiered keys.
-            loadconv: Type change values on loading.
         """
         self.directory = os.path.abspath(directory)
         self.name = name
@@ -45,7 +42,7 @@ class FileJSON(object):
 
     def read(self):
         """
-        Read JSON file.
+        Read file.
         """
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
@@ -53,27 +50,58 @@ class FileJSON(object):
         if not os.path.isfile(self.path):
             for key in self.mandatories:
                 content[key] = ""
-            with open(self.path, 'w') as f:
-                json.dump(content, f, indent=2,
-                    sort_keys=True, cls=JSONSerializer)
+            self.write_content(content)
         else:
-            with open(self.path, 'r') as f:
-                content = json.load(f, object_hook=deserializeHook)
+            content = self.read_content()
             for key in self.mandatories:
                 if not key in content:
                     raise FileJSONError('lack of mandatory key: ' + key)
-        
+
         return content
+
+    def read_content(self):
+        """
+        Real read operation with deserialization. Should be overridden.
+        """
+        return []
 
     def write(self, content):
         """
-        Write JSON file.
+        Write file.
         """
         for key in self.mandatories:
             if not key in content:
                 raise FileJSONError('lack of mandatory key: ' + key)
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
+        self.write_content(content)
+
+    def write_content(self, content):
+        """
+        Real write operation with serialization. Should be overridden.
+        """
+        pass
+
+
+class FileJSON(FileJSONData):
+    """
+    Class for JSON files. Supports custom JSON serialization
+    provided by g_sorcery.serialization.
+    """
+
+    def read_content(self):
+        """
+        Read JSON file.
+        """
+        content = {}
+        with open(self.path, 'r') as f:
+            content = json.load(f, object_hook=deserializeHook)
+        return content
+
+    def write_content(self, content):
+        """
+        Write JSON file.
+        """
         with open(self.path, 'w') as f:
             json.dump(content, f, indent=2, sort_keys=True, cls=JSONSerializer)
 
@@ -149,7 +177,7 @@ class ManifestEntry(object):
 
     __slots__ = ('directory', 'name', 'ftype',
                  'size', 'sha256', 'sha512', 'whirlpool')
-    
+
     def __init__(self, directory, name, ftype):
         self.directory = directory
         self.name = name

@@ -4,10 +4,10 @@
 """
     gs_db_tool.py
     ~~~~~~~~~~~~~
-    
-    CLI to manipulate with package DB
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    CLI to manipulate package DB
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -61,7 +61,7 @@ def transform_db(function):
     def transformator(pkg_db, args):
         pkg_db.read()
         function(pkg_db, args)
-        pkg_db.write_and_manifest()
+        pkg_db.write()
     return transformator
 
 
