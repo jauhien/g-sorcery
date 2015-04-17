@@ -38,10 +38,10 @@ def HTTPRequestHandlerGenerator(direct):
 
     
 class Server(threading.Thread):
-    def __init__(self, directory):
+    def __init__(self, directory, port=8080):
         super(Server, self).__init__()
         HTTPServer.allow_reuse_address = True
-        server_address = ('127.0.0.1', 8080)
+        server_address = ('127.0.0.1', port)
         self.httpd = HTTPServer(server_address, HTTPRequestHandlerGenerator(directory))
     
     def run(self):

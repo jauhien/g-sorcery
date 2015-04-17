@@ -40,7 +40,7 @@ SUPPORTED_FILE_FORMATS = {JSON_FILE_SUFFIX: CategoryJSON}
 
 # bson module is optional, we should check if it is installed
 try:
-    from g_sorcery.file_bson.file_bson import FileBSON
+    from .file_bson.file_bson import FileBSON
 
     class CategoryBSON(FileBSON):
         """
@@ -172,9 +172,13 @@ def get_layout(metadata):
         return (CategoryJSON, [file_name(CATEGORIES_FILE_NAME)])
     elif layout_version == 1:
         category_format = metadata['category_format']
+        wrong_fmt = True
         try:
             category_cls = SUPPORTED_FILE_FORMATS[category_format]
+            wrong_fmt = False
         except KeyError:
+            pass
+        if wrong_fmt:
             raise DBLayoutError("unsupported packages file format: " + category_format)
         return (category_cls, [file_name(CATEGORIES_FILE_NAME), file_name(METADATA_FILE_NAME)])
     else:
