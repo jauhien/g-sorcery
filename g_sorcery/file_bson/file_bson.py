@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-    bson.py
-    ~~~~~~~
+    file_bson.py
+    ~~~~~~~~~~~~
 
     bson file format support
 
@@ -29,10 +29,10 @@ class FileBSON(FileJSONData):
         content = {}
         bcnt = None
         with open(self.path, 'rb') as f:
-            bcnt = f.read()
+            bcnt = bson.BSON(f.read())
         if not bcnt:
             raise FileJSONError('failed to read: ', self.path)
-        rawcnt = bson.BSON.decode(bcnt)
+        rawcnt = bcnt.decode()
         content = from_raw_serializable(rawcnt)
         return content
 

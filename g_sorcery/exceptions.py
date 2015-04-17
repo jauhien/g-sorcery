@@ -52,6 +52,3 @@ class DigestError(GSorceryError):
 
 class DownloadingError(GSorceryError):
     pass
-
-class SerializationError(GSorceryError):
-    pass

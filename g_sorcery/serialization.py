@@ -14,8 +14,6 @@
 import json
 import importlib
 
-from .exceptions import SerializationError
-
 def step_to_raw_serializable(obj):
     """
     Make one step of convertion of object
@@ -54,7 +52,7 @@ def to_raw_serializable(obj):
     else:
         sobj = step_to_raw_serializable(obj)
         if not sobj:
-            raise SerializationError('Non serializable object: ', sobj)
+            raise TypeError('Non serializable object: ', sobj)
         return to_raw_serializable(sobj)
 
 

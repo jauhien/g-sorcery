@@ -15,7 +15,7 @@ import os
 
 from distutils.core import setup
 
-SELECTABLE = ['bson']
+SELECTABLE = {'bson': 'file_bson'}
 
 use_defaults = ' '.join(list(SELECTABLE))
 USE = os.environ.get("USE", use_defaults).split()
@@ -23,7 +23,7 @@ USE = os.environ.get("USE", use_defaults).split()
 optional_modules = []
 for mod in SELECTABLE:
     if mod in USE:
-        optional_modules.append('g_sorcery.%s' % mod)
+        optional_modules.append('g_sorcery.%s' % SELECTABLE[mod])
 
 setup(name          = 'g-sorcery',
       version       = '0.2',

@@ -40,7 +40,7 @@ SUPPORTED_FILE_FORMATS = {JSON_FILE_SUFFIX: CategoryJSON}
 
 # bson module is optional, we should check if it is installed
 try:
-    from g_sorcery.bson.bson import FileBSON
+    from g_sorcery.file_bson.file_bson import FileBSON
 
     class CategoryBSON(FileBSON):
         """
