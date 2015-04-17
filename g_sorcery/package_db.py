@@ -216,7 +216,6 @@ class PackageDB(object):
         """
         self.db_layout.clean()
         self.reset_db()
-        self.write()
 
 
     def write(self):

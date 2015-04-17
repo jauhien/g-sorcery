@@ -230,6 +230,7 @@ class DBLayout(object):
         """
         if os.path.exists(self.directory):
             shutil.rmtree(self.directory)
+        os.makedirs(self.directory)
 
     def read(self):
         """
