@@ -18,12 +18,13 @@ import portage
 
 from .compatibility import basestring, py2k, TemporaryDirectory
 
-from .db_layout import DBLayout, JSON_FILE_SUFFIX
-from .exceptions import DBError, DBStructureError, InvalidKeyError, SyncError
+from .db_layout import DBLayout, JSON_FILE_SUFFIX, SUPPORTED_DB_LAYOUTS, SUPPORTED_FILE_FORMATS
+from .exceptions import DBError, DBLayoutError, DBStructureError, InvalidKeyError, SyncError
 from .fileutils import FileJSON, load_remote_file, copy_all, wget
 from .g_collections import Package
 from .logger import Logger
 
+SUPPORTED_DB_STRUCTURES=[0, 1]
 
 class PackageDB(object):
     """
@@ -142,11 +143,17 @@ class PackageDB(object):
 
         if preferred_layout_version == 0 \
            and preferred_db_version != 0:
-            raise DBStructureError("Wrong DB version: " + preferred_db_version + \
+            raise DBStructureError("Wrong DB version: " + str(preferred_db_version) + \
                                    ", with DB layout version 0 it can be only 0")
 
-        if not preferred_db_version in [0, 1]:
-            raise DBStructureError("Unsupported DB version: " + preferred_db_version)
+        if not preferred_db_version in SUPPORTED_DB_STRUCTURES:
+            raise DBStructureError("Unsupported DB version: " + str(preferred_db_version))
+
+        if not preferred_layout_version in SUPPORTED_DB_LAYOUTS:
+            raise DBLayoutError("unsupported DB layout version: " + str(preferred_layout_version))
+
+        if not preferred_category_format in SUPPORTED_FILE_FORMATS:
+            raise DBLayoutError("unsupported packages file format: " + preferred_category_format)
 
         self.logger = Logger()
         self.directory = os.path.abspath(directory)
@@ -261,7 +268,7 @@ class PackageDB(object):
         elif db_version == 1:
             pass
         else:
-            raise DBStructureError("Unsupported DB version: " + db_version)
+            raise DBStructureError("Unsupported DB version: " + str(db_version))
 
 
     def add_category(self, category, description=None):

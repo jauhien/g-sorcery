@@ -26,6 +26,8 @@ PACKAGES_FILE_NAME = 'packages'
 JSON_FILE_SUFFIX = 'json'
 BSON_FILE_SUFFIX = 'bson'
 
+SUPPORTED_DB_LAYOUTS=[0, 1]
+
 class CategoryJSON(FileJSON):
     """
     Category file in JSON format.
@@ -182,7 +184,7 @@ def get_layout(metadata):
             raise DBLayoutError("unsupported packages file format: " + category_format)
         return (category_cls, [file_name(CATEGORIES_FILE_NAME), file_name(METADATA_FILE_NAME)])
     else:
-        raise DBLayoutError("unsupported DB layout version: " + layout_version)
+        raise DBLayoutError("unsupported DB layout version: " + str(layout_version))
 
 
 class DBLayout(object):
