@@ -105,6 +105,7 @@ class PackageDB(object):
                             self.pkg_name, self.pkg_data = next(self.pkgs_iter)
                             self.vers_iter = iter(self.pkg_data.items())
 
+                ebuild_data = dict(ebuild_data)
                 ebuild_data.update(self.cat_data['common_data'])
                 return (Package(self.cat_name, self.pkg_name, ver), ebuild_data)
 
@@ -129,6 +130,7 @@ class PackageDB(object):
                             self.pkg_name, self.pkg_data = next(self.pkgs_iter)
                             self.vers_iter = iter(self.pkg_data.items())
 
+                ebuild_data = dict(ebuild_data)
                 ebuild_data.update(self.cat_data['common_data'])
                 return (Package(self.cat_name, self.pkg_name, ver), ebuild_data)
 
@@ -273,6 +275,42 @@ class PackageDB(object):
         if not description:
             description = {}
         self.categories[category] = description
+
+
+    def set_common_data(self, category, common_data):
+        """
+        Set common data for a category.
+
+        Args:
+            category: Category name.
+            common_data: Category common data.
+        """
+        if not category in self.categories:
+            raise InvalidKeyError('Non-existent category: ' + category)
+
+        if not category in self.database:
+            self.database[category] = {'common_data': common_data, 'packages': {}}
+        else:
+            self.database[category]['common_data'] = common_data
+
+
+    def get_common_data(self, category):
+        """
+        Get common data for a category.
+
+        Args:
+            category: Category name.
+
+        Returns:
+            Dictionary with category common data.
+        """
+        if not category in self.categories:
+            raise InvalidKeyError('Non-existent category: ' + category)
+
+        if not category in self.database:
+            return {}
+        else:
+            return self.database[category]['common_data']
 
 
     def add_package(self, package, ebuild_data=None):
