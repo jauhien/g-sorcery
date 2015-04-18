@@ -4,14 +4,14 @@
 """
     g_collections.py
     ~~~~~~~~~~~~~~~~
-    
+
     Customized classes of standard python data types
     for use withing g-sorcery for custom formatted string output
     substitution in our ebuild templates and classes for storing
     information about packages and dependencies.
-    
+
     :copyright: (c) 2013 by Brian Dolbec
-    :copyright: (c) 2013 by Jauhien Piatlicki
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -52,13 +52,16 @@ class serializable_elist(object):
     """
 
     __slots__ = ('data')
-    
+
     def __init__(self, iterable=None, separator=' '):
         '''
         iterable: initialize from iterable's items
         separator: string used to join list members with for __str__()
         '''
         self.data = elist(iterable or [], separator)
+
+    def __eq__(self, other):
+        return self.data == other.data
 
     def __iter__(self):
         return iter(self.data)
@@ -122,7 +125,7 @@ class Dependency(object):
 
     def __init__(self, category, package, version="", operator=""):
         atom_str = operator + category + "/" + package
-        if version:            
+        if version:
             atom_str += "-" + str(version)
         object.__setattr__(self, "atom", portage.dep.Atom(atom_str))
         object.__setattr__(self, "category", category)

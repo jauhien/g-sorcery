@@ -4,10 +4,10 @@
 """
     test_FileJSON.py
     ~~~~~~~~~~~~~~~~
-    
+
     FileJSON test suite
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -17,36 +17,10 @@ import unittest
 
 from g_sorcery.fileutils import FileJSON
 from g_sorcery.exceptions import FileJSONError
+from g_sorcery.g_collections import serializable_elist
 
 from tests.base import BaseTest
-
-
-class NonSerializableClass(object):
-    pass
-
-
-class SerializableClass(object):
-
-    __slots__ = ("field1", "field2")
-
-    def __init__(self, field1, field2):
-        self.field1 = field1
-        self.field2 = field2
-
-    def __eq__(self, other):
-        return self.field1 == other.field1 \
-          and self.field2 == other.field2
-
-    def serialize(self):
-        return {"field1": self.field1, "field2": self.field2}
-
-
-class DeserializableClass(SerializableClass):
-
-    @classmethod
-    def deserialize(cls, value):
-        return DeserializableClass(value["field1"], value["field2"])
-
+from tests.serializable import NonSerializableClass, SerializableClass, DeserializableClass
 
 class TestFileJSON(BaseTest):
     def setUp(self):
@@ -54,7 +28,7 @@ class TestFileJSON(BaseTest):
         self.directory = os.path.join(self.tempdir.name, 'tst')
         self.name = 'tst.json'
         self.path = os.path.join(self.directory, self.name)
-    
+
     def test_read_nonexistent(self):
         fj = FileJSON(self.directory, self.name, [])
         content = fj.read()
@@ -99,7 +73,16 @@ class TestFileJSON(BaseTest):
         fj.write(content)
         content_r = fj.read()
         self.assertEqual(content, content_r)
-        
+
+    def test_deserializable_collection(self):
+        fj = FileJSON(self.directory, self.name, [])
+        content1 = DeserializableClass("1", "2")
+        content2 = DeserializableClass("3", "4")
+        content = serializable_elist([content1, content2])
+        fj.write(content)
+        content_r = fj.read()
+        self.assertEqual(content, content_r)
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestFileJSON('test_read_nonexistent'))
@@ -109,4 +92,5 @@ def suite():
     suite.addTest(TestFileJSON('test_write_read'))
     suite.addTest(TestFileJSON('test_serializable'))
     suite.addTest(TestFileJSON('test_deserializable'))
+    suite.addTest(TestFileJSON('test_deserializable_collection'))
     return suite

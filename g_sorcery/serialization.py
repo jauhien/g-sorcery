@@ -14,6 +14,8 @@
 import json
 import importlib
 
+from .compatibility import basestring
+
 def step_to_raw_serializable(obj):
     """
     Make one step of convertion of object
@@ -40,19 +42,22 @@ def to_raw_serializable(obj):
     Convert object to the raw serializable type.
     Logic is the same as in the standard json encoder.
     """
-    if isinstance(obj, str) \
+    if isinstance(obj, basestring) \
        or obj is None \
        or obj is True \
        or obj is False \
        or isinstance(obj, int) \
-       or isinstance(obj, float) \
-       or isinstance(obj, (list, tuple)) \
-       or isinstance(obj, dict):
+       or isinstance(obj, float):
         return obj
+    elif isinstance(obj, dict):
+        return {k: to_raw_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [to_raw_serializable(item) for item in obj]
+
     else:
         sobj = step_to_raw_serializable(obj)
         if not sobj:
-            raise TypeError('Non serializable object: ', sobj)
+            raise TypeError('Non serializable object: ', obj)
         return to_raw_serializable(sobj)
 
 

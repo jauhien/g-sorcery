@@ -18,10 +18,11 @@ import unittest
 from g_sorcery.compatibility import TemporaryDirectory
 from g_sorcery.db_layout import JSON_FILE_SUFFIX, BSON_FILE_SUFFIX
 from g_sorcery.exceptions import IntegrityError, InvalidKeyError, SyncError
-from g_sorcery.g_collections import Package
+from g_sorcery.g_collections import Package, serializable_elist
 from g_sorcery.package_db import PackageDB
 
 from tests.base import BaseTest
+from tests.serializable import DeserializableClass
 from tests.server import Server
 
 SUPPORTED_FILE_FORMATS = [JSON_FILE_SUFFIX]
@@ -50,8 +51,12 @@ class TestPackageDB(BaseTest):
             orig_db = PackageDB(orig_path, preferred_category_format=fmt)
             orig_db.add_category("app-test1")
             orig_db.add_category("app-test2")
-            ebuild_data = {"test1": "tst1", "test2": "tst2"}
-            common_data = {"common1": "cmn1", "common2": "cmn2"}
+            ebuild_data = {"test1": "tst1", "test2": "tst2",
+                           "test3": serializable_elist([DeserializableClass("1", "2"),
+                                                        DeserializableClass("3", "4")])}
+            common_data = {"common1": "cmn1", "common2": "cmn2",
+                           "common3": serializable_elist([DeserializableClass("c1", "c2"),
+                                                          DeserializableClass("c3", "c4")])}
             packages = [Package("app-test1", "test", "1"), Package("app-test1", "test", "2"),
                         Package("app-test1", "test1", "1"), Package("app-test2", "test2", "1")]
             for package in packages:
