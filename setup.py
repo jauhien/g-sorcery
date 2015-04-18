@@ -8,6 +8,9 @@
     installation script
 
     :copyright: (c) 2013-2015 by Jauhien Piatlicki
+    :copyright: (c) 2014 by Brian Dolbec
+                    (code for conditional module installation
+                    is taken from the layman project)
     :license: GPL-2, see LICENSE for more details.
 """
 
