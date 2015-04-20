@@ -4,10 +4,10 @@
 """
     metadata.py
     ~~~~~~~~~~~
-    
+
     metadata generation
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -70,7 +70,7 @@ class XMLGenerator(object):
             schema: XML schema.
         """
         self.external = external
-        self.schema = schema        
+        self.schema = schema
 
     def generate(self, values):
         """
@@ -110,7 +110,7 @@ class XMLGenerator(object):
                 self.add_single_tag(root, name, tag, val, attr)
         else:
             self.add_single_tag(root, name, tag, value)
-            
+
     def add_single_tag(self, root, name, tag, value, attr=None):
         """
         Add a single tag.
@@ -143,7 +143,7 @@ default_schema = [{'name' : 'herd',
                    'multiple' : (True, ""),
                    'required' : False,
                    'subtags' : []},
-                   
+
                    {'name' : 'maintainer',
                    'multiple' : (True, ""),
                    'required' : False,
@@ -209,7 +209,7 @@ default_schema = [{'name' : 'herd',
                                 ]
                         },
                    ]
-            
+
 
 class MetadataGenerator(object):
     """
@@ -225,13 +225,13 @@ class MetadataGenerator(object):
             schema = default_schema
         self.package_db = package_db
         self.xmlg = XMLGenerator('pkgmetadata', schema)
-        
+
     def generate(self, package):
         """
         Generate metadata for a package.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
 
         Returns:
             Metadata source as a list of strings.
@@ -252,7 +252,7 @@ class MetadataGenerator(object):
         Generate metadata using values from a description.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             description: Package description (see package_db module).
 
         Returns:
@@ -261,13 +261,13 @@ class MetadataGenerator(object):
         """
         metadata = self.xmlg.generate(description)
         return metadata
-        
+
     def postprocess(self, package, description, metadata):
         """
         Postprocess generated metadata. Can be overrided.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             description: Package description (see package_db module).
             metadata: xml.etree.ElementTree.Element instance
 

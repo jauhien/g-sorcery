@@ -325,7 +325,7 @@ class PackageDB(object):
         Add a package.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             ebuild_data: Dictionary with package description.
         """
         if not ebuild_data:
@@ -439,7 +439,7 @@ class PackageDB(object):
         List all packages in a database.
 
         Returns:
-            List of package_db.Package instances.
+            List of g_collections.Package instances.
         """
         result = []
         for category, cat_data in self.database.items():
@@ -454,7 +454,7 @@ class PackageDB(object):
         Get package ebuild data.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
 
         Returns:
             Dictionary with package ebuild data.

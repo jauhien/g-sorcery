@@ -4,10 +4,10 @@
 """
     ebuild.py
     ~~~~~~~~~~~~~
-    
+
     ebuild generation
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -30,7 +30,7 @@ class EbuildGenerator(object):
         Generate an ebuild for a package.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             ebuild_data: Dictionary with ebuild data.
 
         Returns:
@@ -79,15 +79,15 @@ class EbuildGenerator(object):
                 error = "substitution failed in line '" + line + "': " + error
                 raise DependencyError(error)
             result.append(line)
-            
+
         return result
-        
+
     def get_template(self, package, ebuild_data):
         """
         Generate ebuild template. Should be overriden.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             ebuild_data: Dictionary with ebuild data.
 
         Returns:
@@ -95,7 +95,7 @@ class EbuildGenerator(object):
         """
         ebuild = []
         return ebuild
-        
+
     def postprocess(self, ebuild, ebuild_data):
         """
         A hook for changing of a generated ebuild.
@@ -122,7 +122,7 @@ class EbuildGeneratorFromFile(EbuildGenerator):
         Generate ebuild template.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             ebuild_data: Dictionary with ebuild data.
 
         Returns:
@@ -138,9 +138,9 @@ class EbuildGeneratorFromFile(EbuildGenerator):
     def get_template_file(self, package, ebuild_data):
         """
         Get template filename for a package. Should be overriden.
-        
+
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             ebuild_data: Dictionary with ebuild data.
 
         Returns:
@@ -158,7 +158,7 @@ class DefaultEbuildGenerator(EbuildGenerator):
 
     Layout has entries for vars and inherited eclasses. Each entry is a list.
     Entries are processed in the following order:
-    
+
     vars_before_inherit
     inherit
     vars_after_inherit
@@ -212,7 +212,7 @@ class DefaultEbuildGenerator(EbuildGenerator):
         if hasattr(layout, "vars_after_keywords"):
             self._append_vars_to_template(layout.vars_after_keywords)
             self.template.append("")
-        
+
 
     def _append_vars_to_template(self, variables):
         """
@@ -241,7 +241,7 @@ class DefaultEbuildGenerator(EbuildGenerator):
         Generate ebuild template.
 
         Args:
-            package: package_db.Package instance.
+            package: g_collections.Package instance.
             ebuild_data: Dictionary with ebuild data.
 
         Returns:

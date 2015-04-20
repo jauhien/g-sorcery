@@ -9,9 +9,9 @@ manage overlays for 3rd party software providers
 :Author: Written by Jauhien Piatlicki <piatlicki@gmail.com>. GSoC idea
 	 and mentorship by Rafael Martins. Lots of help and improvements
 	 by Brian Dolbec. Integration with layman based on work of Auke Booij.
-:Date:   2014-05-10
-:Copyright: Copyright (c) 2013-2014 Jauhien Piatlicki, License: GPL-2
-:Version: 0.1
+:Date:   2015-04-20
+:Copyright: Copyright (c) 2013-2015 Jauhien Piatlicki, License: GPL-2
+:Version: 0.2
 :Manual section: 8
 :Manual group: g-sorcery
 
@@ -54,8 +54,8 @@ There are two ways of using **g-sorcery**:
       displayed as *g-sorcery*. Then you add this overlay as
       usual. It's all you need to do and it's the recommended way of
       using **g-sorcery** and backends.
-      
-    * use it as stand-alone tool
+
+    * use it as stand-alone tool (not recommended)
 
       In this case you should create an overlay (see **portage** documentation), sync it and populate
       it with one or more ebuilds. Then ebuilds could be installed by emerge or by **g-sorcery** tool

@@ -66,7 +66,7 @@ So there are two phases of backend operation:
 
 There are two ways of using backend:
 
-- run it as a CLI tool manually
+- run it as a CLI tool manually (not recommended)
 
 - use its integration with layman
 
@@ -109,7 +109,7 @@ There are two ebuild generator classes as there are two scenarios of using backe
 side: generate the entire overlay tree (possibly by layman) or generate a given ebuild
 and its dependencies. In a first case it would be very bad idea to have sources in ebuild's
 SRC_URI as during manifest generation for an overlay all the sources would be downloaded
-to the user's comuter that inevitably would made user really happy. So one ebuild generator
+to the user's computer that inevitably would made user really happy. So one ebuild generator
 generates ebuild with empty SRC_URI. Note that a mechanism for downloading of sources during
 ebuild merging should be provided. For an example see **git-2** eclass from the main tree or
 any eclass from backends provided with g-sorcery if you want to implement such a mechanism or
@@ -134,7 +134,7 @@ A binary should just pass arguments to g-sorcery. For a backend named gs-elpa it
 
  #!/bin/bash
 
- g-sorcery g-elpa $@   
+ g-sorcery g-elpa $@
 
 Backend config
 ~~~~~~~~~~~~~~
@@ -162,15 +162,15 @@ A simple backend config:
 .. code-block::
 
    {
-     "package": "gs_elpa", 
+     "package": "gs_elpa",
      "repositories": {
        "gnu-elpa": {
          "repo_uri": "http://elpa.gnu.org/packages/"
-       }, 
+       },
        "marmalade": {
          "repo_uri": "http://marmalade-repo.org/packages/",
          "masters": ["gentoo", "gnu-elpa"]
-       }, 
+       },
        "melpa": {
          "repo_uri": "http://melpa.milkbox.net/packages/",
          "masters": ["gentoo", "gnu-elpa"]
@@ -181,8 +181,20 @@ A simple backend config:
 Package database
 ================
 
-Directory layout
-~~~~~~~~~~~~~~~~
+The package is an in memory structure that describes available
+packages and to this structure corresponding files layout.
+
+Directory layout versions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are two directory layouts at the moment:
+
+* v.0 legacy layout
+* v.1 layout that supports different DB structure versions and
+  different file formats.
+
+v.0 legacy layout
+~~~~~~~~~~~~~~~~~
 
 Package database is a directory tree with JSON files. The layout of this tree looks like:
 
@@ -196,41 +208,82 @@ Package database is a directory tree with JSON files. The layout of this tree lo
         category2
         ...
 
+v.1 layout
+~~~~~~~~~~
+
+Metadata file contains information about layout and DB versions as
+well as information about file format used to store packages
+information. At the moment JSON and BSON are supported.
+
+.. code-block::
+
+    db dir
+        manifest.json: database manifest
+        categories.json: information about categories
+        metadata.json: DB metadata
+        category1
+            packages.[b|j]son: information about available packages
+        category2
+        ...
+
+Database structure versions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Database structure has two versions: legacy v.0 and v.1. With
+directory layout v.0 only DB structure v.0 is supported. DB structure
+is internal and shouldn't be relied on by any external tools (including
+backends). PackageDB class API should be used instead.
 
 PackageDB class
 ~~~~~~~~~~~~~~~
 
 PackageDB class is aimed for interaction with package database. It has methods that allow
 to add categories and packages and to do queries on them. Usually you do not want to customize this
-class. But in case you want there is number of methods that can be redifend.
+class.
 
-First of all if you have a database that should be synced with another already generate database
+If you have a database that should be synced with another already generate database
 you can redifine URI to be used for syncing using **get_real_db_uri** method.
-
-There is a number of hooks that are called after package, category or the whole database is
-written/read:
-
-* additional_write_version
-
-* additional_write_package
-
-* additional_write_category
-
-* additional_write
-
-* additional_read_version
-
-* additional_read_package
-
-* additional_read_category
-
-* additional_read
 
 Note that before add any package you should add a category for it using **add_category**.
 Then packages can be added using **add_package**. PackageDB currently does not write changes
-automatically, so you should call **write_and_manifest** after changes are done. This is not relevant
+automatically, so you should call **write** after changes are done. This is not relevant
 for database changing in **process_data** method of database generator as there all changes
-are written by other methods it calls internally after **process_data**.
+are written by other methods it calls internally after
+**process_data**.
+
+If you have some fields that are common to all ebuilds in a given
+category, it's better to split them to common data, that can be set for
+category. This data will be added to ebuild data in results of package
+queries automatically.
+
+Public API that should be used for manipulating packages data:
+
+* add_category(self, category, description=None) -- add new category.
+* set_common_data(self, category, common_data) -- set common ebuild
+  data for a category.
+* get_common_data(self, category) -- get common ebuild data for a
+  category.
+* add_package(self, package, ebuild_data=None) -- add new packages
+  (characterized by category, package name and version) with given
+  ebuild data.
+* list_categories(self) -- list categories.
+* in_category(self, category, name) -- test whether a package is in a
+  given category.
+* list_package_names(self, category) -- list package names in a
+  category.
+* list_catpkg_names(self) -- list category/package name.
+* list_package_versions(self, category, name) -- list package
+  versions.
+* list_all_packages(self) -- list all packages.
+* get_package_description(self, package) -- get ebuild data (it
+  returns a dict that contains both ebuild data for a given package
+  and fields from common data for a given category).
+* get_max_version(self, category, name) -- get the recent available
+  version of a package.
+* iterator -- PackageDB class defines an iterator that iterates
+  through all available package/ebuild data pairs.
+
+To see description of these methods look in g_sorcery/package_db.py file.
 
 JSON serializable objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -243,6 +296,8 @@ g_sorcery.serialization module. It means it should define two methods:
 
 * class method **deserialize** that takes a value returned by **serialize** and constructs new instance
   of your class using it
+
+This holds true for other supported file formats (BSON at the moment).
 
 Dependency handling
 ~~~~~~~~~~~~~~~~~~~
@@ -295,11 +350,11 @@ With this aim you should subclass it and define some methods. Here they are:
        - open_file: Whether parser accepts file objects.
 
        - open_mode: Open mode for a downloaded file.
-       
+
        The only mandatory entry is uri.
 
    The default implementation returns [backend_config["repositories"][REPOSITORY]["repo_uri"]].
-   
+
 * parse_data
    This method parses a file downloaded from a repository
    and returns its content in any form you think useful.
@@ -310,6 +365,16 @@ With this aim you should subclass it and define some methods. Here they are:
    already downloaded and parsed data.
 
 Generally speaking these are all the method you should implement.
+
+Both PackageDB and DBGenerator constructors accept these fields that
+are used to control preferred DB version/layout and file format (used
+during writing DB to disk):
+
+* preferred_layout_version, 1 by default
+* preferred_db_version, 1 by default
+* preferred_category_format, json by default
+
+To see how to use them look at the gs-pypi backend.
 
 Value convertion
 ~~~~~~~~~~~~~~~~
@@ -388,7 +453,7 @@ is a recommended one. To use it you should inherit it and define an ebuild layou
 
 Layout has entries for vars and inherited eclasses. Each entry is a list.
 Entries are processed in the following order:
-    
+
 * vars_before_inherit
 
 * inherit
@@ -414,7 +479,7 @@ Variable names are automatically transformed to the upper-case during ebuild gen
 An example of ebuild generator:
 
 .. code-block::
-   
+
  Layout = collections.namedtuple("Layout",
      ["vars_before_inherit", "inherit",
       "vars_after_description", "vars_after_keywords"])
@@ -429,7 +494,7 @@ An example of ebuild generator:
            ["repo_uri", "source_type", "realname"]
 
          inherit = ["g-elpa"]
-        
+
          vars_after_description = \
            ["homepage"]
 
@@ -497,7 +562,7 @@ Metadata XML schema looks like
                     'multiple' : (True, ""),
                     'required' : False,
                     'subtags' : []},
-                   
+
                     {'name' : 'maintainer',
                     'multiple' : (True, ""),
                     'required' : False,
@@ -520,7 +585,7 @@ Metadata XML schema looks like
                       'multiple' : (False, ""),
                       'required' : False,
                       'subtags' : []},
- 
+
                       {'name' : 'use',
                       'multiple' : (False, ""),
                       'required' : False,
@@ -529,7 +594,7 @@ Metadata XML schema looks like
                                   'required' : True,
                                   'subtags' : []}]
                       },
- 
+
                       {'name' : 'upstream',
                       'multiple' : (False, ""),
                       'required' : False,
@@ -634,7 +699,9 @@ generator, two ebuild generators, eclass and metadata generators.
 
 Also you should write an executable that calls g-sorcery and some configs.
 
-To have better understanding you can look at gs-elpa and gs-pypi backends available
-in g-sorcery repository. Also available tests could be usefull.
+To have better understanding you can look at
+gs-elpa (https://github.com/jauhien/gs-elpa) and gs-pypi
+(https://github.com/jauhien/gs-pypi) backends. Also available tests
+could be usefull.
 
 Note that there is a tool for editing generated database named **gs-db-tool**.
