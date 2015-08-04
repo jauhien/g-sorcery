@@ -4,10 +4,10 @@
 """
     backend.py
     ~~~~~~~~~~
-    
+
     base class for backends
-    
-    :copyright: (c) 2013 by Jauhien Piatlicki
+
+    :copyright: (c) 2013-2015 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
 
@@ -30,7 +30,7 @@ class Backend(object):
 
     Command format is as follows:
     g-backend [-o overlay_dir] [-r repository] command
-    
+
     where command is one of the following:
     sync
     list
@@ -38,11 +38,11 @@ class Backend(object):
     generate package_name
     generate-tree [-d --digest]
     install package_name [portage flags]
-    
+
     If no overlay directory is given the default one from backend config is used.
     """
-    
-    def __init__(self, package_db_generator_class, 
+
+    def __init__(self, package_db_generator_class,
                  ebuild_g_with_digest_class, ebuild_g_without_digest_class,
                  eclass_g_class, metadata_g_class,
                  package_db_class=PackageDB, sync_db=False):
@@ -74,7 +74,7 @@ class Backend(object):
         p_generate_tree = subparsers.add_parser('generate-tree')
         p_generate_tree.add_argument('-d', '--digest', action='store_true')
         p_generate_tree.set_defaults(func=self.generate_tree)
-        
+
         p_install = subparsers.add_parser('install')
         p_install.add_argument('pkgname')
         p_install.add_argument('pkgmanager_flags', nargs=argparse.REMAINDER)
@@ -150,7 +150,7 @@ class Backend(object):
 
         if repository:
             if not "repositories" in config:
-                self.logger.error("repository " + repository + 
+                self.logger.error("repository " + repository +
                     " specified, but there is no repositories entry in config")
                 return -1
             repositories = config["repositories"]
@@ -161,11 +161,15 @@ class Backend(object):
         else:
             self.logger.error('no repository given\n')
             return -1
-                
+
+        try:
+            sync_method = repository_config["sync_method"]
+        except KeyError:
+            sync_method = "tgz"
         if self.sync_db:
             pkg_db = self.package_db_generator(backend_path, repository,
                             common_config, repository_config, generate=False)
-            pkg_db.sync(repository_config["db_uri"])
+            pkg_db.sync(repository_config["db_uri"], repository_config=repository_config, sync_method=sync_method)
         else:
             pkg_db = self.package_db_generator(backend_path,
                             repository, common_config, repository_config)
@@ -227,7 +231,7 @@ class Backend(object):
         except Exception as e:
             self.logger.error('dependency solving failed: ' + str(e) + '\n')
             return -1
-        
+
         eclasses = []
         for package in dependencies:
             eclasses += pkg_db.get_package_description(package)['eclasses']
@@ -409,17 +413,17 @@ class Backend(object):
             try:
                 versions = package_db.list_package_versions(pkg.category,
                                                         pkg.package)
-                for version in versions:            
+                for version in versions:
                     solved_deps, unsolved_deps = self.solve_dependencies(package_db,
                                     Package(pkg.category, pkg.package, version),
                                     solved_deps, unsolved_deps)
             except InvalidKeyError:
                 # ignore non existing packages
                 continue
-        
+
         solved_deps.add(package)
         unsolved_deps.remove(package)
-        
+
         return (solved_deps, unsolved_deps)
 
 
@@ -449,7 +453,7 @@ class Backend(object):
         for pkgname in pkgnames:
             directory = os.path.join(overlay, pkgname)
             fast_manifest(directory)
-        
+
     def generate_tree(self, args, config, global_config):
         """
         Generate entire overlay.
@@ -509,7 +513,7 @@ class Backend(object):
         with open(os.path.join(overlay, 'metadata', 'layout.conf'), 'w') as f:
             f.write("repo-name = %s\n" % os.path.basename(overlay))
             f.write("masters = %s\n" % masters_overlays)
-        
+
         if args.digest:
             ebuild_g = self.ebuild_g_with_digest_class(pkg_db)
         else:
@@ -566,6 +570,13 @@ class Backend(object):
             self.fast_digest(overlay, pkgnames)
         overlays.write(overlays_info)
 
+        try:
+            clean_db = config["repositories"][args.repository]["clean_db"]
+        except KeyError:
+            clean_db = False
+        if clean_db:
+            pkg_db.clean()
+
     def install(self, args, config, global_config):
         """
         Install a package.
@@ -592,7 +603,7 @@ class Backend(object):
             package_manager_class = package_managers[package_manager]
         package_manager = package_manager_class()
         package_manager.install(args.pkgname, *args.pkgmanager_flags)
-        
+
     def __call__(self, args, config, global_config):
         """
         Execute a command

@@ -18,7 +18,7 @@ import os
 
 from distutils.core import setup
 
-SELECTABLE = {'bson': 'file_bson'}
+SELECTABLE = {'bson': 'file_bson', 'git': 'git_syncer'}
 
 use_defaults = ' '.join(list(SELECTABLE))
 USE = os.environ.get("USE", use_defaults).split()
@@ -29,7 +29,7 @@ for mod in SELECTABLE:
         optional_modules.append('g_sorcery.%s' % SELECTABLE[mod])
 
 setup(name          = 'g-sorcery',
-      version       = '0.2',
+      version       = '0.2.1',
       description   = 'framework for automated ebuild generators',
       author        = 'Jauhien Piatlicki',
       author_email  = 'jauhien@gentoo.org',

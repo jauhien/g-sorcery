@@ -581,7 +581,8 @@ backends). PackageDB class API should be used instead.</p>
 to add categories and packages and to do queries on them. Usually you do not want to customize this
 class.</p>
 <p>If you have a database that should be synced with another already generate database
-you can redifine URI to be used for syncing using <strong>get_real_db_uri</strong> method.</p>
+you can use <strong>sync</strong> method. Two sync methods are available
+currently: <strong>tgz</strong> and <strong>git</strong>.</p>
 <p>Note that before add any package you should add a category for it using <strong>add_category</strong>.
 Then packages can be added using <strong>add_package</strong>. PackageDB currently does not write changes
 automatically, so you should call <strong>write</strong> after changes are done. This is not relevant

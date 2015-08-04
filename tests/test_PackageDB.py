@@ -34,17 +34,12 @@ except ImportError as e:
     pass
 
 
-class TestDB(PackageDB):
-    def get_real_db_uri(self, db_uri):
-        return db_uri + "/dummy.tar.gz"
-
-
 class TestPackageDB(BaseTest):
 
     def test_functionality(self):
         port = 8080
         for fmt in SUPPORTED_FILE_FORMATS:
-            sync_address = "127.0.0.1:" + str(port)
+            sync_address = "127.0.0.1:" + str(port) + "/dummy.tar.gz"
             orig_tempdir = TemporaryDirectory()
             orig_path = os.path.join(orig_tempdir.name, "db")
             os.makedirs(orig_path)
@@ -70,7 +65,7 @@ class TestPackageDB(BaseTest):
             os.system("echo invalid >> " + orig_tempdir.name + "/db/app-test1/packages." + fmt)
             os.system("cd " + orig_tempdir.name + " && tar cvzf dummy.tar.gz db")
 
-            test_db = TestDB(self.tempdir.name)
+            test_db = PackageDB(self.tempdir.name)
             self.assertRaises(SyncError, test_db.sync, sync_address)
 
             srv = Server(orig_tempdir.name, port=port)

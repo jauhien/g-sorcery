@@ -11,18 +11,18 @@
     :license: GPL-2, see LICENSE for more details.
 """
 
-import glob
 import os
 
 import portage
 
-from .compatibility import basestring, py2k, TemporaryDirectory
+from .compatibility import basestring, py2k
 
 from .db_layout import DBLayout, JSON_FILE_SUFFIX, SUPPORTED_DB_LAYOUTS, SUPPORTED_FILE_FORMATS
 from .exceptions import DBError, DBLayoutError, DBStructureError, InvalidKeyError, SyncError
-from .fileutils import FileJSON, load_remote_file, copy_all, wget
+from .fileutils import FileJSON, load_remote_file, copy_all
 from .g_collections import Package
 from .logger import Logger
+from .syncer import SUPPORTED_SYNCERS
 
 SUPPORTED_DB_STRUCTURES=[0, 1]
 
@@ -137,6 +137,7 @@ class PackageDB(object):
 
 
     def __init__(self, directory,
+                 persistent_datadir = None,
                  preferred_layout_version=1,
                  preferred_db_version=1,
                  preferred_category_format=JSON_FILE_SUFFIX):
@@ -157,6 +158,11 @@ class PackageDB(object):
 
         self.logger = Logger()
         self.directory = os.path.abspath(directory)
+
+        self.persistent_datadir = persistent_datadir
+        if self.persistent_datadir is not None:
+            self.persistent_datadir = os.path.abspath(self.persistent_datadir)
+
         self.preferred_layout_version = preferred_layout_version
         self.preferred_db_version = preferred_db_version
         self.preferred_category_format = preferred_category_format
@@ -176,24 +182,30 @@ class PackageDB(object):
         self.categories = {}
 
 
-    def sync(self, db_uri):
+    def sync(self, db_uri, repository_config = None, sync_method="tgz"):
         """
         Synchronize local database with remote database.
 
         Args:
             db_uri: URI for synchronization with remote database.
+            repository_config: repository config.
+            sync_method: sync method (tgz or git).
         """
-        real_db_uri = self.get_real_db_uri(db_uri)
-        download_dir = TemporaryDirectory()
-        if wget(real_db_uri, download_dir.name):
-            raise SyncError('sync failed: ' + real_db_uri)
+        if repository_config is None:
+            repository_config = {}
 
-        temp_dir = TemporaryDirectory()
-        for f_name in glob.iglob(os.path.join(download_dir.name, '*.tar.gz')):
-            self.logger.info("unpacking " + f_name)
-            os.system("tar -xvzf " + f_name + " -C " + temp_dir.name)
+        try:
+            syncer_cls = SUPPORTED_SYNCERS[sync_method]
+        except KeyError:
+            raise SyncError('unsupported sync method: ' + sync_method)
+        if self.persistent_datadir is not None:
+            remotedb_dir = os.path.join(self.persistent_datadir, 'remote')
+        else:
+            remotedb_dir = None
+        syncer = syncer_cls(remotedb_dir)
+        synced_data = syncer.sync(db_uri, repository_config)
 
-        tempdb_dir = os.path.join(temp_dir.name, os.listdir(temp_dir.name)[0])
+        tempdb_dir = synced_data.get_path()
         tempdb = PackageDB(tempdb_dir)
 
         tempdb.db_layout.check_manifest()
@@ -204,19 +216,7 @@ class PackageDB(object):
 
         self.db_layout.check_manifest()
 
-        del download_dir
-        del temp_dir
-
-
-    def get_real_db_uri(self, db_uri):
-        """
-        Convert self.db_uri to URI where remote database can be
-        fetched from.
-
-        Returns:
-            URI of remote database file.
-        """
-        return db_uri
+        del synced_data
 
 
     def clean(self):
@@ -538,10 +538,12 @@ class DBGenerator(object):
             Package database.
         """
         db_path = os.path.join(directory, repository, "db")
+        persistent_datadir = os.path.join(directory, repository, "persistent")
         pkg_db = self.package_db_class(db_path,
                                        preferred_layout_version=self.preferred_layout_version,
                                        preferred_db_version=self.preferred_db_version,
-                                       preferred_category_format=self.preferred_category_format)
+                                       preferred_category_format=self.preferred_category_format,
+                                       persistent_datadir=persistent_datadir)
 
         config_f = FileJSON(os.path.join(directory, repository),
                             "config.json", [])

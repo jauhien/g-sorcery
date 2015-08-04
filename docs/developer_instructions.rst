@@ -242,7 +242,8 @@ to add categories and packages and to do queries on them. Usually you do not wan
 class.
 
 If you have a database that should be synced with another already generate database
-you can redifine URI to be used for syncing using **get_real_db_uri** method.
+you can use **sync** method. Two sync methods are available
+currently: **tgz** and **git**.
 
 Note that before add any package you should add a category for it using **add_category**.
 Then packages can be added using **add_package**. PackageDB currently does not write changes
