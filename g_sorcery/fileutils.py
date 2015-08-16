@@ -149,9 +149,9 @@ def wget(uri, directory, output=""):
     """
     if output:
         ret = os.system('wget ' + uri +
-                    ' -O ' + os.path.join(directory, output))
+                        ' -O ' + os.path.join(directory, output) + ' -T 2')
     else:
-        ret = os.system('wget -P ' + directory + ' ' + uri)
+        ret = os.system('wget -P ' + directory + ' ' + uri + ' -T 2')
     return ret
 
 def get_pkgpath(root = None):
