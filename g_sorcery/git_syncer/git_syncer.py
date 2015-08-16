@@ -12,6 +12,8 @@
 """
 
 import os
+import shutil
+import subprocess
 
 from g_sorcery.compatibility import TemporaryDirectory
 
@@ -46,8 +48,11 @@ class GITSyncer(Syncer):
             branch = "master"
 
         if os.path.exists(path):
-            #TODO: allow changing of remotes/branches
-            self.pull(path)
+            if self.branch_not_changed(path, branch) and self.remote_url_not_changed(path, db_uri):
+                self.pull(path)
+            else:
+                shutil.rmtree(path)
+                self.clone(db_uri, branch, path)
         else:
             self.clone(db_uri, branch, path)
 
@@ -65,3 +70,19 @@ class GITSyncer(Syncer):
     def pull(self, path):
         if os.system("cd " + path + " && git pull"):
             raise SyncError("sync failed (pulling): " + path)
+
+
+    def branch_not_changed(self, path, branch):
+        try:
+            result = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=path).rstrip().decode("utf-8")
+        except Exception:
+            return False
+        return result == branch
+
+
+    def remote_url_not_changed(self, path, url):
+        try:
+            result = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], cwd=path).rstrip().decode("utf-8")
+        except Exception:
+            return False
+        return result == url
