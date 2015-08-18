@@ -135,7 +135,7 @@ def copy_all(src, dst):
     """
     os.system("cp -rv " + src + "/* " + dst)
 
-def wget(uri, directory, output=""):
+def wget(uri, directory, output="", timeout = None):
     """
     Fetch a file.
 
@@ -143,15 +143,21 @@ def wget(uri, directory, output=""):
         uri: URI.
         directory: Directory where file should be saved.
         output: Name of output file.
+        timeout: Timeout for wget.
 
     Returns:
         Nonzero in case of a failure.
     """
+    if timeout is None:
+        timeout_str = ' '
+    else:
+        timeout_str = ' -T ' + str(timeout)
+
     if output:
         ret = os.system('wget ' + uri +
-                        ' -O ' + os.path.join(directory, output) + ' -T 2')
+                        ' -O ' + os.path.join(directory, output) + timeout_str)
     else:
-        ret = os.system('wget -P ' + directory + ' ' + uri + ' -T 2')
+        ret = os.system('wget -P ' + directory + ' ' + uri + timeout_str)
     return ret
 
 def get_pkgpath(root = None):
@@ -255,7 +261,7 @@ def _call_parser(f_name, parser, open_file = True, open_mode = 'r'):
     return {os.path.basename(f_name): data}
 
 
-def load_remote_file(uri, parser, open_file = True, open_mode='r', output=""):
+def load_remote_file(uri, parser, open_file = True, open_mode = 'r', output = "", timeout = None):
     """
     Load files from an URI.
 
@@ -264,7 +270,8 @@ def load_remote_file(uri, parser, open_file = True, open_mode='r', output=""):
         parser: Parser that will be applied to downloaded files.
         open_file: Whether parser accepts a file descriptor.
         open_mode: Open mode for a file.
-        output: What output name should downloaded file have
+        output: What output name should downloaded file have.
+        timeout: URI access timeout.
     (it will be a key identifying data loaded from this file)
 
     Returns:
@@ -272,7 +279,7 @@ def load_remote_file(uri, parser, open_file = True, open_mode='r', output=""):
     """
     download_dir = TemporaryDirectory()
     loaded_data = {}
-    if wget(uri, download_dir.name, output):
+    if wget(uri, download_dir.name, output, timeout=timeout):
         raise DownloadingError("wget failed: " + uri)
     for f_name in glob.glob(os.path.join(download_dir.name, "*")):
         if tarfile.is_tarfile(f_name):
