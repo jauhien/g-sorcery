@@ -26,3 +26,5 @@ This project is aimed to create a framework for ebuild-generators for
 3rd party software providers.
 
 If you want to develop a new backend see [developer's instructions](https://github.com/jauhien/g-sorcery/blob/master/docs/developer_instructions.rst).
+
+[TODO list](https://trello.com/b/8WdY2ZIs/framework-for-automated-ebuild-generators).
