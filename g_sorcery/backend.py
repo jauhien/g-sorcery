@@ -12,6 +12,7 @@
 """
 
 import argparse
+import sys
 import os
 
 import portage
@@ -487,7 +488,7 @@ class Backend(object):
         else:
             masters = elist(config["repositories"][args.repository]["masters"])
 
-        overlays = FileJSON("/var/lib/g-sorcery", "overlays.json", [])
+        overlays = FileJSON(os.path.join(sys.prefix, 'var', 'lib', 'g-sorcery'), "overlays.json", [])
         overlays_old_info = overlays.read()
         overlays_info = {}
         masters_overlays = elist()
