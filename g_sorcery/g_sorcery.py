@@ -29,7 +29,10 @@ def main():
     name = sys.argv[1]
     cfg = name + '.json'
     cfg_path = None
-    for path in '.', '~', '/etc/g-sorcery':
+    check_configs = ['.', '~', os.path.join('etc', 'g-sorcery')]
+    for path in os.environ['PATH'].split(os.pathsep):
+        check_configs.append(os.path.join(os.path.dirname(path), 'etc', 'g-sorcery'))
+    for path in check_configs:
         current = os.path.join(path, cfg)
         if (os.path.isfile(current)):
             cfg_path = path
@@ -51,7 +54,7 @@ def main():
         return -1
 
     config_file = None
-    for path in '.', '~', '/etc/g-sorcery':
+    for path in check_configs:
         config_file = os.path.join(path, "g-sorcery.cfg")
         if (os.path.isfile(config_file)):
             break
