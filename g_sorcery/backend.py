@@ -617,6 +617,8 @@ class Backend(object):
             Exit status.
         """
         args = self.parser.parse_args(args)
+        if not args.overlay:
+            self.parser.error("No overlay specified")
         info_f = FileJSON(os.path.join(args.overlay, self.sorcery_dir),
                           "info.json", ["repositories"])
         self.info = info_f.read()
