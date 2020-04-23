@@ -13,6 +13,7 @@
 
 import os
 import threading
+import time
 
 from g_sorcery.compatibility import py2k
 
@@ -49,3 +50,4 @@ class Server(threading.Thread):
 
     def shutdown(self):
         self.httpd.shutdown()
+        time.sleep(0.5)
