@@ -4,9 +4,9 @@
 """
     test_DBGenerator.py
     ~~~~~~~~~~~~~~~~~~~
-    
+
     DBGenerator test suite
-    
+
     :copyright: (c) 2013 by Jauhien Piatlicki
     :license: GPL-2, see LICENSE for more details.
 """
@@ -81,11 +81,13 @@ class TestDBGenerator(BaseTest):
         srv = Server(orig_tempdir.name)
         srv.start()
 
-        pkg_db = db_generator(self.tempdir.name, "test_repo",
+        try:
+            pkg_db = db_generator(self.tempdir.name, "test_repo",
                               common_config = common_config, config = config)
 
-        srv.shutdown()
-        srv.join()
+        finally:
+            srv.shutdown()
+            srv.join()
 
         self.assertEqual(set(pkg_db.list_categories()), set(["app-test1", "app-test2"]))
         self.assertTrue(pkg_db.in_category("app-test1", "test"))

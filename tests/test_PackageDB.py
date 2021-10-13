@@ -70,11 +70,13 @@ class TestPackageDB(BaseTest):
 
             srv = Server(orig_tempdir.name, port=port)
             srv.start()
-            self.assertRaises(IntegrityError, test_db.sync, sync_address)
-            os.system("cd " + orig_tempdir.name + " && mv good.tar.gz dummy.tar.gz")
-            test_db.sync(sync_address)
-            srv.shutdown()
-            srv.join()
+            try:
+                self.assertRaises(IntegrityError, test_db.sync, sync_address)
+                os.system("cd " + orig_tempdir.name + " && mv good.tar.gz dummy.tar.gz")
+                test_db.sync(sync_address)
+            finally:
+                srv.shutdown()
+                srv.join()
             test_db.read()
             self.assertEqual(orig_db.database, test_db.database)
             self.assertEqual(orig_db.get_common_data("app-test1"), test_db.get_common_data("app-test1"))
